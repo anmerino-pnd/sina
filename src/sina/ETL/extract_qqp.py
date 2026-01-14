@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import date
 from bs4 import BeautifulSoup
 
-from jita.settings.credentials import qqp, datos_abiertos
+from sina.settings.credentials import qqp, datos_abiertos
 year = str(date.today().year)
 
 

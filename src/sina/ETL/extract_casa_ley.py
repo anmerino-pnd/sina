@@ -8,8 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from jita.settings.config import CASA_LEY_DATA , HEADERS
-from jita.settings.credentials import casa_ley 
+from sina.settings.config import CASA_LEY_DATA , HEADERS
+from sina.settings.credentials import casa_ley 
 
 CARPETA_SALIDA = CASA_LEY_DATA
 

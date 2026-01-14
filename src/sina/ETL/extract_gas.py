@@ -2,7 +2,7 @@ import logging
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from jita.settings.credentials import gasolina_hmo
+from sina.settings.credentials import gasolina_hmo
 
 def extract_gas() -> pd.DataFrame:
     logging.info("Extrayendo tabla gasolina...")

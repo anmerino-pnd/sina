@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
-from jita.ETL.extract_gas import extract_gas
-from jita.ETL.extract_qqp import extract_qqp
+from sina.ETL.extract_gas import extract_gas
+from sina.ETL.extract_qqp import extract_qqp
 #from jita.ETL.extract_casa_ley import extract_otro
 
 logging.basicConfig(

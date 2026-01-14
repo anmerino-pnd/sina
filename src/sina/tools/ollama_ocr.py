@@ -5,7 +5,7 @@ import ollama
 import numpy as np
 from PIL import Image
 
-from jita.abstract_tools.supermarket_ocr import SupermarketOCRBase
+from sina.abstract_tools.supermarket_ocr import SupermarketOCRBase
 
 class OllamaOCR(SupermarketOCRBase):
     def __init__(self, model: str):

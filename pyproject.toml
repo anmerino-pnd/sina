@@ -1,5 +1,5 @@
 [project]
-name = "jita"
+name = "sina"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.scripts]
-jita = "jita:main"
+sina = "sina:main"
 
 [build-system]
 requires = ["setuptools>=61"]
