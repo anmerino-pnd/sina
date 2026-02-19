@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SINA - Anotador de Folletos</title>
+    <link rel="stylesheet" href="/static/css/annotator.css">
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h1 class="logo">SINA</h1>
+        <p class="subtitle">Anotador de Folletos</p>
+
+        <!-- Selector de imagen -->
+        <div class="section">
+            <label class="label">📁 Imagen</label>
+            <select id="imageSelect" class="select">
+                <option value="">-- Seleccionar --</option>
+                {% for img in images %}
+                <option value="{{ img }}">{{ img }}</option>
+                {% endfor %}
+            </select>
+            <div id="imageInfo" class="info-text"></div>
+        </div>
+
+        <!-- Clase activa -->
+        <div class="section">
+            <label class="label">🏷️ Clase activa</label>
+            <div class="class-buttons">
+                {% for cls in classes %}
+                <button
+                    class="class-btn"
+                    data-class="{{ cls }}"
+                    style="border-left: 4px solid {{ colors[cls] }}"
+                    onclick="setActiveClass('{{ cls }}', '{{ colors[cls] }}')"
+                >
+                    {{ cls }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Lista de anotaciones -->
+        <div class="section">
+            <label class="label">📐 Anotaciones (<span id="annotCount">0</span>)</label>
+            <div id="annotationList" class="annotation-list"></div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="section actions">
+            <button class="btn btn-primary" onclick="saveAll()">
+                💾 Guardar Todo
+            </button>
+            <button class="btn btn-secondary" onclick="clearAll()">
+                🗑️ Limpiar
+            </button>
+            <button class="btn btn-info" onclick="showStats()">
+                📊 Stats Dataset
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div id="statsPanel" class="stats-panel" style="display:none;"></div>
+
+        <!-- Status -->
+        <div id="statusBar" class="status-bar"></div>
+    </aside>
+
+    <!-- CANVAS AREA -->
+    <main class="canvas-area">
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="annotCanvas"></canvas>
+            <div class="placeholder" id="placeholder">
+                Selecciona una imagen para comenzar
+            </div>
+        </div>
+        <div class="toolbar">
+            <span id="cursorInfo">x: 0, y: 0</span>
+            <span id="drawingInfo"></span>
+        </div>
+    </main>
+
+</div>
+
+<script>
+    // Pasar datos de Jinja a JS
+    const CLASSES = {{ classes | tojson }};
+    const COLORS = {{ colors | tojson }};
+</script>
+<script src="/static/js/annotator.js"></script>
+
+</body>
+</html>
