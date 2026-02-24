@@ -9,7 +9,7 @@ from typing import List
 import json
 
 from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES
-from sina.processing_img.image_segmentation import process_annotations
+from sina.processing.image_segmentation import process_annotations
 from sina.scraping.casa_ley import get_flyer
 from sina.config.settings import (
     get_classes_config,
@@ -55,11 +55,9 @@ def get_classes_config() -> dict:
 async def get_annotator(request: Request):
     """Renders the HTML UI dynamically passing the filesystem tree and config."""
     
-    # 1. Load dynamic classes
     class_config = get_classes_config()
     annotation_classes = list(class_config.keys())
     
-    # 2. Build dynamic file tree
     file_tree = build_filesystem_tree(DATA)
     
     return templates.TemplateResponse("annotator.html", {
