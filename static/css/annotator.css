@@ -1,6 +1,23 @@
 /* ============================================================
-   SINA Annotator - CSS
+   SINA Annotator - Modern CSS UI
    ============================================================ */
+
+/* --- CSS Variables (Modern Theme) --- */
+:root {
+    --bg-main: #0f172a;          /* Deep slate blue */
+    --bg-sidebar: #1e293b;       /* Lighter slate */
+    --bg-element: #334155;       /* Element background */
+    --bg-element-hover: #475569; /* Hovered element */
+    --text-main: #f8fafc;        /* Bright white/gray */
+    --text-muted: #94a3b8;       /* Muted text */
+    --accent: #3b82f6;           /* Primary blue */
+    --accent-hover: #2563eb;     /* Darker blue */
+    --danger: #ef4444;           /* Red for delete */
+    --radius-lg: 16px;           /* Large rounded corners */
+    --radius-md: 10px;           /* Medium rounded corners */
+    --radius-sm: 6px;            /* Small rounded corners */
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 * {
     margin: 0;
@@ -9,9 +26,9 @@
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: #0f1117;
-    color: #e0e0e0;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
     overflow: hidden;
     height: 100vh;
 }
@@ -21,127 +38,286 @@ body {
     height: 100vh;
 }
 
-/* --- SIDEBAR --- */
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
 .sidebar {
-    width: 300px;
-    background: #1a1d27;
-    border-right: 1px solid #2a2d3a;
-    padding: 20px;
+    width: 320px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 24px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+/* Custom modern scrollbar for sidebar */
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { 
+    background: var(--bg-element); 
+    border-radius: var(--radius-lg); 
 }
 
 .logo {
-    font-size: 1.5rem;
-    color: #fff;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
 }
 
 .subtitle {
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: -8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: -16px;
+    font-weight: 500;
 }
 
+/* --- Sections & Labels --- */
 .section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .label {
     font-size: 0.75rem;
     text-transform: uppercase;
-    color: #888;
-    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 2px;
 }
 
+/* --- Inputs & Selects --- */
 .select {
-    background: #252830;
-    color: #e0e0e0;
-    border: 1px solid #3a3d4a;
-    border-radius: 6px;
-    padding: 8px 12px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--bg-element);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
     font-size: 0.85rem;
     cursor: pointer;
+    transition: var(--transition);
+    appearance: none; /* Removes default OS arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
 }
 
 .select:focus {
     outline: none;
-    border-color: #5b7fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
-.info-text {
-    font-size: 0.75rem;
-    color: #666;
+.select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* --- Class buttons --- */
+/* --- Class Buttons (Tags) --- */
 .class-buttons {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 }
 
 .class-btn {
-    background: #252830;
-    color: #ccc;
-    border: 1px solid #3a3d4a;
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
+    background: var(--bg-element);
+    color: var(--text-muted);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
     text-align: left;
-    transition: all 0.15s;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
 }
 
+/* Hover state: slight lift and color change */
 .class-btn:hover {
-    background: #2a2d3a;
-    color: #fff;
+    background: var(--bg-element-hover);
+    color: var(--text-main);
+    transform: translateY(-1px);
 }
 
+/* Active state: pushed to the right slightly to show it's selected */
 .class-btn.active {
-    background: #2a2d3a;
-    color: #fff;
-    border-color: #5b7fff;
+    background: var(--bg-element-hover);
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateX(6px);
 }
 
-/* --- Annotation list --- */
+/* --- Annotation List --- */
 .annotation-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    max-height: 200px;
+    gap: 8px;
+    max-height: 250px;
     overflow-y: auto;
+    padding-right: 4px;
 }
+
+.annotation-list::-webkit-scrollbar { width: 4px; }
+.annotation-list::-webkit-scrollbar-thumb { background: var(--bg-element); border-radius: var(--radius-lg); }
 
 .annot-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #252830;
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 0.75rem;
+    background: var(--bg-main);
+    border: 1px solid var(--bg-element);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.annot-item:hover {
+    border-color: var(--bg-element-hover);
 }
 
 .annot-item .annot-label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
+    color: var(--text-main);
+    font-weight: 500;
 }
 
 .annot-item .color-dot {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     display: inline-block;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
 }
 
 .annot-item .delete-btn {
     background: none;
     border: none;
-    color: #e74c3c;
+    color: var(--text-muted);
     cursor: pointer;
-    font-size: 0.9
+    font-size: 1rem;
+    transition: var(--transition);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.annot-item .delete-btn:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* --- Action Buttons --- */
+.actions {
+    margin-top: auto; /* Pushes buttons to the bottom of the sidebar */
+    gap: 12px;
+}
+
+.btn {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--bg-element);
+}
+
+.btn-secondary:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================================
+   CANVAS AREA
+   ============================================================ */
+
+.canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0b1120; /* Slightly darker than sidebar for contrast */
+    position: relative;
+    padding: 24px;
+    overflow: auto; /* Allows scrolling if image is huge */
+}
+
+.canvas-wrapper {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden; /* Clips anything outside the border radius */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    /* Subtle border to frame the image */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#annotCanvas {
+    display: block;
+    cursor: crosshair; /* Changes cursor to indicate drawing */
+}
+
+/* --- Glassmorphism Placeholder --- */
+.placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 16px 32px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    pointer-events: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}

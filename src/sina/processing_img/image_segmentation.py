@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 # Adjust these imports according to your actual project structure
-from sina.config.settings import DATA, DATASET_DIR, RECORTES_DIR, DATASET_ANNOTATED
+from sina.config.paths import DATA, DATASET_DIR, RECORTES_DIR, DATASET_ANNOTATED
 
 def hex_to_bgr(hex_color: str) -> tuple:
     """
@@ -36,8 +36,6 @@ def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> D
         Dict: A summary of the generated files and crops.
     """
     
-    # Construct paths dynamically based on store_name
-    # Assuming your scraper saves images in: datos/{store_name}/{image_name}
     image_path = DATA / store_name / image_name 
     
     if not image_path.exists():
@@ -49,7 +47,7 @@ def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> D
         raise ValueError(f"OpenCV could not load the image: {image_path}")
         
     annotated_img = img.copy()
-    base_name = image_path.stem  # e.g., '2026-02-19_pagina_01'
+    base_name = image_path.stem  
     
     generated_crops = []
 

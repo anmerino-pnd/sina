@@ -1,59 +1,40 @@
-# sina/settings/config.py
-
+from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES
 from pathlib import Path
-from datetime import date
-import locale
-locale.setlocale(locale.LC_TIME, "es_MX.UTF-8")
+import json 
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-}
+def get_classes_config() -> dict:
+    """Reads the classes and colors from the JSON configuration file."""
+       
+    with open(CLASSES, "r", encoding="utf-8") as f:
+        return json.load(f)
+    
+def build_filesystem_tree(base_path: Path) -> dict:
+    """
+    Scans the DATA directory and builds a nested dictionary:
+    { "casa_ley": { "hermosillo": { "2026-02-19": ["pagina_01.jpg", ...] } } }
+    Ignores non-store folders like 'vectorstores' or 'dataset'.
+    """
+    tree = {}
+    ignore_dirs = {"vectorstores", "dataset", "recortes"}
+    
+    if not base_path.exists():
+        return tree
 
-def find_project_root(start_path: Path, marker_file: str = "pyproject.toml") -> Path:
-    current = start_path.resolve()
-    while not (current / marker_file).exists() and current != current.parent:
-        current = current.parent
-    return current
-
-BASE_DIR = find_project_root(Path(__file__))
-
-# --- Datos existentes ---
-DATA = BASE_DIR / "datos"
-CASA_LEY_DATA = DATA / "casa_ley" 
-VECTORS_DIR = DATA / "vectorstores"
-
-# --- Anotador (nuevo) ---
-RECORTES_DIR = CASA_LEY_DATA / "recortes"
-DATASET_DIR = DATA / "dataset"
-DATASET_IMAGES = DATASET_DIR / "images"
-DATASET_LABELS = DATASET_DIR / "labels"
-DATASET_ANNOTATED = DATASET_DIR / "annotated"
-
-# --- Templates y estáticos ---
-TEMPLATES_DIR = BASE_DIR / "templates"
-STATIC_DIR = BASE_DIR / "static"
-
-for path in [
-    DATA, 
-    CASA_LEY_DATA, 
-    VECTORS_DIR,
-    RECORTES_DIR, 
-    DATASET_IMAGES, 
-    DATASET_LABELS, 
-    DATASET_ANNOTATED,
-    TEMPLATES_DIR, 
-    STATIC_DIR,
-]:
-    path.mkdir(parents=True, exist_ok=True)
-
-# --- Clases para anotación ---
-ANNOTATION_CLASSES = [
-    "frutas_verduras",
-    "carnes",
-    "abarrotes",
-    "lacteos",
-    "ofertas_especiales",
-    "banner",
-    "cosmeticos",
-    "otros",
-]
+    for store_dir in base_path.iterdir():
+        if store_dir.is_dir() and store_dir.name not in ignore_dirs:
+            store = store_dir.name
+            tree[store] = {}
+            
+            for city_dir in store_dir.iterdir():
+                if city_dir.is_dir() and city_dir.name not in ignore_dirs:
+                    city = city_dir.name
+                    tree[store][city] = {}
+                    
+                    for date_dir in city_dir.iterdir():
+                        if date_dir.is_dir():
+                            date_str = date_dir.name
+                            # Find all jpg/png files
+                            images = [img.name for img in date_dir.glob("*.[jp][pn]*g")]
+                            if images:
+                                tree[store][city][date_str] = sorted(images)
+    return tree

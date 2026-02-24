@@ -6,11 +6,15 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from pathlib import Path
 from typing import List
+import json
 
-from sina.config.settings import TEMPLATES_DIR, STATIC_DIR, CASA_LEY_DATA
+from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES
 from sina.processing_img.image_segmentation import process_annotations
 from sina.scraping.casa_ley import get_flyer
-
+from sina.config.settings import (
+    get_classes_config,
+    build_filesystem_tree
+)
 
 app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
 
@@ -18,8 +22,7 @@ app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
 #  STATIC MOUNTS
 # ============================================================
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-app.mount("/datos", StaticFiles(directory=str(CASA_LEY_DATA)), name="datos")
-
+app.mount("/datos", StaticFiles(directory=str(DATA)), name="datos")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # ============================================================
@@ -34,9 +37,15 @@ class BoundingBox(BaseModel):
     h: int
 
 class AnnotationPayload(BaseModel):
-    store_name: str       # ej. "casa_ley", "walmart"
-    image_filename: str   # ej. "2026-02-19_pagina_01.jpg"
+    store_name: str       
+    image_filename: str   
     boxes: List[BoundingBox]
+
+def get_classes_config() -> dict:
+    """Reads the classes and colors from the JSON configuration file."""
+       
+    with open(CLASSES, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 # ============================================================
 #  FRONTEND ROUTES
@@ -44,55 +53,26 @@ class AnnotationPayload(BaseModel):
 
 @app.get("/annotator", response_class=HTMLResponse)
 async def get_annotator(request: Request):
-    """Renders the HTML UI for the bounding box annotator."""
+    """Renders the HTML UI dynamically passing the filesystem tree and config."""
     
-    # Ideally, you will read the actual files inside CASA_LEY_DATA dynamically here.
-    # For now, we pass dummy data so the UI renders correctly.
-    available_images = [
-        "2026-02-19/pagina_01.jpg", 
-        "2026-02-19/pagina_02.jpg"
-    ]
+    # 1. Load dynamic classes
+    class_config = get_classes_config()
+    annotation_classes = list(class_config.keys())
     
-    # The categories you want to train your model on
-    annotation_classes = ["frutas_verduras", "carnes", "abarrotes", "ofertas_especiales", "otros"]
-    
-    # Matching HEX colors for the UI and OpenCV drawing
-    class_colors = {
-        "frutas_verduras": "#2ecc71", # Green
-        "carnes": "#e74c3c",          # Red
-        "abarrotes": "#f1c40f",       # Yellow
-        "ofertas_especiales": "#9b59b6", # Purple
-        "otros": "#95a5a6"            # Gray
-    }
+    # 2. Build dynamic file tree
+    file_tree = build_filesystem_tree(DATA)
     
     return templates.TemplateResponse("annotator.html", {
         "request": request,
-        "images": available_images,
+        "file_tree": file_tree,  
         "classes": annotation_classes,
-        "colors": class_colors
+        "colors": class_config
     })
 
 # ============================================================
 #  API ENDPOINTS
 # ============================================================
 
-@app.post("/sina/scraper/{store_name}")
-def trigger_scraper(store_name: str, city: str, url: str):
-    """
-    Generic endpoint to trigger web scraping for different retailers.
-    Implements the Factory pattern to route to the correct scraper.
-    """
-    match store_name:
-        case "casa_ley":
-            # Asumiendo que get_flyer guarda en la ruta correcta configurada en settings
-            get_flyer(city, url, str(CASA_LEY_DATA))
-            return {"status": "success", "message": f"Scraping completado para {store_name} en {city}"}
-        case "walmart":
-            # from sina.scraping.walmart import get_walmart_flyer
-            # get_walmart_flyer(...)
-            return {"status": "pending", "message": "Scraper de Walmart en desarrollo"}
-    
-    raise HTTPException(status_code=404, detail="Supermercado no soportado")
 
 @app.post("/sina/annotate")
 def save_and_crop_annotations(payload: AnnotationPayload):

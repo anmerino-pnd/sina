@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-from sina.config.settings import CASA_LEY_DATA
+from sina.config.paths import CASA_LEY_DATA
 from sina.config.credentials import casa_ley as CASA_LEY_URL
 
 # ==================== CONFIGURACIÓN ====================

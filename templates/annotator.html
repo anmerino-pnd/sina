@@ -15,19 +15,30 @@
         <h1 class="logo">SINA</h1>
         <p class="subtitle">Anotador de Folletos</p>
 
-        <!-- Selector de imagen -->
+        <!-- Dynamic Cascading Selectors -->
         <div class="section">
-            <label class="label">📁 Imagen</label>
-            <select id="imageSelect" class="select">
+            <label class="label">🏪 Supermercado</label>
+            <select id="storeSelect" class="select">
                 <option value="">-- Seleccionar --</option>
-                {% for img in images %}
-                <option value="{{ img }}">{{ img }}</option>
-                {% endfor %}
             </select>
-            <div id="imageInfo" class="info-text"></div>
+            
+            <label class="label">🏙️ Ciudad</label>
+            <select id="citySelect" class="select" disabled>
+                <option value="">-- Seleccionar --</option>
+            </select>
+            
+            <label class="label">📅 Fecha</label>
+            <select id="dateSelect" class="select" disabled>
+                <option value="">-- Seleccionar --</option>
+            </select>
+            
+            <label class="label">📁 Imagen</label>
+            <select id="imageSelect" class="select" disabled>
+                <option value="">-- Seleccionar --</option>
+            </select>
         </div>
 
-        <!-- Clase activa -->
+        <!-- Active Class Buttons -->
         <div class="section">
             <label class="label">🏷️ Clase activa</label>
             <div class="class-buttons">
@@ -44,13 +55,13 @@
             </div>
         </div>
 
-        <!-- Lista de anotaciones -->
+        <!-- Annotation List -->
         <div class="section">
             <label class="label">📐 Anotaciones (<span id="annotCount">0</span>)</label>
             <div id="annotationList" class="annotation-list"></div>
         </div>
 
-        <!-- Acciones -->
+        <!-- Action Buttons -->
         <div class="section actions">
             <button class="btn btn-primary" onclick="saveAll()">
                 💾 Guardar Todo
@@ -58,16 +69,7 @@
             <button class="btn btn-secondary" onclick="clearAll()">
                 🗑️ Limpiar
             </button>
-            <button class="btn btn-info" onclick="showStats()">
-                📊 Stats Dataset
-            </button>
         </div>
-
-        <!-- Stats -->
-        <div id="statsPanel" class="stats-panel" style="display:none;"></div>
-
-        <!-- Status -->
-        <div id="statusBar" class="status-bar"></div>
     </aside>
 
     <!-- CANVAS AREA -->
@@ -78,18 +80,13 @@
                 Selecciona una imagen para comenzar
             </div>
         </div>
-        <div class="toolbar">
-            <span id="cursorInfo">x: 0, y: 0</span>
-            <span id="drawingInfo"></span>
-        </div>
     </main>
 
 </div>
 
+<!-- Pass Backend Data to Frontend JS -->
 <script>
-    // Pasar datos de Jinja a JS
-    const CLASSES = {{ classes | tojson }};
-    const COLORS = {{ colors | tojson }};
+    const FILE_TREE = {{ file_tree | tojson | safe }};
 </script>
 <script src="/static/js/annotator.js"></script>
 
