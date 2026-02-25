@@ -15,7 +15,26 @@
         <h1 class="logo">SINA</h1>
         <p class="subtitle">Anotador de Folletos</p>
 
-        <!-- Dynamic Cascading Selectors -->
+        <!-- Scraper Module -->
+        <div class="section scraper-section">
+            <label class="label">🌐 Obtener Nuevo Folleto</label>
+            <div class="scraper-controls">
+                <select id="scrapeStore" class="select">
+                    <option value="Casa Ley">Casa Ley</option>
+                    <option value="Walmart" disabled>Walmart (Pronto)</option>
+                    <option value="Bodega Aurrera" disabled>Bodega Aurrera (Pronto)</option>
+                    <option value="Soriana" disabled>Soriana (Pronto)</option>
+                </select>
+                <input type="text" id="scrapeCity" class="select input-text" placeholder="Ciudad (ej. Hermosillo)" value="Hermosillo">
+            </div>
+            <button class="btn btn-outline" id="btnScrape" onclick="downloadFlyer()">
+                📥 Descargar Ahora
+            </button>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Image Selectors -->
         <div class="section">
             <label class="label">🏪 Supermercado</label>
             <select id="storeSelect" class="select">
@@ -27,7 +46,7 @@
                 <option value="">-- Seleccionar --</option>
             </select>
             
-            <label class="label">📅 Fecha</label>
+            <label class="label">📅 Fecha (Últimas 10)</label>
             <select id="dateSelect" class="select" disabled>
                 <option value="">-- Seleccionar --</option>
             </select>
@@ -38,7 +57,24 @@
             </select>
         </div>
 
-        <!-- Active Class Buttons -->
+        <!-- Tools (Draw, Pan, Zoom) -->
+        <div class="section">
+            <label class="label">🛠️ Herramientas</label>
+            <div class="tool-toggle">
+                <button id="btnDraw" class="tool-btn active" onclick="setTool('draw')">✏️ Dibujar</button>
+                <button id="btnPan" class="tool-btn" onclick="setTool('pan')">✋ Mover</button>
+            </div>
+            
+            <!-- NEW: Zoom Controls -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="changeZoom(-0.1)" title="Alejar (Ctrl + Rueda Abajo)">➖</button>
+                <span id="zoomLabel" class="zoom-label">100%</span>
+                <button class="zoom-btn" onclick="changeZoom(0.1)" title="Acercar (Ctrl + Rueda Arriba)">➕</button>
+                <button class="zoom-btn" onclick="resetZoom()" title="Restablecer">⟲</button>
+            </div>
+        </div>
+
+        <!-- Active Class -->
         <div class="section">
             <label class="label">🏷️ Clase activa</label>
             <div class="class-buttons">
@@ -55,13 +91,13 @@
             </div>
         </div>
 
-        <!-- Annotation List -->
+        <!-- Annotations -->
         <div class="section">
             <label class="label">📐 Anotaciones (<span id="annotCount">0</span>)</label>
             <div id="annotationList" class="annotation-list"></div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Actions -->
         <div class="section actions">
             <button class="btn btn-primary" onclick="saveAll()">
                 💾 Guardar Todo
@@ -73,7 +109,7 @@
     </aside>
 
     <!-- CANVAS AREA -->
-    <main class="canvas-area">
+    <main class="canvas-area" id="canvasArea">
         <div class="canvas-wrapper" id="canvasWrapper">
             <canvas id="annotCanvas"></canvas>
             <div class="placeholder" id="placeholder">
@@ -84,7 +120,6 @@
 
 </div>
 
-<!-- Pass Backend Data to Frontend JS -->
 <script>
     const FILE_TREE = {{ file_tree | tojson | safe }};
 </script>

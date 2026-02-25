@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 from sina.config.paths import CASA_LEY_DATA
-from sina.config.credentials import casa_ley as CASA_LEY_URL
+from sina.config.credentials import casa_ley_url as CASA_LEY_URL
 
 # ==================== CONFIGURACIÓN ====================
 CIUDAD_OBJETIVO = "Hermosillo"
@@ -24,35 +24,54 @@ HEADERS = {
 CARPETA_SALIDA = CASA_LEY_DATA
 
 
-def select_city(wait, city: str):
+def select_city(driver, wait, city: str):
     """
-    Searches and clicks the city's button
+    Searches and clicks the city's button using robust JS clicks.
     """
     print(f"🏙️ Searching city's button: {city}...")
     
     try:
-        city_button = wait.until(
-            EC.element_to_be_clickable((
-                By.XPATH, 
-                f"//button[contains(text(), '{city}')] | //a[contains(text(), '{city}')] | //*[contains(@class, 'tab') and contains(text(), '{city}')]"
-            ))
-        )
-        city_button.click()
-        print(f"✅ City '{city}' found.")
-        return True
-    except TimeoutException:
-        pass
+        # 1. Buscamos cualquier elemento que contenga la ciudad
+        xpath = f"//button[contains(text(), '{city}')] | //a[contains(text(), '{city}')] | //option[contains(text(), '{city}')] | //*[contains(@class, 'tab') and contains(text(), '{city}')]"
+        
+        elements = driver.find_elements(By.XPATH, xpath)
+        
+        for el in elements:
+            # Solo interactuar con elementos que realmente se ven en pantalla
+            if el.is_displayed():
+                # Inyectar JS Click es 100x más seguro que el click() normal de Selenium
+                driver.execute_script("arguments[0].click();", el)
+                
+                # Si el elemento era un dropdown (<option>), forzamos al navegador a detectar el cambio
+                if el.tag_name == 'option':
+                    parent = el.find_element(By.XPATH, "..")
+                    driver.execute_script("arguments[0].dispatchEvent(new Event('change'));", parent)
+                    
+                print(f"✅ City '{city}' found and clicked.")
+                return True
+                
+        # 2. Estrategia de respaldo (Búsqueda amplia en todo el texto)
+        amplio_xpath = f"//*[normalize-space(text())='{city}']"
+        respaldos = driver.find_elements(By.XPATH, amplio_xpath)
+        for el in respaldos:
+            if el.is_displayed() and el.tag_name not in ['script', 'style']:
+                driver.execute_script("arguments[0].click();", el)
+                print(f"✅ City '{city}' clicked (Fallback strategy).")
+                return True
+
+        print(f"❌ No visible button found for '{city}'.")
+        return False
+        
+    except Exception as e:
+        print(f"❌ Error clicking city: {e}")
+        return False
 
 
 def iframe_publitas_wait(driver, wait):
     """
-    Wait until publitas iframe changes and updates the page.
+    Switches the context to the publitas iframe.
     """
-    print("⏳ Waiting iframe...")
-    
-    time.sleep(2)
-    
-    # Search iframe
+    print("⏳ Switching context to iframe...")
     try:
         iframe = wait.until(
             EC.presence_of_element_located((
@@ -61,7 +80,7 @@ def iframe_publitas_wait(driver, wait):
             ))
         )
         driver.switch_to.frame(iframe)
-        print("✅ iframe found.")
+        print("✅ Context switched to iframe.")
         return True
     except TimeoutException:
         print("❌ iframe not found.")
@@ -76,9 +95,9 @@ def get_url_pages(driver, wait):
     
     try:
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "img.left, img.right")))
-        print("✅ Initial flyer found..")
+        print("✅ Initial flyer image found.")
     except TimeoutException:
-        print("⚠️ Initial flyer not found, next...")
+        print("⚠️ Initial flyer image not found, next...")
     
     page_num = 1
     
@@ -139,13 +158,13 @@ def get_url_pages(driver, wait):
     return urls_folleto
 
 
-def get_imgs(main_url: str, urls: set, base_dir: str, city: str):
+def get_imgs(main_url: str, urls: set, base_dir: str, city: str) -> bool:
     """
     Downloading imgs from flyer: base_dir / city / YYYY-MM-DD /
     """
     if not urls:
         print("\n⚠️ No urls were found to download.")
-        return
+        return False
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     exact_timestamp = datetime.datetime.now().isoformat()
@@ -158,10 +177,20 @@ def get_imgs(main_url: str, urls: set, base_dir: str, city: str):
     urls_list = sorted(list(urls))
     print(f"\n--- Downloading {len(urls_list)} imgs in: {object_dir} ---")
     success_download = 0
+    
+    metadata = {
+        "city": city,
+        "extracting_date": exact_timestamp,
+        "url": {
+            "main_url": main_url
+        },
+        "total_pages_found": len(urls_list),
+        "pages": {} 
+    }
 
-    for i, url in enumerate(urls_list):
+    for i, url in enumerate(urls_list, start=1):
         try:
-            file_name = os.path.join(object_dir, f"page_{i+1:02d}.jpg")
+            file_name = os.path.join(object_dir, f"page_{i:02d}.jpg")
             response = requests.get(url, headers=HEADERS, timeout=30)
             response.raise_for_status()
             
@@ -170,23 +199,29 @@ def get_imgs(main_url: str, urls: set, base_dir: str, city: str):
             print(f"✅ Saved: {file_name}")
             success_download += 1
             
+            metadata['pages'][f'page_{i:02d}.jpg'] = url
+            
         except requests.exceptions.RequestException as e:
             print(f"❌ Error {url}: {e}")
 
-    metadata = {
-        "city": city,
-        "extracting_date": exact_timestamp,
-        "url": main_url,
-        "total_pages_found": len(urls_list),
-        "total_pages_downloaded": success_download,
-        "status": "success" if success_download == len(urls_list) else "failed"
+    metadata['total_pages_downloaded'] = success_download
+    metadata['status'] = "success" if success_download == len(urls_list) else "partial" if success_download > 0 else "failed"
+    
+    metadata_file = os.path.join(object_dir, "metadata.json")
+    with open(metadata_file, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=True)
 
-    }
-
+    print(f"\n📋 Metadata saved: {metadata_file}")
+    print(f"✅ {success_download}/{len(urls_list)} pages downloaded successfully")
     print("\n🎉 ¡Success!")
 
+    if success_download == len(urls_list):
+        return True
+    else:
+        return False
 
-def get_flyer(city: str, url: str, folder: str):
+
+def get_ley_flyer(city: str, url: str, folder: str) -> bool:
     """
     Scraps and downloads imgs from the url.
     
@@ -210,18 +245,39 @@ def get_flyer(city: str, url: str, folder: str):
     try:
         driver.get(url)
         print("✅ Page charged.")
+        time.sleep(4) # Dar tiempo a que cargue la estructura de React/Angular
         
-        time.sleep(3) 
+        # 1. CAPTURAR IFRAME VIEJO: Leemos qué iframe hay ANTES de dar clic
+        old_src = ""
+        try:
+            old_iframe = driver.find_element(By.CSS_SELECTOR, 'iframe[src*="publitas.com"]')
+            old_src = old_iframe.get_attribute("src")
+            print(f"ℹ️ Default iframe loaded: {old_src[:50]}...")
+        except:
+            pass
         
-        if not select_city(wait, city):
+        # 2. HACER CLIC EN LA CIUDAD
+        # OJO: Pasamos 'driver' como primer argumento para poder usar JS Clicks
+        if not select_city(driver, wait, city):
             print("❌ No se pudo seleccionar la ciudad. Abortando.")
-            return
+            return False
         
-        time.sleep(2)
+        # 3. ESPERAR A QUE EL IFRAME CAMBIE
+        print("⏳ Waiting for the flyer iframe to update to the new city...")
+        time.sleep(5) # Crucial: Esperar a que la red descargue el nuevo iframe
         
+        if old_src:
+            try:
+                # Le decimos a Selenium que no avance hasta que el link sea diferente al de La Paz
+                wait.until(lambda d: d.find_element(By.CSS_SELECTOR, 'iframe[src*="publitas.com"]').get_attribute('src') != old_src)
+                print("✅ Iframe source successfully updated!")
+            except TimeoutException:
+                print("⚠️ Iframe source did not change. It might be the same flyer or the click failed.")
+
+        # 4. ENTRAR AL IFRAME NUEVO Y EXTRAER
         if not iframe_publitas_wait(driver, wait):
             print("❌ iframe unavailable. Aborting.")
-            return
+            return False
         
         flyer_url = get_url_pages(driver, wait)
         
@@ -233,6 +289,4 @@ def get_flyer(city: str, url: str, folder: str):
         driver.quit()
         print("\n🔒 Closing web page.")
     
-    get_imgs(url, flyer_url, folder, city=city)
-
-    
+    return get_imgs(url, flyer_url, folder, city=city)

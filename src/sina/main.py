@@ -3,17 +3,25 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-from pathlib import Path
-from typing import List
 import json
 
-from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES
+from sina.config.paths import (
+    TEMPLATES_DIR, 
+    CASA_LEY_DATA,
+    STATIC_DIR, 
+    CLASSES,
+    DATA, 
+)
 from sina.processing.image_segmentation import process_annotations
-from sina.scraping.casa_ley import get_flyer
+from sina.scraping.casa_ley import get_ley_flyer
 from sina.config.settings import (
     get_classes_config,
     build_filesystem_tree
+)
+from sina.config.credentials import (
+    AnnotationPayload,
+    FlyerPayload,
+    casa_ley_url
 )
 
 app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
@@ -24,22 +32,6 @@ app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/datos", StaticFiles(directory=str(DATA)), name="datos")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
-# ============================================================
-#  DATA MODELS (Pydantic Validation)
-# ============================================================
-
-class BoundingBox(BaseModel):
-    label: str
-    x: int
-    y: int
-    w: int
-    h: int
-
-class AnnotationPayload(BaseModel):
-    store_name: str       
-    image_filename: str   
-    boxes: List[BoundingBox]
 
 def get_classes_config() -> dict:
     """Reads the classes and colors from the JSON configuration file."""
@@ -71,7 +63,6 @@ async def get_annotator(request: Request):
 #  API ENDPOINTS
 # ============================================================
 
-
 @app.post("/sina/annotate")
 def save_and_crop_annotations(payload: AnnotationPayload):
     """
@@ -90,3 +81,19 @@ def save_and_crop_annotations(payload: AnnotationPayload):
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/sina/flyer")
+def get_flyer(payload: FlyerPayload):
+    match payload.supermarket:
+        case "Casa Ley":
+            return get_ley_flyer(
+                city = payload.city,
+                url = casa_ley_url,
+                folder = CASA_LEY_DATA
+            )
+        case "Walmart":
+            pass
+        case "Bodega Aurrera":
+            pass
+        case "Soriana":
+            pass
