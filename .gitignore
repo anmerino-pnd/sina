@@ -1,6 +1,6 @@
 .env
 __pycache__/
 __init__.py
-jita.egg-info
+sina.egg-info
 chromedriver.exe
 datos/

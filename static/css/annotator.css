@@ -1,0 +1,254 @@
+/* ============================================================
+   SINA Annotator - Modern CSS UI
+   ============================================================ */
+
+:root {
+    --bg-main: #0f172a;
+    --bg-sidebar: #1e293b;
+    --bg-element: #334155;
+    --bg-element-hover: #475569;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --danger: #ef4444;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    overflow: hidden;
+    height: 100vh;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 320px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--bg-element); border-radius: var(--radius-lg); }
+
+.logo { font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+.subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: -16px; font-weight: 500; }
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.section { display: flex; flex-direction: column; gap: 10px; }
+.label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; font-weight: 600; margin-bottom: 2px; }
+
+/* --- Scraper Specifics --- */
+.scraper-section {
+    background: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-top: -8px;
+}
+.scraper-controls {
+    display: flex;
+    gap: 8px;
+}
+.scraper-controls .select {
+    flex: 1;
+    width: 50%;
+}
+.input-text {
+    background-image: none !important; 
+}
+
+/* --- Selects --- */
+.select {
+    background: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--bg-element);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+.select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
+.select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* --- Tools & Zoom --- */
+.tool-toggle {
+    display: flex;
+    background: var(--bg-main);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--bg-element);
+    overflow: hidden;
+}
+.tool-btn {
+    flex: 1;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+}
+.tool-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.02); }
+.tool-btn.active {
+    background: var(--bg-element-hover);
+    color: var(--text-main);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.2);
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-main);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--bg-element);
+    padding: 4px;
+    margin-top: 4px;
+}
+.zoom-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+.zoom-btn:hover { background: var(--bg-element-hover); color: var(--text-main); }
+.zoom-label { font-size: 0.8rem; color: var(--text-main); font-weight: 600; width: 45px; text-align: center; }
+
+/* --- Class Buttons --- */
+.class-buttons { display: flex; flex-direction: column; gap: 8px; }
+.class-btn {
+    background: var(--bg-element);
+    color: var(--text-muted);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition);
+    overflow: hidden;
+}
+.class-btn:hover { background: var(--bg-element-hover); color: var(--text-main); transform: translateY(-1px); }
+.class-btn.active {
+    background: var(--bg-element-hover);
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateX(6px);
+}
+
+/* --- Annotation List --- */
+.annotation-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
+.annotation-list::-webkit-scrollbar { width: 4px; }
+.annotation-list::-webkit-scrollbar-thumb { background: var(--bg-element); border-radius: var(--radius-lg); }
+
+.annot-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-main); border: 1px solid var(--bg-element);
+    border-radius: var(--radius-md); padding: 10px 14px; font-size: 0.8rem; transition: var(--transition);
+}
+.annot-item:hover { border-color: var(--bg-element-hover); }
+.annot-item .annot-label { display: flex; align-items: center; gap: 10px; color: var(--text-main); font-weight: 500; }
+.annot-item .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+.annot-item .delete-btn {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 1rem; transition: var(--transition); border-radius: 50%;
+    width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+}
+.annot-item .delete-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+
+/* --- Action Buttons --- */
+.actions { margin-top: auto; gap: 12px; }
+.btn {
+    border: none; border-radius: var(--radius-md); padding: 14px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); }
+.btn-secondary { background: transparent; color: var(--text-muted); border: 1px solid var(--bg-element); }
+.btn-secondary:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+
+.btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 10px; margin-top: 4px; }
+.btn-outline:hover { background: rgba(59, 130, 246, 0.1); }
+.btn-outline:disabled { border-color: var(--text-muted); color: var(--text-muted); cursor: not-allowed; }
+
+/* --- CANVAS AREA --- */
+.canvas-area {
+    flex: 1;
+    display: flex;
+    background: #0b1120;
+    position: relative;
+    /* Extra padding allows user to pan past the edges of the image */
+    padding: 50px; 
+    overflow: auto; /* Required for panning & zooming scroll logic */
+}
+
+/* Custom scrollbars for the canvas area */
+.canvas-area::-webkit-scrollbar { width: 10px; height: 10px; }
+.canvas-area::-webkit-scrollbar-track { background: #0b1120; }
+.canvas-area::-webkit-scrollbar-thumb { background: var(--bg-element); border-radius: var(--radius-lg); }
+
+.canvas-wrapper {
+    position: relative;
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* display: inline-block allows the wrapper to shrink-wrap the canvas, enabling proper scrolling */
+    display: inline-block;
+    margin: auto; 
+}
+
+#annotCanvas {
+    display: block;
+    cursor: crosshair; 
+    transition: width 0.1s, height 0.1s; /* Smooth zoom transition */
+}
+
+.placeholder {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 16px 32px; border-radius: var(--radius-lg); border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted); font-weight: 500; font-size: 0.95rem; pointer-events: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}

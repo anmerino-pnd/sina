@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SINA - Anotador de Folletos</title>
+    <link rel="stylesheet" href="/static/css/annotator.css">
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h1 class="logo">SINA</h1>
+        <p class="subtitle">Anotador de Folletos</p>
+
+        <!-- Scraper Module -->
+        <div class="section scraper-section">
+            <label class="label">🌐 Obtener Nuevo Folleto</label>
+            <div class="scraper-controls">
+                <select id="scrapeStore" class="select">
+                    <option value="Casa Ley">Casa Ley</option>
+                    <option value="Walmart" disabled>Walmart (Pronto)</option>
+                    <option value="Bodega Aurrera" disabled>Bodega Aurrera (Pronto)</option>
+                    <option value="Soriana" disabled>Soriana (Pronto)</option>
+                </select>
+                <input type="text" id="scrapeCity" class="select input-text" placeholder="Ciudad (ej. Hermosillo)" value="Hermosillo">
+            </div>
+            <button class="btn btn-outline" id="btnScrape" onclick="downloadFlyer()">
+                📥 Descargar Ahora
+            </button>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Image Selectors -->
+        <div class="section">
+            <label class="label">🏪 Supermercado</label>
+            <select id="storeSelect" class="select">
+                <option value="">-- Seleccionar --</option>
+            </select>
+            
+            <label class="label">🏙️ Ciudad</label>
+            <select id="citySelect" class="select" disabled>
+                <option value="">-- Seleccionar --</option>
+            </select>
+            
+            <label class="label">📅 Fecha (Últimas 10)</label>
+            <select id="dateSelect" class="select" disabled>
+                <option value="">-- Seleccionar --</option>
+            </select>
+            
+            <label class="label">📁 Imagen</label>
+            <select id="imageSelect" class="select" disabled>
+                <option value="">-- Seleccionar --</option>
+            </select>
+        </div>
+
+        <!-- Tools (Draw, Pan, Zoom) -->
+        <div class="section">
+            <label class="label">🛠️ Herramientas</label>
+            <div class="tool-toggle">
+                <button id="btnDraw" class="tool-btn active" onclick="setTool('draw')">✏️ Dibujar</button>
+                <button id="btnPan" class="tool-btn" onclick="setTool('pan')">✋ Mover</button>
+            </div>
+            
+            <!-- NEW: Zoom Controls -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="changeZoom(-0.1)" title="Alejar (Ctrl + Rueda Abajo)">➖</button>
+                <span id="zoomLabel" class="zoom-label">100%</span>
+                <button class="zoom-btn" onclick="changeZoom(0.1)" title="Acercar (Ctrl + Rueda Arriba)">➕</button>
+                <button class="zoom-btn" onclick="resetZoom()" title="Restablecer">⟲</button>
+            </div>
+        </div>
+
+        <!-- Active Class -->
+        <div class="section">
+            <label class="label">🏷️ Clase activa</label>
+            <div class="class-buttons">
+                {% for cls in classes %}
+                <button
+                    class="class-btn"
+                    data-class="{{ cls }}"
+                    style="border-left: 4px solid {{ colors[cls] }}"
+                    onclick="setActiveClass('{{ cls }}', '{{ colors[cls] }}')"
+                >
+                    {{ cls }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Annotations -->
+        <div class="section">
+            <label class="label">📐 Anotaciones (<span id="annotCount">0</span>)</label>
+            <div id="annotationList" class="annotation-list"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="section actions">
+            <button class="btn btn-primary" onclick="saveAll()">
+                💾 Guardar Todo
+            </button>
+            <button class="btn btn-secondary" onclick="clearAll()">
+                🗑️ Limpiar
+            </button>
+        </div>
+    </aside>
+
+    <!-- CANVAS AREA -->
+    <main class="canvas-area" id="canvasArea">
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="annotCanvas"></canvas>
+            <div class="placeholder" id="placeholder">
+                Selecciona una imagen para comenzar
+            </div>
+        </div>
+    </main>
+
+</div>
+
+<script>
+    const FILE_TREE = {{ file_tree | tojson | safe }};
+</script>
+<script src="/static/js/annotator.js"></script>
+
+</body>
+</html>
