@@ -13,7 +13,7 @@ from sina.config.paths import (
     DATA, 
 )
 from sina.processing.image_segmentation import process_annotations
-from sina.scraping.casa_ley import get_ley_flyer
+from sina.scraping.casa_ley import download_flyer
 from sina.config.settings import (
     get_classes_config,
     build_filesystem_tree
@@ -72,9 +72,11 @@ def save_and_crop_annotations(payload: AnnotationPayload):
     try:
         # Pass the validated payload data to your heavy-lifting backend function
         result = process_annotations(
-            store_name=payload.store_name,
-            image_name=payload.image_filename,
-            boxes=payload.boxes
+            supermarket=payload.supermarket,
+            city= payload.city,
+            date= payload.date,
+            image_name= payload.image_name,
+            bboxes= payload.bboxes
         )
         return {"status": "success", "data": result}
     except FileNotFoundError as e:
@@ -86,7 +88,7 @@ def save_and_crop_annotations(payload: AnnotationPayload):
 def get_flyer(payload: FlyerPayload):
     match payload.supermarket:
         case "Casa Ley":
-            return get_ley_flyer(
+            return download_flyer(
                 city = payload.city,
                 url = casa_ley_url,
                 folder = CASA_LEY_DATA
