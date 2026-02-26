@@ -1,47 +1,30 @@
 import cv2
-import os
 import json
-from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Any
 
 # Adjust these imports according to your actual project structure
-from sina.config.paths import DATA, DATASET_DIR, RECORTES_DIR, DATASET_ANNOTATED
+from sina.config.paths import DATA
 
 def hex_to_bgr(hex_color: str) -> tuple:
     """
     Converts a HEX color string (e.g., '#FF0000') to a BGR tuple for OpenCV (0, 0, 255).
     """
     hex_color = hex_color.lstrip('#')
-    # Convert to RGB integer tuple
     rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    # OpenCV uses BGR format
     return (rgb[2], rgb[1], rgb[0])
 
+def process_annotations(
+        supermarket: str,
+        city: str,
+        date: str,
+        image_name: str,
+        bboxes: List[Any]
+):
+    image_path = DATA / supermarket / city / date / image_name
 
-def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> Dict[str, Any]:
-    """
-    Processes bounding boxes drawn by the frontend user.
-    
-    1. Opens the original image.
-    2. Crops each annotated area and saves it into its respective class folder.
-    3. Draws the bounding boxes on a copy of the image and saves it for visual reference.
-    4. Saves the coordinates in a JSON file (YOLO/COCO style).
-    
-    Args:
-        store_name (str): The name of the retailer (e.g., 'casa_ley', 'walmart').
-        image_name (str): The specific filename (e.g., '2026-02-19_pagina_01.jpg').
-        boxes (List[Any]): List of BoundingBox Pydantic models from the frontend.
-        
-    Returns:
-        Dict: A summary of the generated files and crops.
-    """
-    
-    image_path = DATA / store_name / image_name 
-    
     if not image_path.exists():
         raise FileNotFoundError(f"Image not found at path: {image_path}")
-
-    # Load image using OpenCV
+    
     img = cv2.imread(str(image_path))
     if img is None:
         raise ValueError(f"OpenCV could not load the image: {image_path}")
@@ -51,8 +34,7 @@ def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> D
     
     generated_crops = []
 
-    # Process each bounding box drawn by the user
-    for idx, box in enumerate(boxes):
+    for idx, box in enumerate(bboxes):
         label = box.label
         color_hex = getattr(box, 'color', '#00FF00') # Default to green if color is missing
         x, y, w, h = box.x, box.y, box.w, box.h
@@ -61,12 +43,12 @@ def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> D
         # OpenCV slicing uses format: [y:y+h, x:x+w]
         cropped_area = img[y:y+h, x:x+w]
         
-        # Create subfolder for the specific class (e.g., recortes/casa_ley/carnes/)
-        class_dir = RECORTES_DIR / store_name / label
-        class_dir.mkdir(parents=True, exist_ok=True)
+        # Create subfolder for the specific class (e.g., /casa_ley/hermosillo/2026-02-26/recortes/)
+        crop_dir = DATA / supermarket / city / date / "recortes"
+        crop_dir.mkdir(parents=True, exist_ok=True)
         
         crop_filename = f"{base_name}_crop_{idx:03d}_{label}.jpg"
-        crop_filepath = class_dir / crop_filename
+        crop_filepath = crop_dir / crop_filename
         
         # Save crop (only if it has valid dimensions)
         if cropped_area.size > 0:
@@ -86,18 +68,18 @@ def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> D
         cv2.putText(annotated_img, label, (x + 5, y - 5), font, 0.8, (0, 0, 0), 2)
 
     # 3. SAVE FULL ANNOTATED IMAGE
-    annotated_dir = DATASET_ANNOTATED / store_name
+    annotated_dir = DATA / supermarket / city / date / "annotated" 
     annotated_dir.mkdir(parents=True, exist_ok=True)
     annotated_filepath = annotated_dir / f"{base_name}_annotated.jpg"
     cv2.imwrite(str(annotated_filepath), annotated_img)
 
     # 4. SAVE LABELS / COORDINATES AS JSON
-    labels_dir = DATASET_DIR / "labels" / store_name
+    labels_dir = DATA / supermarket / city / date / "labels" 
     labels_dir.mkdir(parents=True, exist_ok=True)
     json_filepath = labels_dir / f"{base_name}.json"
     
     # Format data to save it
-    boxes_dict = [b.dict() for b in boxes]
+    boxes_dict = [b.dict() for b in bboxes]
     with open(json_filepath, "w", encoding="utf-8") as f:
         json.dump(boxes_dict, f, indent=4)
 
@@ -106,3 +88,4 @@ def process_annotations(store_name: str, image_name: str, boxes: List[Any]) -> D
         "annotated_image_path": str(annotated_filepath),
         "labels_file_path": str(json_filepath)
     }
+

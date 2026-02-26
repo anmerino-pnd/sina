@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Any
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -18,9 +18,11 @@ class BoundingBox(BaseModel):
     h: int
 
 class AnnotationPayload(BaseModel):
-    store_name: str       
-    image_filename: str   
-    boxes: List[BoundingBox]
+    supermarket: str
+    city: str
+    date: str
+    image_name: str
+    bboxes: List[Any]
 
 class FlyerPayload(BaseModel):
     supermarket: str

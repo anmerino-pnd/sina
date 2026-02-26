@@ -395,7 +395,7 @@ function clearAll() {
 
 function saveAll() {
     if (boundingBoxes.length === 0) {
-        alert("Por favor dibuja al menos una anotación antes de guardar.");
+        alert("Please draw at least one annotation before saving.");
         return;
     }
 
@@ -406,12 +406,14 @@ function saveAll() {
 
     if (!filename) return;
 
-    const fullRelativePath = `${city}/${date}/${filename}`;
-
+    // We no longer build a massive string. 
+    // We send the exact components to the backend.
     const payload = {
-        store_name: store, 
-        image_filename: fullRelativePath,
-        boxes: boundingBoxes
+        supermarket: store, 
+        city: city,
+        date: date,
+        image_name: filename,
+        bboxes: boundingBoxes // Backend expects 'bboxes'
     };
 
     fetch('/sina/annotate', {
@@ -420,15 +422,15 @@ function saveAll() {
         body: JSON.stringify(payload)
     })
     .then(response => {
-        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+        if (!response.ok) throw new Error("Server response error");
         return response.json();
     })
     .then(data => {
         console.log("Success:", data);
-        alert(`¡Guardado exitoso! Se generaron ${data.data.crops_saved} recortes.`);
+        alert(`Successfully saved! Generated ${data.data.crops_saved} crops.`);
     })
     .catch(error => {
         console.error("Error:", error);
-        alert("Ocurrió un error al guardar las anotaciones.");
+        alert("An error occurred while saving annotations.");
     });
 }
