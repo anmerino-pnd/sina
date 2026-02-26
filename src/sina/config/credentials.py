@@ -22,7 +22,7 @@ class AnnotationPayload(BaseModel):
     city: str
     date: str
     image_name: str
-    bboxes: List[Any]
+    bboxes: List[BoundingBox]
 
 class FlyerPayload(BaseModel):
     supermarket: str
