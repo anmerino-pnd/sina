@@ -20,14 +20,9 @@ BASE_DIR = find_project_root(Path(__file__))
 # --- Datos existentes ---
 DATA = BASE_DIR / "datos"
 CASA_LEY_DATA = DATA / "casa_ley" 
-VECTORS_DIR = DATA / "vectorstores"
+ABARREY_DATA = DATA / "abarrey"
 
 # --- Anotador (nuevo) ---
-RECORTES_DIR = CASA_LEY_DATA / "recortes"
-DATASET_DIR = DATA / "dataset"
-DATASET_IMAGES = DATASET_DIR / "images"
-DATASET_LABELS = DATASET_DIR / "labels"
-DATASET_ANNOTATED = DATASET_DIR / "annotated"
 
 # --- Templates y estáticos ---
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -37,27 +32,11 @@ CLASSES = BASE_DIR / "src" / "sina" / "config" / "classes.json"
 
 for path in [
     DATA, 
-    CASA_LEY_DATA, 
-    VECTORS_DIR,
-    RECORTES_DIR, 
-    DATASET_IMAGES, 
-    DATASET_LABELS, 
-    DATASET_ANNOTATED,
+    CASA_LEY_DATA,
+    ABARREY_DATA,
     TEMPLATES_DIR, 
     STATIC_DIR,
 ]:
     path.mkdir(parents=True, exist_ok=True)
-
-# --- Clases para anotación ---
-ANNOTATION_CLASSES = [
-    "frutas_verduras",
-    "carnes",
-    "abarrotes",
-    "lacteos",
-    "ofertas_especiales",
-    "banner",
-    "cosmeticos",
-    "otros",
-]
 
 

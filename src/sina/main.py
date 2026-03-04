@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+import traceback  # <--- NUEVO: Para ver los errores reales
 import json
 
 from sina.config.paths import (
@@ -70,18 +71,21 @@ def save_and_crop_annotations(payload: AnnotationPayload):
     and saves the dataset files for future model training.
     """
     try:
-        # Pass the validated payload data to your heavy-lifting backend function
         result = process_annotations(
             supermarket=payload.supermarket,
-            city= payload.city,
-            date= payload.date,
-            image_name= payload.image_name,
-            bboxes= payload.bboxes
+            city=payload.city,
+            date=payload.date,
+            image_name=payload.image_name,
+            bboxes=payload.bboxes
         )
         return {"status": "success", "data": result}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
+        # MAGIA: Esto imprimirá la línea exacta del error en tu terminal negra
+        print("\n❌ ERROR INTERNO EN /sina/annotate:")
+        traceback.print_exc()
+        print("----------------------------------\n")
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.post("/sina/flyer")
@@ -90,8 +94,8 @@ def get_flyer(payload: FlyerPayload):
         case "Casa Ley":
             return download_flyer(
                 city = payload.city,
-                url = casa_ley_url,
-                folder = CASA_LEY_DATA
+                base_url = casa_ley_url,
+                base_dir = CASA_LEY_DATA
             )
         case "Walmart":
             pass
