@@ -192,12 +192,55 @@ dateSelect.addEventListener('change', (e) => {
 
     const store = storeSelect.value;
     const city = citySelect.value;
-    if (e.target.value) {
-        FILE_TREE[store][city][e.target.value].forEach(img => {
-            imageSelect.add(new Option(img, img));
+    const date = e.target.value;
+
+    if (date) {
+        // Llenar el dropdown de imágenes (Filtrando para que no muestre el .json en la lista)
+        FILE_TREE[store][city][date].forEach(file => {
+            if(file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.jpeg')) {
+                imageSelect.add(new Option(file, file));
+            }
         });
+
+        // NUEVO: Verificar el estado de los datos
+        checkProcessingStatus(store, city, date);
     }
 });
+
+async function checkProcessingStatus(store, city, date) {
+    const btn = document.getElementById("btnExtract");
+    btn.innerText = "⏳ Verificando...";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/sina/status?supermarket=${store}&city=${city}&date=${date}`);
+        const status = await response.json();
+
+        btn.disabled = false;
+
+        if (status.has_json) {
+            // Ya se procesó
+            btn.innerText = "✅ Ver Datos Extraídos";
+            btn.style.borderColor = "#50fa7b"; // Verde
+            btn.style.color = "#50fa7b";
+        } else if (status.has_recortes) {
+            // Hay recortes, listo para Ollama
+            btn.innerText = "🧠 Procesar con Ollama";
+            btn.style.borderColor = "#bd93f9"; // Morado
+            btn.style.color = "#bd93f9";
+        } else {
+            // No hay recortes todavía
+            btn.innerText = "⚠️ Dibuja recortes primero";
+            btn.style.borderColor = "#ffb86c"; // Naranja
+            btn.style.color = "#ffb86c";
+            btn.disabled = true; // Deshabilita el botón para evitar errores
+        }
+    } catch (error) {
+        console.error("Error al verificar estado:", error);
+        btn.innerText = "🧠 Procesar con Ollama";
+        btn.disabled = false;
+    }
+}
 
 imageSelect.addEventListener('change', (e) => {
     const filename = e.target.value;
@@ -433,4 +476,121 @@ function saveAll() {
         console.error("Error:", error);
         alert("An error occurred while saving annotations.");
     });
+}
+
+// ==========================================
+// LÓGICA DE EXTRACCIÓN LLM Y VENTANA MODAL
+// ==========================================
+
+// Función para abrir la ventana modal
+function openModal() {
+    // Cambiamos el display de 'none' a 'flex' para que se vea centrado
+    document.getElementById("jsonModal").style.display = "flex";
+}
+
+// Función para cerrar la ventana modal
+function closeModal() {
+    document.getElementById("jsonModal").style.display = "none";
+}
+
+// Función que se comunica con tu FastAPI
+async function extractData() {
+    // 1. Obtener los valores que el usuario seleccionó en la UI
+    const store = document.getElementById("storeSelect").value;
+    const city = document.getElementById("citySelect").value;
+    const date = document.getElementById("dateSelect").value;
+
+    // 2. Validar que haya seleccionado algo
+    if (!store || !city || !date) {
+        alert("⚠️ Por favor selecciona Supermercado, Ciudad y Fecha primero.");
+        return;
+    }
+
+    // 3. Cambiar el botón visualmente para que el usuario sepa que está cargando
+    const btn = document.getElementById("btnExtract");
+    btn.innerText = "⏳ Procesando LLM... (Puede tardar)";
+    btn.disabled = true;
+
+    // 4. Abrir la ventana modal mostrando mensaje de carga
+    const jsonViewer = document.getElementById("jsonViewer");
+    jsonViewer.style.color = "#f1fa8c"; // Letra amarilla para advertencia
+    jsonViewer.innerText = "Iniciando Ollama para " + store + "...\nPor favor espera, no cierres esta ventana.";
+    openModal();
+
+    try {
+        // 5. Hacer la petición POST a tu backend
+        const response = await fetch("/sina/extract_text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                supermarket: store,
+                city: city,
+                date: date
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // 6. Si todo salió bien, mostramos el JSON bonito
+                        // 6. Si todo salió bien, armamos una vista profesional
+            jsonViewer.style.color = "#f8f8f2"; // Letra blanca normal
+            
+            // Construimos una tabla HTML dinámica
+            let html = `<div style="margin-bottom: 15px;">
+                <strong>🏪 ${result.data.store || store}</strong> | 
+                <strong>📦 Total Productos:</strong> ${result.data.total_products || (result.data.products ? result.data.products.length : 0)}
+            </div>`;
+
+            if (result.data.products && result.data.products.length > 0) {
+                html += `<table class="professional-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Marca</th>
+                            <th>Precio</th>
+                            <th>Promo</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                result.data.products.forEach(p => {
+                    html += `<tr>
+                        <td>${p.name || '-'}</td>
+                        <td>${p.brand || '-'}</td>
+                        <td style="color: #50fa7b; font-weight: bold;">${p.price || p.regular_price || '-'}</td>
+                        <td style="color: #ff79c6;">${p.sale_description || '-'}</td>
+                    </tr>`;
+                });
+                
+                html += `</tbody></table>`;
+            } else {
+                html += `<p>No se encontraron productos estructurados.</p>`;
+            }
+
+            // Agregamos un botón para ver el JSON original si el usuario lo desea
+            html += `<details style="margin-top: 20px; cursor: pointer; color: #6272a4;">
+                        <summary>Ver JSON Crudo (Para desarrolladores)</summary>
+                        <pre style="color: #50fa7b; padding-top: 10px;">${JSON.stringify(result.data, null, 4)}</pre>
+                     </details>`;
+
+            // Inyectamos el HTML (en vez de usar innerText, usamos innerHTML)
+            jsonViewer.innerHTML = html;
+        } else {
+            // Si el backend tiró un error (ej. HTTPException)
+            throw new Error(result.detail || "Error desconocido en el servidor");
+        }
+
+    } catch (error) {
+        // 7. Si algo falló (red caída, error en python, etc)
+        console.error("Error en extracción:", error);
+        jsonViewer.style.color = "#ff5555"; // Letra roja de error
+        jsonViewer.innerText = "❌ Ocurrió un error:\n" + error.message;
+    } finally {
+        // 8. Restaurar el botón a su estado original, pase lo que pase
+        btn.innerText = "🧠 Procesar con Ollama y Ver JSON";
+        btn.disabled = false;
+    }
 }

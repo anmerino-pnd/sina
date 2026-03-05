@@ -74,6 +74,15 @@
             </div>
         </div>
 
+        <!-- NUEVA SECCIÓN: Procesamiento LLM -->
+        <hr class="divider">
+        <div class="section">
+            <label class="label">Extracción de Datos</label>
+            <button class="btn btn-outline" id="btnExtract" onclick="extractData()" style="width: 100%; border-color: #9c27b0; color: #9c27b0;">
+                Procesar con Ollama y ver JSON
+            </button>
+        </div>
+
         <!-- Active Class -->
         <div class="section">
             <label class="label">🏷️ Clase activa</label>
@@ -124,6 +133,20 @@
     const FILE_TREE = {{ file_tree | tojson | safe }};
 </script>
 <script src="/static/js/annotator.js"></script>
+
+    <!-- VENTANA MODAL PARA EL JSON -->
+    <div id="jsonModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Datos extraídos del folleto</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Aquí se inyectará el JSON -->
+                <pre id="jsonViewer">Esperando respuesta del LLM...</pre>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

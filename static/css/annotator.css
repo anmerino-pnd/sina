@@ -252,3 +252,103 @@ body {
     color: var(--text-muted); font-weight: 500; font-size: 0.95rem; pointer-events: none;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
+
+/* =========================================
+   ESTILOS DE LA VENTANA MODAL (JSON VIEWER)
+   ========================================= */
+.modal-overlay {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro semi-transparente */
+    z-index: 1000; /* Para que quede por encima de todo */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #1e1e2f; /* Color oscuro tipo editor de código */
+    color: #fff;
+    width: 80%;
+    max-width: 800px;
+    height: 80vh;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #ff5c5c;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-body {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto; /* Agrega scroll si el JSON es muy largo */
+}
+
+#jsonViewer {
+    background-color: #282a36;
+    padding: 15px;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    color: #50fa7b; /* Texto verde estilo hacker/código */
+    white-space: pre-wrap; /* Respeta los saltos de línea */
+}
+
+/* =========================================
+   ESTILOS DE LA TABLA DE RESULTADOS
+   ========================================= */
+.professional-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 0.95rem;
+}
+
+.professional-table th, .professional-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #44475a;
+}
+
+.professional-table th {
+    background-color: #44475a;
+    color: #f8f8f2;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.professional-table tbody tr:hover {
+    background-color: #282a36;
+}
+
+#jsonViewer details summary {
+    outline: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+#jsonViewer details summary:hover {
+    color: #bd93f9;
+}

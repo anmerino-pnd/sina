@@ -30,3 +30,8 @@ class AnnotationPayload(BaseModel):
 class FlyerPayload(BaseModel):
     supermarket: str
     city: str
+
+class ExtractPayload(BaseModel):
+    supermarket: str
+    city: str
+    date: str

@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-import traceback  # <--- NUEVO: Para ver los errores reales
+import traceback 
 import json
 
 from sina.config.paths import (
@@ -19,8 +19,14 @@ from sina.config.settings import (
     get_classes_config,
     build_filesystem_tree
 )
+try:
+    from sina.ollama.extract_flyer_text import extract_text
+except ImportError:
+    extract_text = None 
+
 from sina.config.credentials import (
     AnnotationPayload,
+    ExtractPayload,
     FlyerPayload,
     casa_ley_url
 )
@@ -91,7 +97,7 @@ def save_and_crop_annotations(payload: AnnotationPayload):
 @app.post("/sina/flyer")
 def get_flyer(payload: FlyerPayload):
     match payload.supermarket:
-        case "Casa Ley":
+        case "Casa Ley" | "casa_ley":
             return download_flyer(
                 city = payload.city,
                 base_url = casa_ley_url,
@@ -103,3 +109,51 @@ def get_flyer(payload: FlyerPayload):
             pass
         case "Soriana":
             pass
+
+@app.post("/sina/extract_text")
+def extract_crops_data(payload: ExtractPayload):
+    """
+    Checks if flyer_data.json exists. If not, runs the LLM extraction.
+    Returns the JSON content to be displayed in the UI.
+    """
+    json_path = DATA / payload.supermarket / payload.city / payload.date / "flyer_data.json"
+
+    if not json_path.exists():
+        if extract_text is None:
+            raise HTTPException(status_code=500, detail="Extraction module not found.")
+            
+        print(f"🤖 Inciando LLM para {payload.supermarket} - {payload.city} - {payload.date}")
+        
+        success = extract_text(
+            supermarket=payload.supermarket,
+            city=payload.city,
+            date=payload.date
+        )
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to generate the document with the LLM.")
+    else:
+        print(f"📂 flyer_data.json already exists for {payload.date}. Loading directly...")
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {"status": "success", "data": data}
+    except Exception as e:
+        print("\n❌ ERROR READING JSON:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error reading JSON file: {e}")
+
+@app.get("/sina/status")
+def check_status(supermarket: str, city: str, date: str):
+    """Verifica si existen recortes y si ya se generó el flyer_data.json"""
+    base_dir = DATA / supermarket / city / date
+    json_path = base_dir / "flyer_data.json"
+    recortes_dir = base_dir / "recortes"
+
+    has_json = json_path.exists()
+    
+    has_recortes = recortes_dir.exists() and any(recortes_dir.iterdir())
+
+    return {
+        "has_json": has_json,
+        "has_recortes": has_recortes
+    }
