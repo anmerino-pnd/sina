@@ -220,12 +220,12 @@ async function checkProcessingStatus(store, city, date) {
 
         if (status.has_json) {
             // Ya se procesó
-            btn.innerText = "✅ Ver Datos Extraídos";
+            btn.innerText = "✅ Ver datos extraídos";
             btn.style.borderColor = "#50fa7b"; // Verde
             btn.style.color = "#50fa7b";
         } else if (status.has_recortes) {
             // Hay recortes, listo para Ollama
-            btn.innerText = "🧠 Procesar con Ollama";
+            btn.innerText = "Procesar con Ollama";
             btn.style.borderColor = "#bd93f9"; // Morado
             btn.style.color = "#bd93f9";
         } else {
@@ -237,7 +237,7 @@ async function checkProcessingStatus(store, city, date) {
         }
     } catch (error) {
         console.error("Error al verificar estado:", error);
-        btn.innerText = "🧠 Procesar con Ollama";
+        btn.innerText = "Procesar con Ollama";
         btn.disabled = false;
     }
 }
@@ -590,7 +590,7 @@ async function extractData() {
         jsonViewer.innerText = "❌ Ocurrió un error:\n" + error.message;
     } finally {
         // 8. Restaurar el botón a su estado original, pase lo que pase
-        btn.innerText = "🧠 Procesar con Ollama y Ver JSON";
+        btn.innerText = "Procesar con Ollama y Ver JSON";
         btn.disabled = false;
     }
 }
