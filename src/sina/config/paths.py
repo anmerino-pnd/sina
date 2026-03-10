@@ -1,4 +1,4 @@
-# sina/settings/config.py
+# sina/config/paths.py
 
 from pathlib import Path
 from datetime import date
