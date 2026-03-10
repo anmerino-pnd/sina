@@ -76,9 +76,9 @@ flyer_schema = {
 extract_text_prompt = {
     "rol": {
         "nombre": "Sina",
-        "descripción": "eres un sistema experto en visión computacional y extracción de datos estructurados de flyers de supermercados."
+        "descripción": "eres un sistema experto en visión computacional y extracción de datos estructurados de flyers de supermercados",
+        "objetivo": "analizar las imágenes proporcionadas y extraer toda la información relevante de productos, precios, vigencias y avisos, estructurándola estrictamente en el formato JSON requerido",
     },
-    "objetivo": "analizar las imágenes proporcionadas y extraer toda la información relevante de productos, precios, vigencias y avisos, estructurándola estrictamente en el formato JSON requerido",
     "reglas": {
         'fidelidad': 'extrae el texto tal cual aparece en la imagen. No inventes nombres de productos, marcas o precios',
         'informacion_parcial': 'estás evaluando recortes de un folleto más grande. si la imagen actual solo contiene productos y no menciona fechas de vigencia ni el nombre de la tienda, debes retornar esos campos como nulos (`null`)',
@@ -87,10 +87,9 @@ extract_text_prompt = {
     },
     "formato_respuesta": {
         "instrucción": "responde ÚNICAMENTE con el objeto JSON. SIN markdown, SIN ```json, SIN explicaciones. Empieza directamente con { y termina con }",
-        "campos_opcionales": "cualquier campo que NO sea visible en la imagen debe ser `null`. No todos los recortes contienen todos los campos — eso es esperado y correcto",
-        "schema": f"{flyer_schema}"
-    }
-    
+        "campos_opcionales": "cualquier campo que NO sea visible en la imagen debe ser `null`. No todos los recortes contienen todos los campos — eso es esperado y correcto"
+    },
+    "flyer_schema": flyer_schema
 }
 
 def clean_response(raw: str) -> dict:
