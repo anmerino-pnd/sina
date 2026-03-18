@@ -5,12 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-qqp_url : str = os.getenv('QQP_DATOS_URL')
-datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL')
-gasolina_hmo_url: str = os.getenv('GASOLINA_HMO_URL')
-casa_ley_url: str = os.getenv('CASA_LEY_URL')
+qqp_url : str = os.getenv('QQP_DATOS_URL', "")
+datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL', "")
+gasolina_hmo_url: str = os.getenv('GASOLINA_HMO_URL', "")
+casa_ley_url: str = os.getenv('CASA_LEY_URL', "")
 
-ollama_api_key : str = os.getenv('OLLAMA_API_KEY')
+ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
 
 
 class BoundingBox(BaseModel):

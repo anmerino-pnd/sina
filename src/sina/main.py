@@ -101,7 +101,7 @@ def get_flyer(payload: FlyerPayload):
             return download_flyer(
                 city = payload.city,
                 base_url = casa_ley_url,
-                base_dir = CASA_LEY_DATA
+                base_dir = str(CASA_LEY_DATA)
             )
         case "Walmart":
             pass

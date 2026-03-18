@@ -2,9 +2,10 @@ import re
 import time
 import json
 import ollama
+from typing import cast
 from toon import encode
 from ollama import Client
-from typing import Optional, List
+from typing import Callable, Any
 from sina.config.paths import DATA
 from sina.config.credentials import ollama_api_key
 from pydantic import ValidationError, BaseModel, Field
@@ -25,12 +26,14 @@ def extract_text(
         
         imgs = sorted(input_path.iterdir())
 
-        client = Client(
-            host="https://ollama.com",
-            headers={'Authorization': 'Bearer ' + ollama_api_key}
-        ) if cloud else None
-
-        chat_fn = client.chat if cloud else ollama.chat
+        if cloud:
+            client = Client(
+                host="https://ollama.com",
+                headers={'Authorization': 'Bearer ' + ollama_api_key}
+            )
+            chat_fn: Callable[..., Any] = client.chat  
+        else:
+            chat_fn = ollama.chat
 
         flyer = {
             "products": [],
@@ -68,8 +71,12 @@ def extract_text(
                 )
 
                 print(f"✅ Respondió en {time.time() - start_time:.2f}s")
-
-                batch_data = clean_response(response.message.content)
+                content: str | None = response.message.content
+                if content is None:
+                    print(f"⚠️ Batch {batch_num}: respuesta vacía")
+                    continue
+                
+                batch_data = clean_response(content)
 
                 if batch_data.get("products"):
                     flyer["products"].extend(batch_data["products"])

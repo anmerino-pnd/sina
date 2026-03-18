@@ -23,6 +23,10 @@ def extract_images(driver) -> set[str]:
     
     for img in soup.select('img.left, img.right'):
         src = img.get('src', '')
+        # ✅ Cast explícito o guard clause
+        if not isinstance(src, str):
+            continue  # o src = str(src) si puede ser otro tipo
+        
         if 'publitas' in src:
             high_res = re.sub(r'-at\d+', '-at2400', src)
             urls.add(high_res)
