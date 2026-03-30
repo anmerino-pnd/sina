@@ -109,5 +109,5 @@ def extract_text(
         return True
 
     except Exception as e:
-        print(f"❌ Error crítico durante la extracción: {e}")
+        print(f"✗ Error crítico durante la extracción: {e}")
         return False

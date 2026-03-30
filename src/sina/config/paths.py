@@ -21,6 +21,7 @@ BASE_DIR = find_project_root(Path(__file__))
 DATA = BASE_DIR / "datos"
 CASA_LEY_DATA = DATA / "casa_ley" 
 ABARREY_DATA = DATA / "abarrey"
+GAS_DATA = DATA / "gasolineras"
 
 # --- Anotador (nuevo) ---
 
@@ -36,6 +37,7 @@ for path in [
     ABARREY_DATA,
     TEMPLATES_DIR, 
     STATIC_DIR,
+    GAS_DATA
 ]:
     path.mkdir(parents=True, exist_ok=True)
 

@@ -127,14 +127,12 @@ def download_flyer(base_url: str, city: str, base_dir: str) -> bool:
     """
     print(f"🚀 Downloading flyer for: {city}")
     
-    # 1. Descubrir páginas
     pages = discover_pages(base_url)
     
     if not pages:
         print("\n⚠️ No pages found.")
         return False
     
-    # 2. Preparar directorio
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     timestamp = datetime.datetime.now().isoformat()
     
@@ -147,7 +145,6 @@ def download_flyer(base_url: str, city: str, base_dir: str) -> bool:
     output_dir = os.path.join(base_dir, clean_city, today)
     os.makedirs(output_dir, exist_ok=True)
     
-    # 3. Descargar imágenes
     print(f"\n--- Downloading {len(pages)} images to: {output_dir} ---")
     success = 0
     
@@ -182,7 +179,6 @@ def download_flyer(base_url: str, city: str, base_dir: str) -> bool:
         except requests.exceptions.RequestException as e:
             print(f"❌ Page {page_num}: {e}")
     
-    # 4. Metadata
     metadata['total_pages_downloaded'] = success
     metadata['status'] = (
         "success" if success == len(pages)

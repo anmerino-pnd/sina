@@ -9,9 +9,10 @@ qqp_url : str = os.getenv('QQP_DATOS_URL', "")
 datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL', "")
 gasolina_hmo_url: str = os.getenv('GASOLINA_HMO_URL', "")
 casa_ley_url: str = os.getenv('CASA_LEY_URL', "")
+gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
 
 ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
-
+google_api_key: str = os.getenv('GOOGLE_API_KEY', "")
 
 class BoundingBox(BaseModel):
     label: str

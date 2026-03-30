@@ -1,0 +1,2662 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_3852ff9e416e01ca0db4d3385b8b04e5 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_3852ff9e416e01ca0db4d3385b8b04e5" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_3852ff9e416e01ca0db4d3385b8b04e5 = L.map(
+                "map_3852ff9e416e01ca0db4d3385b8b04e5",
+                {
+                    center: [29.043081089473684, -110.97521453157896],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_b571c6f4982237e52d6491726f4c6e75 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b571c6f4982237e52d6491726f4c6e75.addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+    var color_map_5953cf13605d558020b5e10f6c96ce3b = {};
+
+    
+    color_map_5953cf13605d558020b5e10f6c96ce3b.color = d3.scale.threshold()
+              .domain([27.99, 27.994008016032062, 27.998016032064125, 28.002024048096192, 28.006032064128256, 28.01004008016032, 28.014048096192383, 28.018056112224446, 28.02206412825651, 28.026072144288577, 28.03008016032064, 28.034088176352704, 28.038096192384767, 28.04210420841683, 28.046112224448898, 28.05012024048096, 28.054128256513025, 28.058136272545088, 28.06214428857715, 28.06615230460922, 28.070160320641282, 28.074168336673345, 28.07817635270541, 28.082184368737472, 28.086192384769536, 28.090200400801603, 28.094208416833666, 28.09821643286573, 28.102224448897793, 28.106232464929857, 28.110240480961924, 28.114248496993987, 28.11825651302605, 28.122264529058114, 28.126272545090178, 28.130280561122245, 28.134288577154308, 28.13829659318637, 28.142304609218435, 28.1463126252505, 28.150320641282562, 28.15432865731463, 28.158336673346692, 28.162344689378756, 28.16635270541082, 28.170360721442883, 28.17436873747495, 28.178376753507013, 28.182384769539077, 28.18639278557114, 28.190400801603204, 28.19440881763527, 28.198416833667334, 28.202424849699398, 28.20643286573146, 28.210440881763525, 28.214448897795588, 28.218456913827655, 28.22246492985972, 28.226472945891782, 28.230480961923845, 28.23448897795591, 28.238496993987976, 28.24250501002004, 28.246513026052103, 28.250521042084166, 28.25452905811623, 28.258537074148293, 28.26254509018036, 28.266553106212424, 28.270561122244487, 28.27456913827655, 28.278577154308614, 28.28258517034068, 28.286593186372745, 28.290601202404808, 28.29460921843687, 28.298617234468935, 28.302625250501002, 28.306633266533066, 28.31064128256513, 28.314649298597192, 28.318657314629256, 28.32266533066132, 28.326673346693386, 28.33068136272545, 28.334689378757513, 28.338697394789577, 28.34270541082164, 28.346713426853707, 28.35072144288577, 28.354729458917834, 28.358737474949898, 28.36274549098196, 28.366753507014028, 28.37076152304609, 28.374769539078155, 28.37877755511022, 28.382785571142282, 28.386793587174346, 28.390801603206413, 28.394809619238476, 28.39881763527054, 28.402825651302603, 28.406833667334666, 28.410841683366733, 28.414849699398797, 28.41885771543086, 28.422865731462924, 28.426873747494987, 28.430881763527054, 28.434889779559118, 28.43889779559118, 28.442905811623245, 28.446913827655308, 28.45092184368737, 28.45492985971944, 28.458937875751502, 28.462945891783566, 28.46695390781563, 28.470961923847693, 28.47496993987976, 28.478977955911823, 28.482985971943886, 28.48699398797595, 28.491002004008013, 28.495010020040077, 28.499018036072144, 28.503026052104207, 28.50703406813627, 28.511042084168334, 28.515050100200398, 28.519058116232465, 28.52306613226453, 28.52707414829659, 28.531082164328655, 28.53509018036072, 28.539098196392786, 28.54310621242485, 28.547114228456913, 28.551122244488976, 28.55513026052104, 28.559138276553103, 28.56314629258517, 28.567154308617233, 28.571162324649297, 28.57517034068136, 28.579178356713424, 28.58318637274549, 28.587194388777554, 28.591202404809618, 28.59521042084168, 28.599218436873745, 28.60322645290581, 28.607234468937875, 28.61124248496994, 28.615250501002002, 28.619258517034066, 28.62326653306613, 28.627274549098196, 28.63128256513026, 28.635290581162323, 28.639298597194387, 28.64330661322645, 28.647314629258517, 28.65132264529058, 28.655330661322644, 28.659338677354707, 28.66334669338677, 28.667354709418838, 28.6713627254509, 28.675370741482965, 28.67937875751503, 28.68338677354709, 28.687394789579155, 28.691402805611222, 28.695410821643286, 28.69941883767535, 28.703426853707413, 28.707434869739476, 28.711442885771543, 28.715450901803607, 28.71945891783567, 28.723466933867734, 28.727474949899797, 28.73148296593186, 28.735490981963927, 28.73949899799599, 28.743507014028054, 28.747515030060118, 28.75152304609218, 28.75553106212425, 28.759539078156312, 28.763547094188375, 28.76755511022044, 28.771563126252502, 28.77557114228457, 28.779579158316633, 28.783587174348696, 28.78759519038076, 28.791603206412823, 28.795611222444887, 28.799619238476954, 28.803627254509017, 28.80763527054108, 28.811643286573144, 28.815651302605207, 28.819659318637274, 28.823667334669338, 28.8276753507014, 28.831683366733465, 28.83569138276553, 28.839699398797592, 28.84370741482966, 28.847715430861722, 28.851723446893786, 28.85573146292585, 28.859739478957913, 28.86374749498998, 28.867755511022043, 28.871763527054107, 28.87577154308617, 28.879779559118234, 28.8837875751503, 28.887795591182364, 28.891803607214428, 28.89581162324649, 28.899819639278554, 28.90382765531062, 28.907835671342685, 28.91184368737475, 28.915851703406812, 28.919859719438875, 28.92386773547094, 28.927875751503006, 28.93188376753507, 28.935891783567133, 28.939899799599196, 28.94390781563126, 28.947915831663327, 28.95192384769539, 28.955931863727454, 28.959939879759517, 28.96394789579158, 28.967955911823644, 28.97196392785571, 28.975971943887775, 28.979979959919838, 28.9839879759519, 28.987995991983965, 28.992004008016032, 28.996012024048095, 29.00002004008016, 29.004028056112222, 29.008036072144286, 29.012044088176353, 29.016052104208416, 29.02006012024048, 29.024068136272543, 29.028076152304607, 29.03208416833667, 29.036092184368737, 29.0401002004008, 29.044108216432864, 29.048116232464928, 29.05212424849699, 29.056132264529058, 29.06014028056112, 29.064148296593185, 29.06815631262525, 29.072164328657312, 29.076172344689375, 29.080180360721442, 29.084188376753506, 29.08819639278557, 29.092204408817633, 29.096212424849696, 29.100220440881763, 29.104228456913827, 29.10823647294589, 29.112244488977954, 29.116252505010017, 29.120260521042084, 29.124268537074148, 29.12827655310621, 29.132284569138275, 29.136292585170338, 29.140300601202405, 29.14430861723447, 29.148316633266532, 29.152324649298595, 29.15633266533066, 29.160340681362722, 29.16434869739479, 29.168356713426853, 29.172364729458916, 29.17637274549098, 29.180380761523043, 29.18438877755511, 29.188396793587174, 29.192404809619237, 29.1964128256513, 29.200420841683364, 29.204428857715428, 29.208436873747495, 29.212444889779558, 29.21645290581162, 29.220460921843685, 29.22446893787575, 29.228476953907816, 29.23248496993988, 29.236492985971942, 29.240501002004006, 29.24450901803607, 29.248517034068136, 29.2525250501002, 29.256533066132263, 29.260541082164327, 29.26454909819639, 29.268557114228454, 29.27256513026052, 29.276573146292584, 29.280581162324648, 29.28458917835671, 29.288597194388775, 29.29260521042084, 29.296613226452905, 29.30062124248497, 29.304629258517032, 29.308637274549096, 29.31264529058116, 29.316653306613226, 29.32066132264529, 29.324669338677353, 29.328677354709416, 29.33268537074148, 29.336693386773547, 29.34070140280561, 29.344709418837674, 29.348717434869737, 29.3527254509018, 29.356733466933868, 29.36074148296593, 29.364749498997995, 29.368757515030058, 29.37276553106212, 29.37677354709419, 29.380781563126252, 29.384789579158316, 29.38879759519038, 29.392805611222443, 29.396813627254506, 29.400821643286573, 29.404829659318636, 29.4088376753507, 29.412845691382763, 29.416853707414827, 29.420861723446894, 29.424869739478957, 29.42887775551102, 29.432885771543084, 29.436893787575148, 29.44090180360721, 29.44490981963928, 29.44891783567134, 29.452925851703405, 29.45693386773547, 29.460941883767532, 29.4649498997996, 29.468957915831663, 29.472965931863726, 29.47697394789579, 29.480981963927853, 29.48498997995992, 29.488997995991983, 29.493006012024047, 29.49701402805611, 29.501022044088174, 29.505030060120237, 29.509038076152304, 29.513046092184368, 29.51705410821643, 29.521062124248495, 29.525070140280558, 29.529078156312625, 29.53308617234469, 29.537094188376752, 29.541102204408816, 29.54511022044088, 29.549118236472943, 29.55312625250501, 29.557134268537073, 29.561142284569137, 29.5651503006012, 29.569158316633263, 29.57316633266533, 29.577174348697394, 29.581182364729457, 29.58519038076152, 29.589198396793584, 29.59320641282565, 29.597214428857715, 29.60122244488978, 29.60523046092184, 29.609238476953905, 29.613246492985972, 29.617254509018036, 29.6212625250501, 29.625270541082163, 29.629278557114226, 29.63328657314629, 29.637294589178357, 29.64130260521042, 29.645310621242484, 29.649318637274547, 29.65332665330661, 29.657334669338674, 29.66134268537074, 29.665350701402804, 29.669358717434868, 29.67336673346693, 29.677374749498995, 29.681382765531062, 29.685390781563125, 29.68939879759519, 29.693406813627252, 29.697414829659316, 29.701422845691383, 29.705430861723446, 29.70943887775551, 29.713446893787573, 29.717454909819637, 29.721462925851704, 29.725470941883767, 29.72947895791583, 29.733486973947894, 29.737494989979957, 29.74150300601202, 29.745511022044088, 29.74951903807615, 29.753527054108215, 29.75753507014028, 29.761543086172342, 29.76555110220441, 29.769559118236472, 29.773567134268536, 29.7775751503006, 29.781583166332663, 29.785591182364726, 29.789599198396793, 29.793607214428857, 29.79761523046092, 29.801623246492984, 29.805631262525047, 29.809639278557114, 29.813647294589178, 29.81765531062124, 29.821663326653304, 29.825671342685368, 29.829679358717435, 29.8336873747495, 29.837695390781562, 29.841703406813625, 29.84571142284569, 29.849719438877756, 29.85372745490982, 29.857735470941883, 29.861743486973946, 29.86575150300601, 29.869759519038073, 29.87376753507014, 29.877775551102204, 29.881783567134267, 29.88579158316633, 29.889799599198394, 29.893807615230457, 29.897815631262525, 29.901823647294588, 29.90583166332665, 29.909839679358715, 29.91384769539078, 29.917855711422845, 29.92186372745491, 29.925871743486972, 29.929879759519036, 29.9338877755511, 29.937895791583166, 29.94190380761523, 29.945911823647293, 29.949919839679357, 29.95392785571142, 29.957935871743487, 29.96194388777555, 29.965951903807614, 29.969959919839678, 29.97396793587174, 29.977975951903804, 29.98198396793587, 29.985991983967935, 29.99])
+              .range(['#2ecc71ff', '#2ecc71ff', '#2fcc70ff', '#30cc70ff', '#31cc6fff', '#32cc6fff', '#32cc6fff', '#33cc6eff', '#34cc6eff', '#35cc6dff', '#36cc6dff', '#36cc6dff', '#37cc6cff', '#38cc6cff', '#39cc6bff', '#39cc6bff', '#3acc6bff', '#3bcc6aff', '#3ccc6aff', '#3dcc69ff', '#3dcc69ff', '#3ecc69ff', '#3fcc68ff', '#40cc68ff', '#41cc67ff', '#41cb67ff', '#42cb67ff', '#43cb66ff', '#44cb66ff', '#44cb66ff', '#45cb65ff', '#46cb65ff', '#47cb64ff', '#48cb64ff', '#48cb64ff', '#49cb63ff', '#4acb63ff', '#4bcb62ff', '#4bcb62ff', '#4ccb62ff', '#4dcb61ff', '#4ecb61ff', '#4fcb60ff', '#4fcb60ff', '#50cb60ff', '#51cb5fff', '#52cb5fff', '#53cb5eff', '#53cb5eff', '#54cb5eff', '#55cb5dff', '#56cb5dff', '#56cb5cff', '#57cb5cff', '#58cb5cff', '#59cb5bff', '#5aca5bff', '#5aca5aff', '#5bca5aff', '#5cca5aff', '#5dca59ff', '#5eca59ff', '#5eca58ff', '#5fca58ff', '#60ca58ff', '#61ca57ff', '#61ca57ff', '#62ca57ff', '#63ca56ff', '#64ca56ff', '#65ca55ff', '#65ca55ff', '#66ca55ff', '#67ca54ff', '#68ca54ff', '#69ca53ff', '#69ca53ff', '#6aca53ff', '#6bca52ff', '#6cca52ff', '#6cca51ff', '#6dca51ff', '#6eca51ff', '#6fca50ff', '#70ca50ff', '#70ca4fff', '#71ca4fff', '#72c94fff', '#73c94eff', '#74c94eff', '#74c94dff', '#75c94dff', '#76c94dff', '#77c94cff', '#77c94cff', '#78c94bff', '#79c94bff', '#7ac94bff', '#7bc94aff', '#7bc94aff', '#7cc94aff', '#7dc949ff', '#7ec949ff', '#7ec948ff', '#7fc948ff', '#80c948ff', '#81c947ff', '#82c947ff', '#82c946ff', '#83c946ff', '#84c946ff', '#85c945ff', '#86c945ff', '#86c944ff', '#87c944ff', '#88c944ff', '#89c943ff', '#89c943ff', '#8ac942ff', '#8bc842ff', '#8cc842ff', '#8dc841ff', '#8dc841ff', '#8ec840ff', '#8fc840ff', '#90c840ff', '#91c83fff', '#91c83fff', '#92c83eff', '#93c83eff', '#94c83eff', '#94c83dff', '#95c83dff', '#96c83cff', '#97c83cff', '#98c83cff', '#98c83bff', '#99c83bff', '#9ac83bff', '#9bc83aff', '#9cc83aff', '#9cc839ff', '#9dc839ff', '#9ec839ff', '#9fc838ff', '#9fc838ff', '#a0c837ff', '#a1c837ff', '#a2c837ff', '#a3c836ff', '#a3c736ff', '#a4c735ff', '#a5c735ff', '#a6c735ff', '#a7c734ff', '#a7c734ff', '#a8c733ff', '#a9c733ff', '#aac733ff', '#aac732ff', '#abc732ff', '#acc731ff', '#adc731ff', '#aec731ff', '#aec730ff', '#afc730ff', '#b0c72fff', '#b1c72fff', '#b1c72fff', '#b2c72eff', '#b3c72eff', '#b4c72eff', '#b5c72dff', '#b5c72dff', '#b6c72cff', '#b7c72cff', '#b8c72cff', '#b9c72bff', '#b9c72bff', '#bac72aff', '#bbc72aff', '#bcc62aff', '#bcc629ff', '#bdc629ff', '#bec628ff', '#bfc628ff', '#c0c628ff', '#c0c627ff', '#c1c627ff', '#c2c626ff', '#c3c626ff', '#c4c626ff', '#c4c625ff', '#c5c625ff', '#c6c624ff', '#c7c624ff', '#c7c624ff', '#c8c623ff', '#c9c623ff', '#cac622ff', '#cbc622ff', '#cbc622ff', '#ccc621ff', '#cdc621ff', '#cec621ff', '#cfc620ff', '#cfc620ff', '#d0c61fff', '#d1c61fff', '#d2c61fff', '#d2c61eff', '#d3c61eff', '#d4c51dff', '#d5c51dff', '#d6c51dff', '#d6c51cff', '#d7c51cff', '#d8c51bff', '#d9c51bff', '#dac51bff', '#dac51aff', '#dbc51aff', '#dcc519ff', '#ddc519ff', '#ddc519ff', '#dec518ff', '#dfc518ff', '#e0c517ff', '#e1c517ff', '#e1c517ff', '#e2c516ff', '#e3c516ff', '#e4c515ff', '#e4c515ff', '#e5c515ff', '#e6c514ff', '#e7c514ff', '#e8c513ff', '#e8c513ff', '#e9c513ff', '#eac512ff', '#ebc512ff', '#ecc512ff', '#ecc411ff', '#edc411ff', '#eec410ff', '#efc410ff', '#efc410ff', '#f0c40fff', '#f1c40fff', '#f1c40fff', '#f1c40fff', '#f1c30fff', '#f1c30fff', '#f1c20fff', '#f1c210ff', '#f1c110ff', '#f1c110ff', '#f1c010ff', '#f1c010ff', '#f1bf10ff', '#f1bf11ff', '#f1be11ff', '#f1be11ff', '#f1bd11ff', '#f1bd11ff', '#f1bc12ff', '#f1bc12ff', '#f1bb12ff', '#f1bb12ff', '#f1ba12ff', '#f1ba12ff', '#f1b913ff', '#f0b913ff', '#f0b813ff', '#f0b813ff', '#f0b713ff', '#f0b714ff', '#f0b714ff', '#f0b614ff', '#f0b614ff', '#f0b514ff', '#f0b514ff', '#f0b415ff', '#f0b415ff', '#f0b315ff', '#f0b315ff', '#f0b215ff', '#f0b216ff', '#f0b116ff', '#f0b116ff', '#f0b016ff', '#f0b016ff', '#f0af16ff', '#f0af17ff', '#f0ae17ff', '#f0ae17ff', '#f0ad17ff', '#efad17ff', '#efac18ff', '#efac18ff', '#efab18ff', '#efab18ff', '#efaa18ff', '#efaa18ff', '#efa919ff', '#efa919ff', '#efa919ff', '#efa819ff', '#efa819ff', '#efa71aff', '#efa71aff', '#efa61aff', '#efa61aff', '#efa51aff', '#efa51aff', '#efa41bff', '#efa41bff', '#efa31bff', '#efa31bff', '#efa21bff', '#efa21cff', '#efa11cff', '#eea11cff', '#eea01cff', '#eea01cff', '#ee9f1cff', '#ee9f1dff', '#ee9e1dff', '#ee9e1dff', '#ee9d1dff', '#ee9d1dff', '#ee9c1dff', '#ee9c1eff', '#ee9b1eff', '#ee9b1eff', '#ee9b1eff', '#ee9a1eff', '#ee9a1fff', '#ee991fff', '#ee991fff', '#ee981fff', '#ee981fff', '#ee971fff', '#ee9720ff', '#ee9620ff', '#ee9620ff', '#ee9520ff', '#ed9520ff', '#ed9421ff', '#ed9421ff', '#ed9321ff', '#ed9321ff', '#ed9221ff', '#ed9221ff', '#ed9122ff', '#ed9122ff', '#ed9022ff', '#ed9022ff', '#ed8f22ff', '#ed8f23ff', '#ed8e23ff', '#ed8e23ff', '#ed8d23ff', '#ed8d23ff', '#ed8c23ff', '#ed8c24ff', '#ed8c24ff', '#ed8b24ff', '#ed8b24ff', '#ed8a24ff', '#ed8a25ff', '#ed8925ff', '#ec8925ff', '#ec8825ff', '#ec8825ff', '#ec8725ff', '#ec8726ff', '#ec8626ff', '#ec8626ff', '#ec8526ff', '#ec8526ff', '#ec8427ff', '#ec8427ff', '#ec8327ff', '#ec8327ff', '#ec8227ff', '#ec8227ff', '#ec8128ff', '#ec8128ff', '#ec8028ff', '#ec8028ff', '#ec7f28ff', '#ec7f29ff', '#ec7e29ff', '#ec7e29ff', '#ec7e29ff', '#ec7d29ff', '#eb7d29ff', '#eb7c2aff', '#eb7c2aff', '#eb7b2aff', '#eb7b2aff', '#eb7a2aff', '#eb7a2bff', '#eb792bff', '#eb792bff', '#eb782bff', '#eb782bff', '#eb772bff', '#eb772cff', '#eb762cff', '#eb762cff', '#eb752cff', '#eb752cff', '#eb742dff', '#eb742dff', '#eb732dff', '#eb732dff', '#eb722dff', '#eb722dff', '#eb712eff', '#eb712eff', '#ea702eff', '#ea702eff', '#ea702eff', '#ea6f2fff', '#ea6f2fff', '#ea6e2fff', '#ea6e2fff', '#ea6d2fff', '#ea6d2fff', '#ea6c30ff', '#ea6c30ff', '#ea6b30ff', '#ea6b30ff', '#ea6a30ff', '#ea6a31ff', '#ea6931ff', '#ea6931ff', '#ea6831ff', '#ea6831ff', '#ea6731ff', '#ea6732ff', '#ea6632ff', '#ea6632ff', '#ea6532ff', '#e96532ff', '#e96433ff', '#e96433ff', '#e96333ff', '#e96333ff', '#e96233ff', '#e96233ff', '#e96234ff', '#e96134ff', '#e96134ff', '#e96034ff', '#e96034ff', '#e95f34ff', '#e95f35ff', '#e95e35ff', '#e95e35ff', '#e95d35ff', '#e95d35ff', '#e95c36ff', '#e95c36ff', '#e95b36ff', '#e95b36ff', '#e95a36ff', '#e95a36ff', '#e95937ff', '#e85937ff', '#e85837ff', '#e85837ff', '#e85737ff', '#e85738ff', '#e85638ff', '#e85638ff', '#e85538ff', '#e85538ff', '#e85438ff', '#e85439ff', '#e85439ff', '#e85339ff', '#e85339ff', '#e85239ff', '#e8523aff', '#e8513aff', '#e8513aff', '#e8503aff', '#e8503aff', '#e84f3aff', '#e84f3bff', '#e84e3bff', '#e84e3bff', '#e84d3bff', '#e74d3bff', '#e74c3cff', '#e74c3cff']);
+    
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.x = d3.scale.linear()
+              .domain([27.99, 29.99])
+              .range([0, 450 - 50]);
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.legend = L.control({position: 'topright'});
+    color_map_5953cf13605d558020b5e10f6c96ce3b.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
+    color_map_5953cf13605d558020b5e10f6c96ce3b.legend.addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.xAxis = d3.svg.axis()
+        .scale(color_map_5953cf13605d558020b5e10f6c96ce3b.x)
+        .orient("top")
+        .tickSize(1)
+        .tickValues([27.99, 28.99, 29.99]);
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.svg = d3.select(".legend.leaflet-control").append("svg")
+        .attr("id", 'legend')
+        .attr("width", 450)
+        .attr("height", 40);
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.g = color_map_5953cf13605d558020b5e10f6c96ce3b.svg.append("g")
+        .attr("class", "key")
+        .attr("fill", "black")
+        .attr("transform", "translate(25,16)");
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.g.selectAll("rect")
+        .data(color_map_5953cf13605d558020b5e10f6c96ce3b.color.range().map(function(d, i) {
+          return {
+            x0: i ? color_map_5953cf13605d558020b5e10f6c96ce3b.x(color_map_5953cf13605d558020b5e10f6c96ce3b.color.domain()[i - 1]) : color_map_5953cf13605d558020b5e10f6c96ce3b.x.range()[0],
+            x1: i < color_map_5953cf13605d558020b5e10f6c96ce3b.color.domain().length ? color_map_5953cf13605d558020b5e10f6c96ce3b.x(color_map_5953cf13605d558020b5e10f6c96ce3b.color.domain()[i]) : color_map_5953cf13605d558020b5e10f6c96ce3b.x.range()[1],
+            z: d
+          };
+        }))
+      .enter().append("rect")
+        .attr("height", 40 - 30)
+        .attr("x", function(d) { return d.x0; })
+        .attr("width", function(d) { return d.x1 - d.x0; })
+        .style("fill", function(d) { return d.z; });
+
+    color_map_5953cf13605d558020b5e10f6c96ce3b.g.call(color_map_5953cf13605d558020b5e10f6c96ce3b.xAxis).append("text")
+        .attr("class", "caption")
+        .attr("y", 21)
+        .attr("fill", "black")
+        .text("Precio Diesel (MXN)");
+    
+            var circle_marker_28cf99ba82d6e340894d4bef675275f9 = L.circleMarker(
+                [29.0820931, -110.9421558],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_54d369618e41927f4c4bef3c54f58235 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_40840ab76cce2a68990bb959f3d53000 = $(`<div id="html_40840ab76cce2a68990bb959f3d53000" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">FEDERICO LÓPEZ LÓPEZ</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Ures-Hermosillo Km 3.5</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $nan</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_54d369618e41927f4c4bef3c54f58235.setContent(html_40840ab76cce2a68990bb959f3d53000);
+            
+        
+
+        circle_marker_28cf99ba82d6e340894d4bef675275f9.bindPopup(popup_54d369618e41927f4c4bef3c54f58235)
+        ;
+
+        
+    
+    
+            circle_marker_28cf99ba82d6e340894d4bef675275f9.bindTooltip(
+                `<div>
+                     FEDERICO LÓPEZ LÓPEZ | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_31b1309a9de80ff1654a7064429a900d = L.circleMarker(
+                [29.1454227, -111.0239231],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_e98f3e0e553953d8ace2d023113bf8d9 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_b71dbaddc6dce98ea8476d93c7bfb806 = $(`<div id="html_b71dbaddc6dce98ea8476d93c7bfb806" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVICIOS DEL REAL DEL ALAMITO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Hermosillo Ures Entronq.Carretera del Real A.No. 1</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.89</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.28</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_e98f3e0e553953d8ace2d023113bf8d9.setContent(html_b71dbaddc6dce98ea8476d93c7bfb806);
+            
+        
+
+        circle_marker_31b1309a9de80ff1654a7064429a900d.bindPopup(popup_e98f3e0e553953d8ace2d023113bf8d9)
+        ;
+
+        
+    
+    
+            circle_marker_31b1309a9de80ff1654a7064429a900d.bindTooltip(
+                `<div>
+                     SERVICIOS DEL REAL DEL ALAMITO S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_aca96e538f27d4edeba60bbf3e1ef704 = L.circleMarker(
+                [29.1018976, -110.9932532],
+                {"bubblingMouseEvents": true, "color": "#a3c736ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#a3c736ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_716902ae0b1e65409624f4df1a3f2bf6 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_59a8e63af20947ce192fa38b3a24aec1 = $(`<div id="html_59a8e63af20947ce192fa38b3a24aec1" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVICIO EL KENO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 José Ma Mendoza 794</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.93</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.59             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_716902ae0b1e65409624f4df1a3f2bf6.setContent(html_59a8e63af20947ce192fa38b3a24aec1);
+            
+        
+
+        circle_marker_aca96e538f27d4edeba60bbf3e1ef704.bindPopup(popup_716902ae0b1e65409624f4df1a3f2bf6)
+        ;
+
+        
+    
+    
+            circle_marker_aca96e538f27d4edeba60bbf3e1ef704.bindTooltip(
+                `<div>
+                     SERVICIO EL KENO S.A. DE C.V. | $28.59
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_889bf0e380a6618af2f098194467edc7 = L.circleMarker(
+                [29.1258695, -110.9639566],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_44b8796f6a9b7d8d0a56937b1862e5e4 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_cae83b7d51595f4fadad66de60e162c0 = $(`<div id="html_cae83b7d51595f4fadad66de60e162c0" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">CORPORATIVO ENERVISION, S.A.P.I. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard López Portillo No. 189</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $24.29</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_44b8796f6a9b7d8d0a56937b1862e5e4.setContent(html_cae83b7d51595f4fadad66de60e162c0);
+            
+        
+
+        circle_marker_889bf0e380a6618af2f098194467edc7.bindPopup(popup_44b8796f6a9b7d8d0a56937b1862e5e4)
+        ;
+
+        
+    
+    
+            circle_marker_889bf0e380a6618af2f098194467edc7.bindTooltip(
+                `<div>
+                     CORPORATIVO ENERVISION, S.A.P.I. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e1736ca348326856202fca0091531e41 = L.circleMarker(
+                [29.12112419999999, -111.0232697],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_53617f01935a400c51f0c60d63f5d4b5 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_1e5375d2aaf3cb7584ba9049a288a8c5 = $(`<div id="html_1e5375d2aaf3cb7584ba9049a288a8c5" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">CORPORATIVO ENERVISION, S.A.P.I. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Quiroga No. 555</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $24.29</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_53617f01935a400c51f0c60d63f5d4b5.setContent(html_1e5375d2aaf3cb7584ba9049a288a8c5);
+            
+        
+
+        circle_marker_e1736ca348326856202fca0091531e41.bindPopup(popup_53617f01935a400c51f0c60d63f5d4b5)
+        ;
+
+        
+    
+    
+            circle_marker_e1736ca348326856202fca0091531e41.bindTooltip(
+                `<div>
+                     CORPORATIVO ENERVISION, S.A.P.I. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2be0aa85b78f348caa897a06245ac538 = L.circleMarker(
+                [29.0399766, -110.9395311],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_c6ac6d082de28de9d06e0ba1da2c2f9d = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_ab922bbf1f0dd457ec0856b34854c51f = $(`<div id="html_ab922bbf1f0dd457ec0856b34854c51f" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">CORPORATIVO ENERVISION, S.A.P.I. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Paseo Las Palmas No. 1</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $24.29</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_c6ac6d082de28de9d06e0ba1da2c2f9d.setContent(html_ab922bbf1f0dd457ec0856b34854c51f);
+            
+        
+
+        circle_marker_2be0aa85b78f348caa897a06245ac538.bindPopup(popup_c6ac6d082de28de9d06e0ba1da2c2f9d)
+        ;
+
+        
+    
+    
+            circle_marker_2be0aa85b78f348caa897a06245ac538.bindTooltip(
+                `<div>
+                     CORPORATIVO ENERVISION, S.A.P.I. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_14fd0e14a3cfd59b7f67fa4083039c3b = L.circleMarker(
+                [29.0265015, -110.911048],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_c95ba6a8f2c463995ecb283f34b33014 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_3510e13dd63bb7bb7844c946713228c2 = $(`<div id="html_3510e13dd63bb7bb7844c946713228c2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACIÓN DE SERVICIO EL PILOTO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a Nogales Km 5.5</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_c95ba6a8f2c463995ecb283f34b33014.setContent(html_3510e13dd63bb7bb7844c946713228c2);
+            
+        
+
+        circle_marker_14fd0e14a3cfd59b7f67fa4083039c3b.bindPopup(popup_c95ba6a8f2c463995ecb283f34b33014)
+        ;
+
+        
+    
+    
+            circle_marker_14fd0e14a3cfd59b7f67fa4083039c3b.bindTooltip(
+                `<div>
+                     ESTACIÓN DE SERVICIO EL PILOTO S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3a4073e96bd7361be789470c225fb70c = L.circleMarker(
+                [29.1705174, -110.9152711],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_46810577262bc3cee4319e803d53d788 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_03bda9031e354f73852547043a6f40b4 = $(`<div id="html_03bda9031e354f73852547043a6f40b4" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Internacional a Nogales Km 9.8</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_46810577262bc3cee4319e803d53d788.setContent(html_03bda9031e354f73852547043a6f40b4);
+            
+        
+
+        circle_marker_3a4073e96bd7361be789470c225fb70c.bindPopup(popup_46810577262bc3cee4319e803d53d788)
+        ;
+
+        
+    
+    
+            circle_marker_3a4073e96bd7361be789470c225fb70c.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7ad62c9de73e1fcfc77e0fe0367b30e2 = L.circleMarker(
+                [29.098658, -110.9207296],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_a3cd4c625aeede26bda2241555f6a5ba = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_130a995e02c5f9958863344248b0b8a0 = $(`<div id="html_130a995e02c5f9958863344248b0b8a0" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Bulevar Enrique Mazon López No. 735</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_a3cd4c625aeede26bda2241555f6a5ba.setContent(html_130a995e02c5f9958863344248b0b8a0);
+            
+        
+
+        circle_marker_7ad62c9de73e1fcfc77e0fe0367b30e2.bindPopup(popup_a3cd4c625aeede26bda2241555f6a5ba)
+        ;
+
+        
+    
+    
+            circle_marker_7ad62c9de73e1fcfc77e0fe0367b30e2.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_be736a1bcb1b169c53266a4b64023ecb = L.circleMarker(
+                [27.4731537, -109.9165794],
+                {"bubblingMouseEvents": true, "color": "#b9c72bff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#b9c72bff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_b965168d9988f854431ce81e5e370892 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_e5796557d68fc9670617387a2abf5067 = $(`<div id="html_e5796557d68fc9670617387a2abf5067" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ROQUIS S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Internacional México (15) Tramo Cd. Obregón-Hermosillo</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.80</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.00</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.70             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_b965168d9988f854431ce81e5e370892.setContent(html_e5796557d68fc9670617387a2abf5067);
+            
+        
+
+        circle_marker_be736a1bcb1b169c53266a4b64023ecb.bindPopup(popup_b965168d9988f854431ce81e5e370892)
+        ;
+
+        
+    
+    
+            circle_marker_be736a1bcb1b169c53266a4b64023ecb.bindTooltip(
+                `<div>
+                     ROQUIS S.A. DE C.V. | $28.70
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_96ca0d831a19bbb3de5af802b63aa5fe = L.circleMarker(
+                [29.131686, -111.0068532],
+                {"bubblingMouseEvents": true, "color": "#ec8825ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#ec8825ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_98c000ea48c14b2a26ae4b56113891a3 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_ea12f089c129679e244b957349411d97 = $(`<div id="html_ea12f089c129679e244b957349411d97" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Lázaro Cárdenas S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.79</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.49</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_98c000ea48c14b2a26ae4b56113891a3.setContent(html_ea12f089c129679e244b957349411d97);
+            
+        
+
+        circle_marker_96ca0d831a19bbb3de5af802b63aa5fe.bindPopup(popup_98c000ea48c14b2a26ae4b56113891a3)
+        ;
+
+        
+    
+    
+            circle_marker_96ca0d831a19bbb3de5af802b63aa5fe.bindTooltip(
+                `<div>
+                     GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V. | $29.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_242d0285d612eb9120f952ddb35159b0 = L.circleMarker(
+                [29.0682396, -111.0022697],
+                {"bubblingMouseEvents": true, "color": "#92c83fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#92c83fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_2a3e900a2f6dd00bd8b460ac109c20ae = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_851a7944cd71d8c9b8ab97964c8bd6d9 = $(`<div id="html_851a7944cd71d8c9b8ab97964c8bd6d9" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">AGA COMBUSTIBLES S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Paseo Rio Sonora Norte No. 567</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.00</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.50</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.50             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_2a3e900a2f6dd00bd8b460ac109c20ae.setContent(html_851a7944cd71d8c9b8ab97964c8bd6d9);
+            
+        
+
+        circle_marker_242d0285d612eb9120f952ddb35159b0.bindPopup(popup_2a3e900a2f6dd00bd8b460ac109c20ae)
+        ;
+
+        
+    
+    
+            circle_marker_242d0285d612eb9120f952ddb35159b0.bindTooltip(
+                `<div>
+                     AGA COMBUSTIBLES S.A. DE C.V. | $28.50
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_a9a4d180d3769ffff1860b47928fa281 = L.circleMarker(
+                [29.0798605, -110.9570001],
+                {"bubblingMouseEvents": true, "color": "#2ecc71ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2ecc71ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_7d2b18aa333fc3b5a78a8b48ca94b557 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_8e49300ab7d246ee0e605bb83c5b69e2 = $(`<div id="html_8e49300ab7d246ee0e605bb83c5b69e2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACIÓN DE SERVICIO DEL DESIERTO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Hermosillo - Nogales 1309</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $27.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_7d2b18aa333fc3b5a78a8b48ca94b557.setContent(html_8e49300ab7d246ee0e605bb83c5b69e2);
+            
+        
+
+        circle_marker_a9a4d180d3769ffff1860b47928fa281.bindPopup(popup_7d2b18aa333fc3b5a78a8b48ca94b557)
+        ;
+
+        
+    
+    
+            circle_marker_a9a4d180d3769ffff1860b47928fa281.bindTooltip(
+                `<div>
+                     ESTACIÓN DE SERVICIO DEL DESIERTO S.A. DE C.V. | $27.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_893c6c62186b5caa97f2bd96465e67d1 = L.circleMarker(
+                [28.8227474, -111.9363016],
+                {"bubblingMouseEvents": true, "color": "#dec518ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dec518ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_824b34d6eae5be9fad2a584dcd5c7c4f = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_8b997a653c6946af11ba0af8f04b7a15 = $(`<div id="html_8b997a653c6946af11ba0af8f04b7a15" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">MULTILIQUIDOS DE HERMOSILLO</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a Bahia de Kino Lado Oeste No. 84 San Franci</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.49</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.89             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_824b34d6eae5be9fad2a584dcd5c7c4f.setContent(html_8b997a653c6946af11ba0af8f04b7a15);
+            
+        
+
+        circle_marker_893c6c62186b5caa97f2bd96465e67d1.bindPopup(popup_824b34d6eae5be9fad2a584dcd5c7c4f)
+        ;
+
+        
+    
+    
+            circle_marker_893c6c62186b5caa97f2bd96465e67d1.bindTooltip(
+                `<div>
+                     MULTILIQUIDOS DE HERMOSILLO | $28.89
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1bfdd5cc1c4fab5ff67d070219fa37b1 = L.circleMarker(
+                [29.1557764, -110.9090723],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_74b97f4e6ee1120b22b349d098779b19 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_b19f88acd85a9922e87538579d9a0721 = $(`<div id="html_b19f88acd85a9922e87538579d9a0721" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO ORIENTE S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Enrique Mazon López No. 1113</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_74b97f4e6ee1120b22b349d098779b19.setContent(html_b19f88acd85a9922e87538579d9a0721);
+            
+        
+
+        circle_marker_1bfdd5cc1c4fab5ff67d070219fa37b1.bindPopup(popup_74b97f4e6ee1120b22b349d098779b19)
+        ;
+
+        
+    
+    
+            circle_marker_1bfdd5cc1c4fab5ff67d070219fa37b1.bindTooltip(
+                `<div>
+                     GASERVICIO ORIENTE S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5b8195e7d885360adb9f6449e5f424ea = L.circleMarker(
+                [28.8389878, -111.489224],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_c377129b616bbe0077a085f159839fa6 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_34bc6230404f0fe74ab24b4e7e29dd05 = $(`<div id="html_34bc6230404f0fe74ab24b4e7e29dd05" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO MORELOS S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Alicia Arellano Pavlovich No. 476</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_c377129b616bbe0077a085f159839fa6.setContent(html_34bc6230404f0fe74ab24b4e7e29dd05);
+            
+        
+
+        circle_marker_5b8195e7d885360adb9f6449e5f424ea.bindPopup(popup_c377129b616bbe0077a085f159839fa6)
+        ;
+
+        
+    
+    
+            circle_marker_5b8195e7d885360adb9f6449e5f424ea.bindTooltip(
+                `<div>
+                     GASERVICIO MORELOS S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_63f75ef40b2ee946d43c498721023bef = L.circleMarker(
+                [29.084843, -110.9880654],
+                {"bubblingMouseEvents": true, "color": "#e85738ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e85738ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_58e12bb8dd29b11c66e3b211ee72edbf = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_85c764c700e094f7ee540a554d1ecea2 = $(`<div id="html_85c764c700e094f7ee540a554d1ecea2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACION DE SERVICIO ERSAL SA DE CV</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 AVE MAR DE CORTES NÚMERO 8910</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.10</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.90             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_58e12bb8dd29b11c66e3b211ee72edbf.setContent(html_85c764c700e094f7ee540a554d1ecea2);
+            
+        
+
+        circle_marker_63f75ef40b2ee946d43c498721023bef.bindPopup(popup_58e12bb8dd29b11c66e3b211ee72edbf)
+        ;
+
+        
+    
+    
+            circle_marker_63f75ef40b2ee946d43c498721023bef.bindTooltip(
+                `<div>
+                     ESTACION DE SERVICIO ERSAL SA DE CV | $29.90
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2d8c5090024316d0af4005f91657b299 = L.circleMarker(
+                [29.0809248, -111.0490011],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_d1c2c8df6d8edcff5fea22f4f71084d0 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_64f74429400ca0996caa8c1304d3c8a3 = $(`<div id="html_64f74429400ca0996caa8c1304d3c8a3" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">CM COMBUSTIBLES S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 BLVD LUIS DONALDO COLOSIO NO. 1099 ESQUINA CALLE JET</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.10</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_d1c2c8df6d8edcff5fea22f4f71084d0.setContent(html_64f74429400ca0996caa8c1304d3c8a3);
+            
+        
+
+        circle_marker_2d8c5090024316d0af4005f91657b299.bindPopup(popup_d1c2c8df6d8edcff5fea22f4f71084d0)
+        ;
+
+        
+    
+    
+            circle_marker_2d8c5090024316d0af4005f91657b299.bindTooltip(
+                `<div>
+                     CM COMBUSTIBLES S.A. DE C.V. | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_51bca23ca2c36f2f6c81d5a3efc23f67 = L.circleMarker(
+                [29.0615585, -110.966474],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_c9bb1e463094e619a3ac3f4361b5b9c7 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_08ba32d48a45a8f0f8c6003db1d99d5d = $(`<div id="html_08ba32d48a45a8f0f8c6003db1d99d5d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">FONDO EMPRESARIAL S4M, S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Blvd. Solidaridad No. 1120</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_c9bb1e463094e619a3ac3f4361b5b9c7.setContent(html_08ba32d48a45a8f0f8c6003db1d99d5d);
+            
+        
+
+        circle_marker_51bca23ca2c36f2f6c81d5a3efc23f67.bindPopup(popup_c9bb1e463094e619a3ac3f4361b5b9c7)
+        ;
+
+        
+    
+    
+            circle_marker_51bca23ca2c36f2f6c81d5a3efc23f67.bindTooltip(
+                `<div>
+                     FONDO EMPRESARIAL S4M, S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_88a1adc23434d1309880e8d5be84dcb1 = L.circleMarker(
+                [29.0950819, -111.0228287],
+                {"bubblingMouseEvents": true, "color": "#51cb5fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#51cb5fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_5e9081b108f6bbccbf16aa05eaa82b97 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_941895ffc02a15e2c95d795db5960717 = $(`<div id="html_941895ffc02a15e2c95d795db5960717" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">OPERADORA RIO COLORADO, S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 BULEVAR JESUS GARCIA MORALES NO. 496</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.39</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.79</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.17             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_5e9081b108f6bbccbf16aa05eaa82b97.setContent(html_941895ffc02a15e2c95d795db5960717);
+            
+        
+
+        circle_marker_88a1adc23434d1309880e8d5be84dcb1.bindPopup(popup_5e9081b108f6bbccbf16aa05eaa82b97)
+        ;
+
+        
+    
+    
+            circle_marker_88a1adc23434d1309880e8d5be84dcb1.bindTooltip(
+                `<div>
+                     OPERADORA RIO COLORADO, S. DE R.L. DE C.V. | $28.17
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2988be994282c87c6295b5371ba93fec = L.circleMarker(
+                [29.1319608, -110.9931916],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_fa49fa1aeb159a9fdd89f7cb6e53d48b = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_2b354a34d66a0b57a12392e301e913e7 = $(`<div id="html_2b354a34d66a0b57a12392e301e913e7" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">OPERADORA RIO COLORADO, S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 BULEVAR SOLIDARIDAD NO. 646</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.89</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.89</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_fa49fa1aeb159a9fdd89f7cb6e53d48b.setContent(html_2b354a34d66a0b57a12392e301e913e7);
+            
+        
+
+        circle_marker_2988be994282c87c6295b5371ba93fec.bindPopup(popup_fa49fa1aeb159a9fdd89f7cb6e53d48b)
+        ;
+
+        
+    
+    
+            circle_marker_2988be994282c87c6295b5371ba93fec.bindTooltip(
+                `<div>
+                     OPERADORA RIO COLORADO, S. DE R.L. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_101c2bf1a4caf8f4b9a203798e89efa4 = L.circleMarker(
+                [29.01957669999999, -110.9306],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_43e5dc8d7fe979839be68dce1cb95b60 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_d1d026c5bbcb7a114cea2ca0de22c5f5 = $(`<div id="html_d1d026c5bbcb7a114cea2ca0de22c5f5" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">FONDO EMPRESARIAL S4M, S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a la Colorada No. 189, esquina con Bulevar Capomo</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_43e5dc8d7fe979839be68dce1cb95b60.setContent(html_d1d026c5bbcb7a114cea2ca0de22c5f5);
+            
+        
+
+        circle_marker_101c2bf1a4caf8f4b9a203798e89efa4.bindPopup(popup_43e5dc8d7fe979839be68dce1cb95b60)
+        ;
+
+        
+    
+    
+            circle_marker_101c2bf1a4caf8f4b9a203798e89efa4.bindTooltip(
+                `<div>
+                     FONDO EMPRESARIAL S4M, S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7d31ad01ba65b394b9089e9e66d5c49e = L.circleMarker(
+                [29.0798018, -110.9532482],
+                {"bubblingMouseEvents": true, "color": "#e85738ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e85738ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_b40aa6277eeb8b1bac2e7cbb4559c352 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_4ced8753311e481e2702d43919d11e94 = $(`<div id="html_4ced8753311e481e2702d43919d11e94" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACIÓN DE SERVICIO ERSAL S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Hermosillo a Kino Km 106 L-4</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.10</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.90             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_b40aa6277eeb8b1bac2e7cbb4559c352.setContent(html_4ced8753311e481e2702d43919d11e94);
+            
+        
+
+        circle_marker_7d31ad01ba65b394b9089e9e66d5c49e.bindPopup(popup_b40aa6277eeb8b1bac2e7cbb4559c352)
+        ;
+
+        
+    
+    
+            circle_marker_7d31ad01ba65b394b9089e9e66d5c49e.bindTooltip(
+                `<div>
+                     ESTACIÓN DE SERVICIO ERSAL S.A. DE C.V. | $29.90
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_52579170308455f0ba0046583b6da7cb = L.circleMarker(
+                [29.119724, -110.912889],
+                {"bubblingMouseEvents": true, "color": "#dec518ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dec518ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_841c3d24a89bda717c16ef501f9d1c12 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_0cabaa7b53d6ce929d2f5098706218e2 = $(`<div id="html_0cabaa7b53d6ce929d2f5098706218e2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">POWER GAS S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Enrique Mazón López No. 724</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.30</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.19</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.89             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_841c3d24a89bda717c16ef501f9d1c12.setContent(html_0cabaa7b53d6ce929d2f5098706218e2);
+            
+        
+
+        circle_marker_52579170308455f0ba0046583b6da7cb.bindPopup(popup_841c3d24a89bda717c16ef501f9d1c12)
+        ;
+
+        
+    
+    
+            circle_marker_52579170308455f0ba0046583b6da7cb.bindTooltip(
+                `<div>
+                     POWER GAS S.A. DE C.V. | $28.89
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5771976e9d8c7e5813411b1f6b713bb3 = L.circleMarker(
+                [29.0832264, -110.9495767],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_11a2829900ff80e593ab8d81488f6c03 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_4bd1a8db102f2d43d8c3652cca6b5ea8 = $(`<div id="html_4bd1a8db102f2d43d8c3652cca6b5ea8" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Luis Encinas No. 36</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_11a2829900ff80e593ab8d81488f6c03.setContent(html_4bd1a8db102f2d43d8c3652cca6b5ea8);
+            
+        
+
+        circle_marker_5771976e9d8c7e5813411b1f6b713bb3.bindPopup(popup_11a2829900ff80e593ab8d81488f6c03)
+        ;
+
+        
+    
+    
+            circle_marker_5771976e9d8c7e5813411b1f6b713bb3.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7089427d31800c11ef2161829c8973a3 = L.circleMarker(
+                [29.1160513, -110.9731861],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_f543f5cd1b95b42f84608bfcc44acd67 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_5bc74ca9525bb9cab42d86a5340e69e3 = $(`<div id="html_5bc74ca9525bb9cab42d86a5340e69e3" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Francisco Monteverde No. 900</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.25</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_f543f5cd1b95b42f84608bfcc44acd67.setContent(html_5bc74ca9525bb9cab42d86a5340e69e3);
+            
+        
+
+        circle_marker_7089427d31800c11ef2161829c8973a3.bindPopup(popup_f543f5cd1b95b42f84608bfcc44acd67)
+        ;
+
+        
+    
+    
+            circle_marker_7089427d31800c11ef2161829c8973a3.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_15cfbc51e9f0ed2e9af9b86ed572a2d7 = L.circleMarker(
+                [29.0265015, -110.911048],
+                {"bubblingMouseEvents": true, "color": "#e96433ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e96433ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_d2af1f1b61d15560411d02d3174f8075 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_4f621317b06593921b6439bf57aebebe = $(`<div id="html_4f621317b06593921b6439bf57aebebe" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GRUPO GASOLINERO LM S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a Nogales Km 1.7</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.49</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.79             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_d2af1f1b61d15560411d02d3174f8075.setContent(html_4f621317b06593921b6439bf57aebebe);
+            
+        
+
+        circle_marker_15cfbc51e9f0ed2e9af9b86ed572a2d7.bindPopup(popup_d2af1f1b61d15560411d02d3174f8075)
+        ;
+
+        
+    
+    
+            circle_marker_15cfbc51e9f0ed2e9af9b86ed572a2d7.bindTooltip(
+                `<div>
+                     GRUPO GASOLINERO LM S.A. DE C.V. | $29.79
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0fca06155244ae3a2bb1c8d500cc460c = L.circleMarker(
+                [29.0159111, -110.9623992],
+                {"bubblingMouseEvents": true, "color": "#e96433ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e96433ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_ff5f6723b11f328efab35f4e0e648d77 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_3f50cc0e5c6ee1abb1e4269bd923a82b = $(`<div id="html_3f50cc0e5c6ee1abb1e4269bd923a82b" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO HERMOSUR S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Manuel J. Clouthier No. 275</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.49</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.79             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_ff5f6723b11f328efab35f4e0e648d77.setContent(html_3f50cc0e5c6ee1abb1e4269bd923a82b);
+            
+        
+
+        circle_marker_0fca06155244ae3a2bb1c8d500cc460c.bindPopup(popup_ff5f6723b11f328efab35f4e0e648d77)
+        ;
+
+        
+    
+    
+            circle_marker_0fca06155244ae3a2bb1c8d500cc460c.bindTooltip(
+                `<div>
+                     GASERVICIO HERMOSUR S.A. DE C.V. | $29.79
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_21c364884973cc08205dd0ec89a6d332 = L.circleMarker(
+                [29.0359254, -110.9545754],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_517268c4be335322ca3b88ae9dda4d38 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_f562c9597934b0d78495cc1c65d37841 = $(`<div id="html_f562c9597934b0d78495cc1c65d37841" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Periférico Sur No. 28</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_517268c4be335322ca3b88ae9dda4d38.setContent(html_f562c9597934b0d78495cc1c65d37841);
+            
+        
+
+        circle_marker_21c364884973cc08205dd0ec89a6d332.bindPopup(popup_517268c4be335322ca3b88ae9dda4d38)
+        ;
+
+        
+    
+    
+            circle_marker_21c364884973cc08205dd0ec89a6d332.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3fe2b05ef9d3ceb4fe5e7774dca32eb5 = L.circleMarker(
+                [29.05154739999999, -110.9714221],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_ec4dffa2783f19ea4ea6bd4e67ce4bfa = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_9545c89cc4784c638295b1e2805a9eba = $(`<div id="html_9545c89cc4784c638295b1e2805a9eba" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES Y SERVICIOS JARDIN JUÁREZ S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Calle Matamoros S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_ec4dffa2783f19ea4ea6bd4e67ce4bfa.setContent(html_9545c89cc4784c638295b1e2805a9eba);
+            
+        
+
+        circle_marker_3fe2b05ef9d3ceb4fe5e7774dca32eb5.bindPopup(popup_ec4dffa2783f19ea4ea6bd4e67ce4bfa)
+        ;
+
+        
+    
+    
+            circle_marker_3fe2b05ef9d3ceb4fe5e7774dca32eb5.bindTooltip(
+                `<div>
+                     COMBUSTIBLES Y SERVICIOS JARDIN JUÁREZ S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4e4200dd18dcfa8b29a5f1d9ffcb95a5 = L.circleMarker(
+                [29.03722939999999, -111.0020967],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_b370ce581acc4df54e66150eba9444e8 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_a4e641b3b6845f27d7832bf92baf05c8 = $(`<div id="html_a4e641b3b6845f27d7832bf92baf05c8" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Dr. Antonio Quiroga No. 330</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_b370ce581acc4df54e66150eba9444e8.setContent(html_a4e641b3b6845f27d7832bf92baf05c8);
+            
+        
+
+        circle_marker_4e4200dd18dcfa8b29a5f1d9ffcb95a5.bindPopup(popup_b370ce581acc4df54e66150eba9444e8)
+        ;
+
+        
+    
+    
+            circle_marker_4e4200dd18dcfa8b29a5f1d9ffcb95a5.bindTooltip(
+                `<div>
+                     COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_eb845e57a4a2c62c2029451ec4b33c15 = L.circleMarker(
+                [29.0332041, -110.9420655],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_469c7f8c437e6ac51a7b9820b863638a = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_3f8b8d47b70b9389f03c15129fdfe17c = $(`<div id="html_3f8b8d47b70b9389f03c15129fdfe17c" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES Y SERVICIOS PERISUR S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Periférico Sur Y Carretera a Sahuaripa</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_469c7f8c437e6ac51a7b9820b863638a.setContent(html_3f8b8d47b70b9389f03c15129fdfe17c);
+            
+        
+
+        circle_marker_eb845e57a4a2c62c2029451ec4b33c15.bindPopup(popup_469c7f8c437e6ac51a7b9820b863638a)
+        ;
+
+        
+    
+    
+            circle_marker_eb845e57a4a2c62c2029451ec4b33c15.bindTooltip(
+                `<div>
+                     COMBUSTIBLES Y SERVICIOS PERISUR S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_86b03fc0549653ace5956235b8edd7d8 = L.circleMarker(
+                [29.0524692, -110.9768825],
+                {"bubblingMouseEvents": true, "color": "#dec518ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dec518ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_15117b45e55bebc3bcf8608580794777 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_15f5ff04cb22199aab83ec8924c8fed1 = $(`<div id="html_15f5ff04cb22199aab83ec8924c8fed1" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASOLINERA LA MINA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Avenida Lázaro Cárdenas No. 209</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.30</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.19</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.89             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_15117b45e55bebc3bcf8608580794777.setContent(html_15f5ff04cb22199aab83ec8924c8fed1);
+            
+        
+
+        circle_marker_86b03fc0549653ace5956235b8edd7d8.bindPopup(popup_15117b45e55bebc3bcf8608580794777)
+        ;
+
+        
+    
+    
+            circle_marker_86b03fc0549653ace5956235b8edd7d8.bindTooltip(
+                `<div>
+                     GASOLINERA LA MINA S.A. DE C.V. | $28.89
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1204f7d6927921d091faf4a9349cd639 = L.circleMarker(
+                [27.9110633, -110.9090678],
+                {"bubblingMouseEvents": true, "color": "#dec518ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dec518ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_3ffda5796e2113621848b1ad0d007174 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_9a563bc4870f2ff1cc2499f68c7ba4b3 = $(`<div id="html_9a563bc4870f2ff1cc2499f68c7ba4b3" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">POWER GAS S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Libertad Esquina Salida a Guaymas</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.30</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.19</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.89             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_3ffda5796e2113621848b1ad0d007174.setContent(html_9a563bc4870f2ff1cc2499f68c7ba4b3);
+            
+        
+
+        circle_marker_1204f7d6927921d091faf4a9349cd639.bindPopup(popup_3ffda5796e2113621848b1ad0d007174)
+        ;
+
+        
+    
+    
+            circle_marker_1204f7d6927921d091faf4a9349cd639.bindTooltip(
+                `<div>
+                     POWER GAS S.A. DE C.V. | $28.89
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_43bf2711eda3868fe279b6d9c039e2b6 = L.circleMarker(
+                [29.1454187, -110.9741699],
+                {"bubblingMouseEvents": true, "color": "#dec518ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dec518ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_4533f696b1afc12f34f3d546e63d34b8 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_ee140b0e85df7de223883a18227693d9 = $(`<div id="html_ee140b0e85df7de223883a18227693d9" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">AUTOSERVICIO LA CANDELARIA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Progreso No. 258</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.30</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.19</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.89             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_4533f696b1afc12f34f3d546e63d34b8.setContent(html_ee140b0e85df7de223883a18227693d9);
+            
+        
+
+        circle_marker_43bf2711eda3868fe279b6d9c039e2b6.bindPopup(popup_4533f696b1afc12f34f3d546e63d34b8)
+        ;
+
+        
+    
+    
+            circle_marker_43bf2711eda3868fe279b6d9c039e2b6.bindTooltip(
+                `<div>
+                     AUTOSERVICIO LA CANDELARIA S.A. DE C.V. | $28.89
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0d62733d42439e077d6d9e66e798f0cc = L.circleMarker(
+                [29.013417, -110.9229322],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_bf036f32b8dbc1006709c4db62797cb4 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_3207d768c012935da58d25ea9e25f73f = $(`<div id="html_3207d768c012935da58d25ea9e25f73f" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">AUTO SERVICIO LORI S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a La Colorada Km 3.5 Esquina Planetario</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $24.29</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_bf036f32b8dbc1006709c4db62797cb4.setContent(html_3207d768c012935da58d25ea9e25f73f);
+            
+        
+
+        circle_marker_0d62733d42439e077d6d9e66e798f0cc.bindPopup(popup_bf036f32b8dbc1006709c4db62797cb4)
+        ;
+
+        
+    
+    
+            circle_marker_0d62733d42439e077d6d9e66e798f0cc.bindTooltip(
+                `<div>
+                     AUTO SERVICIO LORI S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b07341c5cd677add7525b7c829f7bf94 = L.circleMarker(
+                [29.0817937, -111.0226598],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_def46d0ade3a3414d52c8b9c4629627c = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_a985d45d114d19266dcc9b3a34069908 = $(`<div id="html_a985d45d114d19266dcc9b3a34069908" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Luis Donaldo Colosio Esquina Con Boulevard Antonio Q.</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_def46d0ade3a3414d52c8b9c4629627c.setContent(html_a985d45d114d19266dcc9b3a34069908);
+            
+        
+
+        circle_marker_b07341c5cd677add7525b7c829f7bf94.bindPopup(popup_def46d0ade3a3414d52c8b9c4629627c)
+        ;
+
+        
+    
+    
+            circle_marker_b07341c5cd677add7525b7c829f7bf94.bindTooltip(
+                `<div>
+                     COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_cb9f5e4dfbd2b661055b6b7e168ca68b = L.circleMarker(
+                [29.1241839, -110.9805355],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_743fa19826d5feed6fd9dcfb7c4bbf42 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_2f017d84f3414bcd9929d6fc22db609f = $(`<div id="html_2f017d84f3414bcd9929d6fc22db609f" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES Y SERVICIOS LPSA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard José López Portillo 437 Esquina Simon Bley</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_743fa19826d5feed6fd9dcfb7c4bbf42.setContent(html_2f017d84f3414bcd9929d6fc22db609f);
+            
+        
+
+        circle_marker_cb9f5e4dfbd2b661055b6b7e168ca68b.bindPopup(popup_743fa19826d5feed6fd9dcfb7c4bbf42)
+        ;
+
+        
+    
+    
+            circle_marker_cb9f5e4dfbd2b661055b6b7e168ca68b.bindTooltip(
+                `<div>
+                     COMBUSTIBLES Y SERVICIOS LPSA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7ab34c464e96a04fafae2ab9e1fcc513 = L.circleMarker(
+                [29.1091644, -110.95741],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_b1d655dafc4a738c0ad3023d7e632bb3 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_234881b1269d4377967ca4b739f5bcd2 = $(`<div id="html_234881b1269d4377967ca4b739f5bcd2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">REFORMA GASOLINERA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Avenida Reforma S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_b1d655dafc4a738c0ad3023d7e632bb3.setContent(html_234881b1269d4377967ca4b739f5bcd2);
+            
+        
+
+        circle_marker_7ab34c464e96a04fafae2ab9e1fcc513.bindPopup(popup_b1d655dafc4a738c0ad3023d7e632bb3)
+        ;
+
+        
+    
+    
+            circle_marker_7ab34c464e96a04fafae2ab9e1fcc513.bindTooltip(
+                `<div>
+                     REFORMA GASOLINERA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_994e089071a36c97ea92c778bcb6a9a5 = L.circleMarker(
+                [29.1503283, -110.9969332],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_f61edc34c25665e65a0c9913000ecfbd = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_cd71d63a338e0c84689f79dc8487619d = $(`<div id="html_cd71d63a338e0c84689f79dc8487619d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASOLINERA SAN JAVIER S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard José Alberto Healy Noriega No. 1062</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.85</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_f61edc34c25665e65a0c9913000ecfbd.setContent(html_cd71d63a338e0c84689f79dc8487619d);
+            
+        
+
+        circle_marker_994e089071a36c97ea92c778bcb6a9a5.bindPopup(popup_f61edc34c25665e65a0c9913000ecfbd)
+        ;
+
+        
+    
+    
+            circle_marker_994e089071a36c97ea92c778bcb6a9a5.bindTooltip(
+                `<div>
+                     GASOLINERA SAN JAVIER S.A. DE C.V. | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1042b5bb1995da0fbae4da5c1c2edcce = L.circleMarker(
+                [29.0977526, -110.9314072],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_d8c3bd1bc63c19c22b40db175f351a68 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_2c4abe01a9f900e09e6b1dfd7d65541a = $(`<div id="html_2c4abe01a9f900e09e6b1dfd7d65541a" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVICIO EL FARO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Francisco Eusebio Kino No. 1098</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_d8c3bd1bc63c19c22b40db175f351a68.setContent(html_2c4abe01a9f900e09e6b1dfd7d65541a);
+            
+        
+
+        circle_marker_1042b5bb1995da0fbae4da5c1c2edcce.bindPopup(popup_d8c3bd1bc63c19c22b40db175f351a68)
+        ;
+
+        
+    
+    
+            circle_marker_1042b5bb1995da0fbae4da5c1c2edcce.bindTooltip(
+                `<div>
+                     SERVICIO EL FARO S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_51750b2dba1177e03f387e942c48a7d0 = L.circleMarker(
+                [29.0729673, -110.9559192],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_6dc31cbe73e1ec3d859fe31a571f3582 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_009bef601b1375ee602b35a02652d6ae = $(`<div id="html_009bef601b1375ee602b35a02652d6ae" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">CAMINO REAL GASOLINERA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera 4 Carriles Hillo-Nogales</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_6dc31cbe73e1ec3d859fe31a571f3582.setContent(html_009bef601b1375ee602b35a02652d6ae);
+            
+        
+
+        circle_marker_51750b2dba1177e03f387e942c48a7d0.bindPopup(popup_6dc31cbe73e1ec3d859fe31a571f3582)
+        ;
+
+        
+    
+    
+            circle_marker_51750b2dba1177e03f387e942c48a7d0.bindTooltip(
+                `<div>
+                     CAMINO REAL GASOLINERA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_33a876f142f6013116c52f51c8ca5f8c = L.circleMarker(
+                [29.0950981, -111.0175091],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_db3f704bf1ee8ffb2c10f12e69d24ce5 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_af3667a64bea6b42bac5d85b361778c5 = $(`<div id="html_af3667a64bea6b42bac5d85b361778c5" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">AGROCOMBUSTIBLES EL CHAMIZAL S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Hermosillo-Bahia de Kino 1471</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_db3f704bf1ee8ffb2c10f12e69d24ce5.setContent(html_af3667a64bea6b42bac5d85b361778c5);
+            
+        
+
+        circle_marker_33a876f142f6013116c52f51c8ca5f8c.bindPopup(popup_db3f704bf1ee8ffb2c10f12e69d24ce5)
+        ;
+
+        
+    
+    
+            circle_marker_33a876f142f6013116c52f51c8ca5f8c.bindTooltip(
+                `<div>
+                     AGROCOMBUSTIBLES EL CHAMIZAL S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_41750187ddf348d0aa64ac9da6a845d8 = L.circleMarker(
+                [29.0300378, -110.916211],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_2258ef0fc1b976e65efbc29a499e41e3 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_e80c7887edd7ce42308e0ec7e160b178 = $(`<div id="html_e80c7887edd7ce42308e0ec7e160b178" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO SANTA CLARA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a Sahuaripa Esquina Boulevard de Los Seris 353</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_2258ef0fc1b976e65efbc29a499e41e3.setContent(html_e80c7887edd7ce42308e0ec7e160b178);
+            
+        
+
+        circle_marker_41750187ddf348d0aa64ac9da6a845d8.bindPopup(popup_2258ef0fc1b976e65efbc29a499e41e3)
+        ;
+
+        
+    
+    
+            circle_marker_41750187ddf348d0aa64ac9da6a845d8.bindTooltip(
+                `<div>
+                     GASERVICIO SANTA CLARA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d3152ff83bfbf7f9f27efe6a53c70a37 = L.circleMarker(
+                [29.0383234, -111.0033336],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_810b28e56df3221506c985dffa7f7566 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_1414e2909ca0fb597af1b56a155ffd31 = $(`<div id="html_1414e2909ca0fb597af1b56a155ffd31" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO EL LLANITO QUIROGA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Calle Dr Antonio Quiroga No. 135</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_810b28e56df3221506c985dffa7f7566.setContent(html_1414e2909ca0fb597af1b56a155ffd31);
+            
+        
+
+        circle_marker_d3152ff83bfbf7f9f27efe6a53c70a37.bindPopup(popup_810b28e56df3221506c985dffa7f7566)
+        ;
+
+        
+    
+    
+            circle_marker_d3152ff83bfbf7f9f27efe6a53c70a37.bindTooltip(
+                `<div>
+                     GASERVICIO EL LLANITO QUIROGA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4ecc4eafeab8c1e4402217b9b96144bd = L.circleMarker(
+                [29.1447551, -110.9526195],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_17964e8587ceeac47eaadf8d67ff1d6e = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_f7916a1056b293d7a4c84ff9374c5819 = $(`<div id="html_f7916a1056b293d7a4c84ff9374c5819" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO MORELOS S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Morelos No. 853</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_17964e8587ceeac47eaadf8d67ff1d6e.setContent(html_f7916a1056b293d7a4c84ff9374c5819);
+            
+        
+
+        circle_marker_4ecc4eafeab8c1e4402217b9b96144bd.bindPopup(popup_17964e8587ceeac47eaadf8d67ff1d6e)
+        ;
+
+        
+    
+    
+            circle_marker_4ecc4eafeab8c1e4402217b9b96144bd.bindTooltip(
+                `<div>
+                     GASERVICIO MORELOS S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b732bf27a64425713fc9b0a821d1a76c = L.circleMarker(
+                [29.09127399999999, -110.9307235],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_9e5ff5514a8b3cc29069bfaf4bbf519e = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_efbd92156d9dcb815c4f19805dcaafbc = $(`<div id="html_efbd92156d9dcb815c4f19805dcaafbc" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO ORIENTE S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Avenida 18 de Marzo No. 78</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_9e5ff5514a8b3cc29069bfaf4bbf519e.setContent(html_efbd92156d9dcb815c4f19805dcaafbc);
+            
+        
+
+        circle_marker_b732bf27a64425713fc9b0a821d1a76c.bindPopup(popup_9e5ff5514a8b3cc29069bfaf4bbf519e)
+        ;
+
+        
+    
+    
+            circle_marker_b732bf27a64425713fc9b0a821d1a76c.bindTooltip(
+                `<div>
+                     GASERVICIO ORIENTE S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1924ef726716aee8c505848f29237be7 = L.circleMarker(
+                [29.0916169, -110.991547],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_8686c36fca0c8de314fc124ee32a0e48 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_c20ba33b650594fccc60bf2e840cb65e = $(`<div id="html_c20ba33b650594fccc60bf2e840cb65e" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO ENCINAS S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Solidaridad No. 94</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_8686c36fca0c8de314fc124ee32a0e48.setContent(html_c20ba33b650594fccc60bf2e840cb65e);
+            
+        
+
+        circle_marker_1924ef726716aee8c505848f29237be7.bindPopup(popup_8686c36fca0c8de314fc124ee32a0e48)
+        ;
+
+        
+    
+    
+            circle_marker_1924ef726716aee8c505848f29237be7.bindTooltip(
+                `<div>
+                     GASERVICIO ENCINAS S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1c3b27384e250f58a996eb68a63c738d = L.circleMarker(
+                [29.0729673, -110.9559192],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_04fdaf5f9e4ef341065ff96b58e16280 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_9d01a1d0f8856dbd3ffbba93c278d931 = $(`<div id="html_9d01a1d0f8856dbd3ffbba93c278d931" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO SANTA CLARA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Fed. No. 15 Tramo Hermosillo-Guaymas Km :248 No. 1194</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_04fdaf5f9e4ef341065ff96b58e16280.setContent(html_9d01a1d0f8856dbd3ffbba93c278d931);
+            
+        
+
+        circle_marker_1c3b27384e250f58a996eb68a63c738d.bindPopup(popup_04fdaf5f9e4ef341065ff96b58e16280)
+        ;
+
+        
+    
+    
+            circle_marker_1c3b27384e250f58a996eb68a63c738d.bindTooltip(
+                `<div>
+                     GASERVICIO SANTA CLARA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_93dc7badd3dc1072b1fd900087c1709b = L.circleMarker(
+                [29.1503283, -110.9969332],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_8e663deab4607d9ba5857cafcede584f = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_cfb8effa03ad16e2c6220575f5851c75 = $(`<div id="html_cfb8effa03ad16e2c6220575f5851c75" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard José Alberto Healy Noriega No. 1080</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.85</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_8e663deab4607d9ba5857cafcede584f.setContent(html_cfb8effa03ad16e2c6220575f5851c75);
+            
+        
+
+        circle_marker_93dc7badd3dc1072b1fd900087c1709b.bindPopup(popup_8e663deab4607d9ba5857cafcede584f)
+        ;
+
+        
+    
+    
+            circle_marker_93dc7badd3dc1072b1fd900087c1709b.bindTooltip(
+                `<div>
+                     GASERVICIO S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8948d89c4c3c2f9809d12a2aea838667 = L.circleMarker(
+                [29.0848923, -110.9849895],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_0fd7551ff53a0f04fb4e37491e6ccedd = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_bdab3707555eeb81613844d5cb8fcec2 = $(`<div id="html_bdab3707555eeb81613844d5cb8fcec2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Luis Donaldo Colosio No. 490 Esquina Con Solidaridad</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_0fd7551ff53a0f04fb4e37491e6ccedd.setContent(html_bdab3707555eeb81613844d5cb8fcec2);
+            
+        
+
+        circle_marker_8948d89c4c3c2f9809d12a2aea838667.bindPopup(popup_0fd7551ff53a0f04fb4e37491e6ccedd)
+        ;
+
+        
+    
+    
+            circle_marker_8948d89c4c3c2f9809d12a2aea838667.bindTooltip(
+                `<div>
+                     GASERVICIO S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_36af194eeff686a8dc764e765faa8831 = L.circleMarker(
+                [29.0374499, -110.9583478],
+                {"bubblingMouseEvents": true, "color": "#f0ad17ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f0ad17ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_42fd9cf8d55fb559fa97e1768d2f5fcc = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_2f9f15b0c1b9607e66dcd02ae8f4b815 = $(`<div id="html_2f9f15b0c1b9607e66dcd02ae8f4b815" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVICIO EL GALLO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Vildosola Y Periférico Sur S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $26.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.18             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_42fd9cf8d55fb559fa97e1768d2f5fcc.setContent(html_2f9f15b0c1b9607e66dcd02ae8f4b815);
+            
+        
+
+        circle_marker_36af194eeff686a8dc764e765faa8831.bindPopup(popup_42fd9cf8d55fb559fa97e1768d2f5fcc)
+        ;
+
+        
+    
+    
+            circle_marker_36af194eeff686a8dc764e765faa8831.bindTooltip(
+                `<div>
+                     SERVICIO EL GALLO S.A. DE C.V. | $29.18
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c8056e8ac9f7a1d0e4a238061f54d87c = L.circleMarker(
+                [29.0420985, -110.9945406],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_53ea1480f02e5d2db6a988032e2ebc30 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_862ce77279899ff1712e2cffa4e560de = $(`<div id="html_862ce77279899ff1712e2cffa4e560de" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES Y LUBRICANTES CF S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Avenida Lázaro Cárdenas No. 413</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.47</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.49</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_53ea1480f02e5d2db6a988032e2ebc30.setContent(html_862ce77279899ff1712e2cffa4e560de);
+            
+        
+
+        circle_marker_c8056e8ac9f7a1d0e4a238061f54d87c.bindPopup(popup_53ea1480f02e5d2db6a988032e2ebc30)
+        ;
+
+        
+    
+    
+            circle_marker_c8056e8ac9f7a1d0e4a238061f54d87c.bindTooltip(
+                `<div>
+                     COMBUSTIBLES Y LUBRICANTES CF S.A. DE C.V. | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5a362798ff566179727e6b8bea4e71ea = L.circleMarker(
+                [29.0183718, -110.9289068],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_18e7e08a8a8286314a8fb1781a0e1a91 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_24c669d73675e029ff5998ec3dfc012d = $(`<div id="html_24c669d73675e029ff5998ec3dfc012d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a La Colorada No. 98</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.89</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_18e7e08a8a8286314a8fb1781a0e1a91.setContent(html_24c669d73675e029ff5998ec3dfc012d);
+            
+        
+
+        circle_marker_5a362798ff566179727e6b8bea4e71ea.bindPopup(popup_18e7e08a8a8286314a8fb1781a0e1a91)
+        ;
+
+        
+    
+    
+            circle_marker_5a362798ff566179727e6b8bea4e71ea.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7acaac85c087dcc4cef3d6837dd25ce5 = L.circleMarker(
+                [29.0800989, -110.9534265],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_85f3133dfa93127f1be41f50fc3e5c19 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_2da71a85d15b5aac2b6086ff50a6bbd6 = $(`<div id="html_2da71a85d15b5aac2b6086ff50a6bbd6" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Calle Dr Noriega S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_85f3133dfa93127f1be41f50fc3e5c19.setContent(html_2da71a85d15b5aac2b6086ff50a6bbd6);
+            
+        
+
+        circle_marker_7acaac85c087dcc4cef3d6837dd25ce5.bindPopup(popup_85f3133dfa93127f1be41f50fc3e5c19)
+        ;
+
+        
+    
+    
+            circle_marker_7acaac85c087dcc4cef3d6837dd25ce5.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fe6a35e79f621d8c1619768ed0f9b5e4 = L.circleMarker(
+                [29.0488745, -110.9344625],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_16c3e2f986cd4d5af31fa1dc07192a99 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_40a080920a1f3dc5a75670398eb7e800 = $(`<div id="html_40a080920a1f3dc5a75670398eb7e800" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Paseo del Lago No. 4</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_16c3e2f986cd4d5af31fa1dc07192a99.setContent(html_40a080920a1f3dc5a75670398eb7e800);
+            
+        
+
+        circle_marker_fe6a35e79f621d8c1619768ed0f9b5e4.bindPopup(popup_16c3e2f986cd4d5af31fa1dc07192a99)
+        ;
+
+        
+    
+    
+            circle_marker_fe6a35e79f621d8c1619768ed0f9b5e4.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6ef1a65f3863f4a7bd83e11071256396 = L.circleMarker(
+                [29.0529665, -110.9307829],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_5e340ea25db2468ac06b41ae4c0607db = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_71096fbf94ccc891356fbe3c88cb7ec2 = $(`<div id="html_71096fbf94ccc891356fbe3c88cb7ec2" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard de Los Ganaderos No. 492</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_5e340ea25db2468ac06b41ae4c0607db.setContent(html_71096fbf94ccc891356fbe3c88cb7ec2);
+            
+        
+
+        circle_marker_6ef1a65f3863f4a7bd83e11071256396.bindPopup(popup_5e340ea25db2468ac06b41ae4c0607db)
+        ;
+
+        
+    
+    
+            circle_marker_6ef1a65f3863f4a7bd83e11071256396.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2a2eedc501780ad2d8083b337aaf1988 = L.circleMarker(
+                [29.1128478, -110.9930595],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_32e1babff1532d08a76e342e87494d2d = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_0b37379ea8f34d9e25c04ed5bd5bdc27 = $(`<div id="html_0b37379ea8f34d9e25c04ed5bd5bdc27" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Solidaridad No. 392</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.94</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_32e1babff1532d08a76e342e87494d2d.setContent(html_0b37379ea8f34d9e25c04ed5bd5bdc27);
+            
+        
+
+        circle_marker_2a2eedc501780ad2d8083b337aaf1988.bindPopup(popup_32e1babff1532d08a76e342e87494d2d)
+        ;
+
+        
+    
+    
+            circle_marker_2a2eedc501780ad2d8083b337aaf1988.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_dd23c1622093c57ae6d2e96c164ea46b = L.circleMarker(
+                [29.0869466, -110.9303523],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_59367e5e5ba6fb979adee12264e9c68a = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_77bcd65a27be6969852cac6b253b5494 = $(`<div id="html_77bcd65a27be6969852cac6b253b5494" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GUADALUPANA GASOLINERA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Internacional Km 247.3</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.69</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_59367e5e5ba6fb979adee12264e9c68a.setContent(html_77bcd65a27be6969852cac6b253b5494);
+            
+        
+
+        circle_marker_dd23c1622093c57ae6d2e96c164ea46b.bindPopup(popup_59367e5e5ba6fb979adee12264e9c68a)
+        ;
+
+        
+    
+    
+            circle_marker_dd23c1622093c57ae6d2e96c164ea46b.bindTooltip(
+                `<div>
+                     GUADALUPANA GASOLINERA S.A. DE C.V. | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0b9d1a865c70579b1e3dfef882f67433 = L.circleMarker(
+                [29.0900161, -111.0458873],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_3018264c1b5e317d0e7dd1c73665d457 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_dca119f647676f27c84cec1632a1f187 = $(`<div id="html_dca119f647676f27c84cec1632a1f187" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">MANUEL DE LA FUENTE S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Km 63 Carretera Hermosillo-Bahia de Kino Sur</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_3018264c1b5e317d0e7dd1c73665d457.setContent(html_dca119f647676f27c84cec1632a1f187);
+            
+        
+
+        circle_marker_0b9d1a865c70579b1e3dfef882f67433.bindPopup(popup_3018264c1b5e317d0e7dd1c73665d457)
+        ;
+
+        
+    
+    
+            circle_marker_0b9d1a865c70579b1e3dfef882f67433.bindTooltip(
+                `<div>
+                     MANUEL DE LA FUENTE S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_af255ad231b192f957b29c39f70d5bb4 = L.circleMarker(
+                [29.0944253, -111.0095909],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_e9f3ec548d7a9177a9122c63e595ec1f = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_0fa238b85eb0d65e46ae9b79205d7b5f = $(`<div id="html_0fa238b85eb0d65e46ae9b79205d7b5f" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVI GAS LA ESPIGA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Hermosillo-Bahia de Kino No. 290</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.49</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_e9f3ec548d7a9177a9122c63e595ec1f.setContent(html_0fa238b85eb0d65e46ae9b79205d7b5f);
+            
+        
+
+        circle_marker_af255ad231b192f957b29c39f70d5bb4.bindPopup(popup_e9f3ec548d7a9177a9122c63e595ec1f)
+        ;
+
+        
+    
+    
+            circle_marker_af255ad231b192f957b29c39f70d5bb4.bindTooltip(
+                `<div>
+                     SERVI GAS LA ESPIGA S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8bf74e9f5146d1c50308bf2f3d2afe69 = L.circleMarker(
+                [29.1266538, -110.9976995],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_2be3981a4477e24239c6205c3ab9da5f = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_905e24d48fffa4cb614c01cc05e0da31 = $(`<div id="html_905e24d48fffa4cb614c01cc05e0da31" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACIÓN DE SERVICIO GEMA LC S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Lázaro Cárdenas No. 884</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.29</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_2be3981a4477e24239c6205c3ab9da5f.setContent(html_905e24d48fffa4cb614c01cc05e0da31);
+            
+        
+
+        circle_marker_8bf74e9f5146d1c50308bf2f3d2afe69.bindPopup(popup_2be3981a4477e24239c6205c3ab9da5f)
+        ;
+
+        
+    
+    
+            circle_marker_8bf74e9f5146d1c50308bf2f3d2afe69.bindTooltip(
+                `<div>
+                     ESTACIÓN DE SERVICIO GEMA LC S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_198a3a8e3933891947eab35a4fcca145 = L.circleMarker(
+                [29.0849201, -110.990191],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_d22752cdc5f443a44df9a3dbe2d932cc = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_bb51778d424e36c459bb04d5860b761c = $(`<div id="html_bb51778d424e36c459bb04d5860b761c" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASOLINERA ZAMORA S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera a Pesqueira Km 8.400 Zamora</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.20</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_d22752cdc5f443a44df9a3dbe2d932cc.setContent(html_bb51778d424e36c459bb04d5860b761c);
+            
+        
+
+        circle_marker_198a3a8e3933891947eab35a4fcca145.bindPopup(popup_d22752cdc5f443a44df9a3dbe2d932cc)
+        ;
+
+        
+    
+    
+            circle_marker_198a3a8e3933891947eab35a4fcca145.bindTooltip(
+                `<div>
+                     GASOLINERA ZAMORA S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2fef746e669adea0e880ce09e096a14b = L.circleMarker(
+                [29.0870484, -111.0220097],
+                {"bubblingMouseEvents": true, "color": "#55cb5dff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#55cb5dff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_741431106dd584e7660113e0ac9bcc8a = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_4ae9965818c9853efff326e4f1e65985 = $(`<div id="html_4ae9965818c9853efff326e4f1e65985" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Antonio Quiroga No. 91</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.77</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.10</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.19             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_741431106dd584e7660113e0ac9bcc8a.setContent(html_4ae9965818c9853efff326e4f1e65985);
+            
+        
+
+        circle_marker_2fef746e669adea0e880ce09e096a14b.bindPopup(popup_741431106dd584e7660113e0ac9bcc8a)
+        ;
+
+        
+    
+    
+            circle_marker_2fef746e669adea0e880ce09e096a14b.bindTooltip(
+                `<div>
+                     COMBUSTIBLES REYMEX, S. DE R.L. DE C.V. | $28.19
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0c139d2e0e8b2e6e0e8df4845cd53ca2 = L.circleMarker(
+                [29.089415, -111.0482052],
+                {"bubblingMouseEvents": true, "color": "#55cb5dff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#55cb5dff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_260242e0b397bae113966c71cc2362c8 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_436def7b31ecbc4773b4273a3ae15a07 = $(`<div id="html_436def7b31ecbc4773b4273a3ae15a07" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard García Morales No. 961</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.89</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.79</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.19             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_260242e0b397bae113966c71cc2362c8.setContent(html_436def7b31ecbc4773b4273a3ae15a07);
+            
+        
+
+        circle_marker_0c139d2e0e8b2e6e0e8df4845cd53ca2.bindPopup(popup_260242e0b397bae113966c71cc2362c8)
+        ;
+
+        
+    
+    
+            circle_marker_0c139d2e0e8b2e6e0e8df4845cd53ca2.bindTooltip(
+                `<div>
+                     GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V. | $28.19
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8d53d73f2478dc6a636737a07edc364b = L.circleMarker(
+                [29.0319755, -110.9594809],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_99a5fda975b3b70e50916245d5e5158e = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_0fbbb89403ead697c52dcbac1a9caa56 = $(`<div id="html_0fbbb89403ead697c52dcbac1a9caa56" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVICIO VALLE DEL DESIERTO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Carretera Hermosillo-Guaymas Esquina Boulevard Libertad S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_99a5fda975b3b70e50916245d5e5158e.setContent(html_0fbbb89403ead697c52dcbac1a9caa56);
+            
+        
+
+        circle_marker_8d53d73f2478dc6a636737a07edc364b.bindPopup(popup_99a5fda975b3b70e50916245d5e5158e)
+        ;
+
+        
+    
+    
+            circle_marker_8d53d73f2478dc6a636737a07edc364b.bindTooltip(
+                `<div>
+                     SERVICIO VALLE DEL DESIERTO S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3cee414f52092105e88e7cdd29cf5271 = L.circleMarker(
+                [29.094106, -111.0016115],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_3f85c16d9b265a565fe75041719bc406 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_d6725f58ddc08bf9ffd5bfe20821b84e = $(`<div id="html_d6725f58ddc08bf9ffd5bfe20821b84e" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACIÓN DE SERVICIO 5162 S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard García Morales No. 202</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_3f85c16d9b265a565fe75041719bc406.setContent(html_d6725f58ddc08bf9ffd5bfe20821b84e);
+            
+        
+
+        circle_marker_3cee414f52092105e88e7cdd29cf5271.bindPopup(popup_3f85c16d9b265a565fe75041719bc406)
+        ;
+
+        
+    
+    
+            circle_marker_3cee414f52092105e88e7cdd29cf5271.bindTooltip(
+                `<div>
+                     ESTACIÓN DE SERVICIO 5162 S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_85b443b412c68759ad10902d18a693b1 = L.circleMarker(
+                [29.1435735, -110.996023],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_58d1d3b46195b0af875bd47853ab6f00 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_a0c5d17d6aa92e9c93867586069b631d = $(`<div id="html_a0c5d17d6aa92e9c93867586069b631d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">PLAZA PROGRESO S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Solidaridad No. 735</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_58d1d3b46195b0af875bd47853ab6f00.setContent(html_a0c5d17d6aa92e9c93867586069b631d);
+            
+        
+
+        circle_marker_85b443b412c68759ad10902d18a693b1.bindPopup(popup_58d1d3b46195b0af875bd47853ab6f00)
+        ;
+
+        
+    
+    
+            circle_marker_85b443b412c68759ad10902d18a693b1.bindTooltip(
+                `<div>
+                     PLAZA PROGRESO S.A. DE C.V. | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_436940e0872532dc60536e4595bc8df6 = L.circleMarker(
+                [29.0932181, -110.9808654],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_0783a52549235155354f8a1102f53293 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_47ef49f5d08aa7f0392e6feb0462446c = $(`<div id="html_47ef49f5d08aa7f0392e6feb0462446c" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">ESTACIÓN DE SERVICIO 1642 S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Luis Encinas Y Gustavo Muñoz</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.45</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.89</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_0783a52549235155354f8a1102f53293.setContent(html_47ef49f5d08aa7f0392e6feb0462446c);
+            
+        
+
+        circle_marker_436940e0872532dc60536e4595bc8df6.bindPopup(popup_0783a52549235155354f8a1102f53293)
+        ;
+
+        
+    
+    
+            circle_marker_436940e0872532dc60536e4595bc8df6.bindTooltip(
+                `<div>
+                     ESTACIÓN DE SERVICIO 1642 S.A. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d32115907507e03c7f4b4a90a489e4d9 = L.circleMarker(
+                [29.1123153, -110.971555],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_6f3a4e727966083663541069f15d3261 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_c56c2c5b7964fbc05a0c0c611aee902a = $(`<div id="html_c56c2c5b7964fbc05a0c0c611aee902a" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">OPERADORA RIO COLORADO S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Periférico Norte Esquina Esteban Vaca Calderon</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.97</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $28.29</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_6f3a4e727966083663541069f15d3261.setContent(html_c56c2c5b7964fbc05a0c0c611aee902a);
+            
+        
+
+        circle_marker_d32115907507e03c7f4b4a90a489e4d9.bindPopup(popup_6f3a4e727966083663541069f15d3261)
+        ;
+
+        
+    
+    
+            circle_marker_d32115907507e03c7f4b4a90a489e4d9.bindTooltip(
+                `<div>
+                     OPERADORA RIO COLORADO S. DE R.L. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4af2919c4a89f0216949484183f2ff9b = L.circleMarker(
+                [29.0722657, -110.9638389],
+                {"bubblingMouseEvents": true, "color": "#f1c40fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f1c40fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_f7bebc67aa2f080090d5164e5919f92f = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_113f7fa29dedcb5b6ba4197dca0a939d = $(`<div id="html_113f7fa29dedcb5b6ba4197dca0a939d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">OPERADORA RIO COLORADO, S. DE R.L. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Reforma Y Manuel Z Cubillas</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.95</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.95</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_f7bebc67aa2f080090d5164e5919f92f.setContent(html_113f7fa29dedcb5b6ba4197dca0a939d);
+            
+        
+
+        circle_marker_4af2919c4a89f0216949484183f2ff9b.bindPopup(popup_f7bebc67aa2f080090d5164e5919f92f)
+        ;
+
+        
+    
+    
+            circle_marker_4af2919c4a89f0216949484183f2ff9b.bindTooltip(
+                `<div>
+                     OPERADORA RIO COLORADO, S. DE R.L. DE C.V. | $28.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_36bd608751cc63c8ed16f8945ae30a4d = L.circleMarker(
+                [29.0811076, -110.9252641],
+                {"bubblingMouseEvents": true, "color": "#92c83fff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#92c83fff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_54b74e1505792e8282ac830400dfeb9e = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_101c77ccc309218484f6cec5d9b354fc = $(`<div id="html_101c77ccc309218484f6cec5d9b354fc" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASOLINERA RENDIMAS DEL NOROESTE S.A. DE C.V.</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Periférico Oriente S/N Esquina Con Calle Canal Principal</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.90</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.50             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_54b74e1505792e8282ac830400dfeb9e.setContent(html_101c77ccc309218484f6cec5d9b354fc);
+            
+        
+
+        circle_marker_36bd608751cc63c8ed16f8945ae30a4d.bindPopup(popup_54b74e1505792e8282ac830400dfeb9e)
+        ;
+
+        
+    
+    
+            circle_marker_36bd608751cc63c8ed16f8945ae30a4d.bindTooltip(
+                `<div>
+                     GASOLINERA RENDIMAS DEL NOROESTE S.A. DE C.V. | $28.50
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_923c2c7fe42cfd0805d0bc8ae735de78 = L.circleMarker(
+                [29.1421479, -111.0240728],
+                {"bubblingMouseEvents": true, "color": "#90c840ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90c840ff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_a342371ee93e0aa90f56b32019ee38b8 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_70f528c804b3721a39eff0d3bd1fb51c = $(`<div id="html_70f528c804b3721a39eff0d3bd1fb51c" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. </h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Boulevard Antonio Quiroga No. 507</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $27.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $28.49             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟢 Barato vs promedio</p>         </div>         </div>`)[0];
+                popup_a342371ee93e0aa90f56b32019ee38b8.setContent(html_70f528c804b3721a39eff0d3bd1fb51c);
+            
+        
+
+        circle_marker_923c2c7fe42cfd0805d0bc8ae735de78.bindPopup(popup_a342371ee93e0aa90f56b32019ee38b8)
+        ;
+
+        
+    
+    
+            circle_marker_923c2c7fe42cfd0805d0bc8ae735de78.bindTooltip(
+                `<div>
+                     SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V.  | $28.49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_af7d84bf7fc04c76780e5c8316fb7847 = L.circleMarker(
+                [29.0688764, -110.9674999],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_107d0d626eec79613feffa0574b2be2f = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_1a522e2653188806d22c6650cadddcc3 = $(`<div id="html_1a522e2653188806d22c6650cadddcc3" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO ENCINAS SA DE CV</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Avenida Paseo Rio Sonora Norte S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $22.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_107d0d626eec79613feffa0574b2be2f.setContent(html_1a522e2653188806d22c6650cadddcc3);
+            
+        
+
+        circle_marker_af7d84bf7fc04c76780e5c8316fb7847.bindPopup(popup_107d0d626eec79613feffa0574b2be2f)
+        ;
+
+        
+    
+    
+            circle_marker_af7d84bf7fc04c76780e5c8316fb7847.bindTooltip(
+                `<div>
+                     GASERVICIO ENCINAS SA DE CV | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_fc3a875fa0e06cb06853d8a2a2d1a4f4 = L.circleMarker(
+                [29.1485315, -110.9808949],
+                {"bubblingMouseEvents": true, "color": "#e74c3cff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3cff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_dad0d34a22a6897036bdb45fe8cae4d2 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_c2f347ce8d801a9066b11cbdac2a6b63 = $(`<div id="html_c2f347ce8d801a9066b11cbdac2a6b63" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">GASERVICIO EL LLANITO QUIROGA SA DE CV</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Periférico Poniente Esquina Avenida Escuinapa Y Rosario</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.99</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $29.99</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.99             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🔴 Caro vs promedio</p>         </div>         </div>`)[0];
+                popup_dad0d34a22a6897036bdb45fe8cae4d2.setContent(html_c2f347ce8d801a9066b11cbdac2a6b63);
+            
+        
+
+        circle_marker_fc3a875fa0e06cb06853d8a2a2d1a4f4.bindPopup(popup_dad0d34a22a6897036bdb45fe8cae4d2)
+        ;
+
+        
+    
+    
+            circle_marker_fc3a875fa0e06cb06853d8a2a2d1a4f4.bindTooltip(
+                `<div>
+                     GASERVICIO EL LLANITO QUIROGA SA DE CV | $29.99
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c9d6ddd82a95be8ff45f518e1877e6ca = L.circleMarker(
+                [29.1204804, -110.8969264],
+                {"bubblingMouseEvents": true, "color": "#ee9f1dff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#ee9f1dff", "fillOpacity": 0.85, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_3852ff9e416e01ca0db4d3385b8b04e5);
+        
+    
+        var popup_af1dea18e99de383fd8cb05a8bf37d40 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_5239e06ff4b8bff2a248041453f7743d = $(`<div id="html_5239e06ff4b8bff2a248041453f7743d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 200px;">             <h4 style="margin:0; color:#2c3e50;">SERVIGAS BROCA SA DE CV</h4>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">📍 Calle 4 S/N</p>             <p style="margin:2px 0;">⛽ <b>Magna:</b>   $23.98</p>             <p style="margin:2px 0;">⭐ <b>Premium:</b> $nan</p>             <p style="margin:2px 0;">🚛 <b>Diesel:</b>                   $29.30             </p>             <hr style="margin:4px 0;">             <p style="margin:2px 0;">🟡 Promedio vs promedio</p>         </div>         </div>`)[0];
+                popup_af1dea18e99de383fd8cb05a8bf37d40.setContent(html_5239e06ff4b8bff2a248041453f7743d);
+            
+        
+
+        circle_marker_c9d6ddd82a95be8ff45f518e1877e6ca.bindPopup(popup_af1dea18e99de383fd8cb05a8bf37d40)
+        ;
+
+        
+    
+    
+            circle_marker_c9d6ddd82a95be8ff45f518e1877e6ca.bindTooltip(
+                `<div>
+                     SERVIGAS BROCA SA DE CV | $29.30
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>
