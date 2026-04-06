@@ -1,0 +1,7590 @@
+{
+  "aguascalientes": {
+    "id": "01",
+    "municipios": {
+      "aguascalientes": {
+        "id": "001"
+      },
+      "asientos": {
+        "id": "002"
+      },
+      "calvillo": {
+        "id": "003"
+      },
+      "cosio": {
+        "id": "004"
+      },
+      "jesus maria": {
+        "id": "005"
+      },
+      "pabellon de arteaga": {
+        "id": "006"
+      },
+      "rincon de romos": {
+        "id": "007"
+      },
+      "san jose de gracia": {
+        "id": "008"
+      },
+      "tepezala": {
+        "id": "009"
+      },
+      "el llano": {
+        "id": "010"
+      },
+      "san francisco de los romo": {
+        "id": "011"
+      }
+    }
+  },
+  "baja california": {
+    "id": "02",
+    "municipios": {
+      "ensenada": {
+        "id": "001"
+      },
+      "mexicali": {
+        "id": "002"
+      },
+      "tecate": {
+        "id": "003"
+      },
+      "tijuana": {
+        "id": "004"
+      },
+      "playas de rosarito": {
+        "id": "005"
+      },
+      "san quintin": {
+        "id": "006"
+      },
+      "san felipe": {
+        "id": "007"
+      }
+    }
+  },
+  "baja california sur": {
+    "id": "03",
+    "municipios": {
+      "comondu": {
+        "id": "001"
+      },
+      "mulege": {
+        "id": "002"
+      },
+      "la paz": {
+        "id": "003"
+      },
+      "los cabos": {
+        "id": "008"
+      },
+      "loreto": {
+        "id": "009"
+      }
+    }
+  },
+  "campeche": {
+    "id": "04",
+    "municipios": {
+      "calkini": {
+        "id": "001"
+      },
+      "campeche": {
+        "id": "002"
+      },
+      "carmen": {
+        "id": "003"
+      },
+      "champoton": {
+        "id": "004"
+      },
+      "hecelchakan": {
+        "id": "005"
+      },
+      "hopelchen": {
+        "id": "006"
+      },
+      "palizada": {
+        "id": "007"
+      },
+      "tenabo": {
+        "id": "008"
+      },
+      "escarcega": {
+        "id": "009"
+      },
+      "calakmul": {
+        "id": "010"
+      },
+      "candelaria": {
+        "id": "011"
+      },
+      "seybaplaya": {
+        "id": "012"
+      },
+      "dzitbalche": {
+        "id": "013"
+      }
+    }
+  },
+  "coahuila de zaragoza": {
+    "id": "05",
+    "municipios": {
+      "abasolo": {
+        "id": "001"
+      },
+      "acuna": {
+        "id": "002"
+      },
+      "allende": {
+        "id": "003"
+      },
+      "arteaga": {
+        "id": "004"
+      },
+      "candela": {
+        "id": "005"
+      },
+      "castanos": {
+        "id": "006"
+      },
+      "cuatro cienegas": {
+        "id": "007"
+      },
+      "escobedo": {
+        "id": "008"
+      },
+      "francisco i. madero": {
+        "id": "009"
+      },
+      "frontera": {
+        "id": "010"
+      },
+      "general cepeda": {
+        "id": "011"
+      },
+      "guerrero": {
+        "id": "012"
+      },
+      "hidalgo": {
+        "id": "013"
+      },
+      "jimenez": {
+        "id": "014"
+      },
+      "juarez": {
+        "id": "015"
+      },
+      "lamadrid": {
+        "id": "016"
+      },
+      "matamoros": {
+        "id": "017"
+      },
+      "monclova": {
+        "id": "018"
+      },
+      "morelos": {
+        "id": "019"
+      },
+      "muzquiz": {
+        "id": "020"
+      },
+      "nadadores": {
+        "id": "021"
+      },
+      "nava": {
+        "id": "022"
+      },
+      "ocampo": {
+        "id": "023"
+      },
+      "parras": {
+        "id": "024"
+      },
+      "piedras negras": {
+        "id": "025"
+      },
+      "progreso": {
+        "id": "026"
+      },
+      "ramos arizpe": {
+        "id": "027"
+      },
+      "sabinas": {
+        "id": "028"
+      },
+      "sacramento": {
+        "id": "029"
+      },
+      "saltillo": {
+        "id": "030"
+      },
+      "san buenaventura": {
+        "id": "031"
+      },
+      "san juan de sabinas": {
+        "id": "032"
+      },
+      "san pedro": {
+        "id": "033"
+      },
+      "sierra mojada": {
+        "id": "034"
+      },
+      "torreon": {
+        "id": "035"
+      },
+      "viesca": {
+        "id": "036"
+      },
+      "villa union": {
+        "id": "037"
+      },
+      "zaragoza": {
+        "id": "038"
+      }
+    }
+  },
+  "colima": {
+    "id": "06",
+    "municipios": {
+      "armeria": {
+        "id": "001"
+      },
+      "colima": {
+        "id": "002"
+      },
+      "comala": {
+        "id": "003"
+      },
+      "coquimatlan": {
+        "id": "004"
+      },
+      "cuauhtemoc": {
+        "id": "005"
+      },
+      "ixtlahuacan": {
+        "id": "006"
+      },
+      "manzanillo": {
+        "id": "007"
+      },
+      "minatitlan": {
+        "id": "008"
+      },
+      "tecoman": {
+        "id": "009"
+      },
+      "villa de alvarez": {
+        "id": "010"
+      }
+    }
+  },
+  "chiapas": {
+    "id": "07",
+    "municipios": {
+      "acacoyagua": {
+        "id": "001"
+      },
+      "acala": {
+        "id": "002"
+      },
+      "acapetahua": {
+        "id": "003"
+      },
+      "altamirano": {
+        "id": "004"
+      },
+      "amatan": {
+        "id": "005"
+      },
+      "amatenango de la frontera": {
+        "id": "006"
+      },
+      "amatenango del valle": {
+        "id": "007"
+      },
+      "angel albino corzo": {
+        "id": "008"
+      },
+      "arriaga": {
+        "id": "009"
+      },
+      "bejucal de ocampo": {
+        "id": "010"
+      },
+      "bella vista": {
+        "id": "011"
+      },
+      "berriozabal": {
+        "id": "012"
+      },
+      "bochil": {
+        "id": "013"
+      },
+      "el bosque": {
+        "id": "014"
+      },
+      "cacahoatan": {
+        "id": "015"
+      },
+      "catazaja": {
+        "id": "016"
+      },
+      "cintalapa de figueroa": {
+        "id": "017"
+      },
+      "coapilla": {
+        "id": "018"
+      },
+      "comitan de dominguez": {
+        "id": "019"
+      },
+      "la concordia": {
+        "id": "020"
+      },
+      "copainala": {
+        "id": "021"
+      },
+      "chalchihuitan": {
+        "id": "022"
+      },
+      "chamula": {
+        "id": "023"
+      },
+      "chanal": {
+        "id": "024"
+      },
+      "chapultenango": {
+        "id": "025"
+      },
+      "chenalho": {
+        "id": "026"
+      },
+      "chiapa de corzo": {
+        "id": "027"
+      },
+      "chiapilla": {
+        "id": "028"
+      },
+      "chicoasen": {
+        "id": "029"
+      },
+      "chicomuselo": {
+        "id": "030"
+      },
+      "chilon": {
+        "id": "031"
+      },
+      "escuintla": {
+        "id": "032"
+      },
+      "francisco leon": {
+        "id": "033"
+      },
+      "frontera comalapa": {
+        "id": "034"
+      },
+      "frontera hidalgo": {
+        "id": "035"
+      },
+      "la grandeza": {
+        "id": "036"
+      },
+      "huehuetan": {
+        "id": "037"
+      },
+      "huixtan": {
+        "id": "038"
+      },
+      "huitiupan": {
+        "id": "039"
+      },
+      "huixtla": {
+        "id": "040"
+      },
+      "la independencia": {
+        "id": "041"
+      },
+      "ixhuatan": {
+        "id": "042"
+      },
+      "ixtacomitan": {
+        "id": "043"
+      },
+      "ixtapa": {
+        "id": "044"
+      },
+      "ixtapangajoya": {
+        "id": "045"
+      },
+      "jiquipilas": {
+        "id": "046"
+      },
+      "jitotol": {
+        "id": "047"
+      },
+      "juarez": {
+        "id": "048"
+      },
+      "larrainzar": {
+        "id": "049"
+      },
+      "la libertad": {
+        "id": "050"
+      },
+      "mapastepec": {
+        "id": "051"
+      },
+      "las margaritas": {
+        "id": "052"
+      },
+      "mazapa de madero": {
+        "id": "053"
+      },
+      "mazatan": {
+        "id": "054"
+      },
+      "metapa": {
+        "id": "055"
+      },
+      "mitontic": {
+        "id": "056"
+      },
+      "motozintla": {
+        "id": "057"
+      },
+      "nicolas ruiz": {
+        "id": "058"
+      },
+      "ocosingo": {
+        "id": "059"
+      },
+      "ocotepec": {
+        "id": "060"
+      },
+      "ocozocoautla de espinosa": {
+        "id": "061"
+      },
+      "ostuacan": {
+        "id": "062"
+      },
+      "osumacinta": {
+        "id": "063"
+      },
+      "oxchuc": {
+        "id": "064"
+      },
+      "palenque": {
+        "id": "065"
+      },
+      "pantelho": {
+        "id": "066"
+      },
+      "pantepec": {
+        "id": "067"
+      },
+      "pichucalco": {
+        "id": "068"
+      },
+      "pijijiapan": {
+        "id": "069"
+      },
+      "el porvenir": {
+        "id": "070"
+      },
+      "villa comaltitlan": {
+        "id": "071"
+      },
+      "pueblo nuevo solistahuacan": {
+        "id": "072"
+      },
+      "rayon": {
+        "id": "073"
+      },
+      "reforma": {
+        "id": "074"
+      },
+      "las rosas": {
+        "id": "075"
+      },
+      "sabanilla": {
+        "id": "076"
+      },
+      "salto de agua": {
+        "id": "077"
+      },
+      "san cristobal de las casas": {
+        "id": "078"
+      },
+      "san fernando": {
+        "id": "079"
+      },
+      "siltepec": {
+        "id": "080"
+      },
+      "simojovel": {
+        "id": "081"
+      },
+      "sitala": {
+        "id": "082"
+      },
+      "socoltenango": {
+        "id": "083"
+      },
+      "solosuchiapa": {
+        "id": "084"
+      },
+      "soyalo": {
+        "id": "085"
+      },
+      "suchiapa": {
+        "id": "086"
+      },
+      "suchiate": {
+        "id": "087"
+      },
+      "sunuapa": {
+        "id": "088"
+      },
+      "tapachula": {
+        "id": "089"
+      },
+      "tapalapa": {
+        "id": "090"
+      },
+      "tapilula": {
+        "id": "091"
+      },
+      "tecpatan": {
+        "id": "092"
+      },
+      "tenejapa": {
+        "id": "093"
+      },
+      "teopisca": {
+        "id": "094"
+      },
+      "tila": {
+        "id": "096"
+      },
+      "tonala": {
+        "id": "097"
+      },
+      "totolapa": {
+        "id": "098"
+      },
+      "la trinitaria": {
+        "id": "099"
+      },
+      "tumbala": {
+        "id": "100"
+      },
+      "tuxtla gutierrez": {
+        "id": "101"
+      },
+      "tuxtla chico": {
+        "id": "102"
+      },
+      "tuzantan": {
+        "id": "103"
+      },
+      "tzimol": {
+        "id": "104"
+      },
+      "union juarez": {
+        "id": "105"
+      },
+      "venustiano carranza": {
+        "id": "106"
+      },
+      "villa corzo": {
+        "id": "107"
+      },
+      "villaflores": {
+        "id": "108"
+      },
+      "yajalon": {
+        "id": "109"
+      },
+      "san lucas": {
+        "id": "110"
+      },
+      "zinacantan": {
+        "id": "111"
+      },
+      "san juan cancuc": {
+        "id": "112"
+      },
+      "aldama": {
+        "id": "113"
+      },
+      "benemerito de las americas": {
+        "id": "114"
+      },
+      "maravilla tenejapa": {
+        "id": "115"
+      },
+      "marques de comillas": {
+        "id": "116"
+      },
+      "montecristo de guerrero": {
+        "id": "117"
+      },
+      "san andres duraznal": {
+        "id": "118"
+      },
+      "santiago el pinar": {
+        "id": "119"
+      },
+      "capitan luis angel vidal": {
+        "id": "120"
+      },
+      "rincon chamula san pedro": {
+        "id": "121"
+      },
+      "el parral": {
+        "id": "122"
+      },
+      "emiliano zapata": {
+        "id": "123"
+      },
+      "mezcalapa": {
+        "id": "124"
+      },
+      "honduras de la sierra": {
+        "id": "125"
+      }
+    }
+  },
+  "chihuahua": {
+    "id": "08",
+    "municipios": {
+      "ahumada": {
+        "id": "001"
+      },
+      "aldama": {
+        "id": "002"
+      },
+      "allende": {
+        "id": "003"
+      },
+      "aquiles serdan": {
+        "id": "004"
+      },
+      "ascension": {
+        "id": "005"
+      },
+      "bachiniva": {
+        "id": "006"
+      },
+      "balleza": {
+        "id": "007"
+      },
+      "batopilas de manuel gomez morin": {
+        "id": "008"
+      },
+      "bocoyna": {
+        "id": "009"
+      },
+      "buenaventura": {
+        "id": "010"
+      },
+      "camargo": {
+        "id": "011"
+      },
+      "carichi": {
+        "id": "012"
+      },
+      "casas grandes": {
+        "id": "013"
+      },
+      "coronado": {
+        "id": "014"
+      },
+      "coyame del sotol": {
+        "id": "015"
+      },
+      "la cruz": {
+        "id": "016"
+      },
+      "cuauhtemoc": {
+        "id": "017"
+      },
+      "cusihuiriachi": {
+        "id": "018"
+      },
+      "chihuahua": {
+        "id": "019"
+      },
+      "chinipas": {
+        "id": "020"
+      },
+      "delicias": {
+        "id": "021"
+      },
+      "dr. belisario dominguez": {
+        "id": "022"
+      },
+      "galeana": {
+        "id": "023"
+      },
+      "santa isabel": {
+        "id": "024"
+      },
+      "gomez farias": {
+        "id": "025"
+      },
+      "gran morelos": {
+        "id": "026"
+      },
+      "guachochi": {
+        "id": "027"
+      },
+      "guadalupe": {
+        "id": "028"
+      },
+      "guadalupe y calvo": {
+        "id": "029"
+      },
+      "guazapares": {
+        "id": "030"
+      },
+      "guerrero": {
+        "id": "031"
+      },
+      "hidalgo del parral": {
+        "id": "032"
+      },
+      "huejotitan": {
+        "id": "033"
+      },
+      "ignacio zaragoza": {
+        "id": "034"
+      },
+      "janos": {
+        "id": "035"
+      },
+      "jimenez": {
+        "id": "036"
+      },
+      "juarez": {
+        "id": "037"
+      },
+      "julimes": {
+        "id": "038"
+      },
+      "lopez": {
+        "id": "039"
+      },
+      "madera": {
+        "id": "040"
+      },
+      "maguarichi": {
+        "id": "041"
+      },
+      "manuel benavides": {
+        "id": "042"
+      },
+      "matachi": {
+        "id": "043"
+      },
+      "matamoros": {
+        "id": "044"
+      },
+      "meoqui": {
+        "id": "045"
+      },
+      "morelos": {
+        "id": "046"
+      },
+      "moris": {
+        "id": "047"
+      },
+      "namiquipa": {
+        "id": "048"
+      },
+      "nonoava": {
+        "id": "049"
+      },
+      "nuevo casas grandes": {
+        "id": "050"
+      },
+      "ocampo": {
+        "id": "051"
+      },
+      "ojinaga": {
+        "id": "052"
+      },
+      "praxedis g. guerrero": {
+        "id": "053"
+      },
+      "riva palacio": {
+        "id": "054"
+      },
+      "rosales": {
+        "id": "055"
+      },
+      "rosario": {
+        "id": "056"
+      },
+      "san francisco de borja": {
+        "id": "057"
+      },
+      "san francisco de conchos": {
+        "id": "058"
+      },
+      "san francisco del oro": {
+        "id": "059"
+      },
+      "santa barbara": {
+        "id": "060"
+      },
+      "satevo": {
+        "id": "061"
+      },
+      "saucillo": {
+        "id": "062"
+      },
+      "temosachic": {
+        "id": "063"
+      },
+      "el tule": {
+        "id": "064"
+      },
+      "urique": {
+        "id": "065"
+      },
+      "uruachi": {
+        "id": "066"
+      },
+      "valle de zaragoza": {
+        "id": "067"
+      }
+    }
+  },
+  "ciudad de mexico": {
+    "id": "09",
+    "municipios": {
+      "azcapotzalco": {
+        "id": "002"
+      },
+      "coyoacan": {
+        "id": "003"
+      },
+      "cuajimalpa de morelos": {
+        "id": "004"
+      },
+      "gustavo a. madero": {
+        "id": "005"
+      },
+      "iztacalco": {
+        "id": "006"
+      },
+      "iztapalapa": {
+        "id": "007"
+      },
+      "la magdalena contreras": {
+        "id": "008"
+      },
+      "milpa alta": {
+        "id": "009"
+      },
+      "alvaro obregon": {
+        "id": "010"
+      },
+      "tlahuac": {
+        "id": "011"
+      },
+      "tlalpan": {
+        "id": "012"
+      },
+      "xochimilco": {
+        "id": "013"
+      },
+      "benito juarez": {
+        "id": "014"
+      },
+      "cuauhtemoc": {
+        "id": "015"
+      },
+      "miguel hidalgo": {
+        "id": "016"
+      },
+      "venustiano carranza": {
+        "id": "017"
+      }
+    }
+  },
+  "durango": {
+    "id": "10",
+    "municipios": {
+      "canatlan": {
+        "id": "001"
+      },
+      "canelas": {
+        "id": "002"
+      },
+      "coneto de comonfort": {
+        "id": "003"
+      },
+      "cuencame": {
+        "id": "004"
+      },
+      "durango": {
+        "id": "005"
+      },
+      "general simon bolivar": {
+        "id": "006"
+      },
+      "gomez palacio": {
+        "id": "007"
+      },
+      "guadalupe victoria": {
+        "id": "008"
+      },
+      "guanacevi": {
+        "id": "009"
+      },
+      "hidalgo": {
+        "id": "010"
+      },
+      "inde": {
+        "id": "011"
+      },
+      "lerdo": {
+        "id": "012"
+      },
+      "mapimi": {
+        "id": "013"
+      },
+      "mezquital": {
+        "id": "014"
+      },
+      "nazas": {
+        "id": "015"
+      },
+      "nombre de dios": {
+        "id": "016"
+      },
+      "ocampo": {
+        "id": "017"
+      },
+      "el oro": {
+        "id": "018"
+      },
+      "otaez": {
+        "id": "019"
+      },
+      "panuco de coronado": {
+        "id": "020"
+      },
+      "penon blanco": {
+        "id": "021"
+      },
+      "poanas": {
+        "id": "022"
+      },
+      "pueblo nuevo": {
+        "id": "023"
+      },
+      "rodeo": {
+        "id": "024"
+      },
+      "san bernardo": {
+        "id": "025"
+      },
+      "san dimas": {
+        "id": "026"
+      },
+      "san juan de guadalupe": {
+        "id": "027"
+      },
+      "san juan del rio": {
+        "id": "028"
+      },
+      "san luis del cordero": {
+        "id": "029"
+      },
+      "san pedro del gallo": {
+        "id": "030"
+      },
+      "santa clara": {
+        "id": "031"
+      },
+      "santiago papasquiaro": {
+        "id": "032"
+      },
+      "suchil": {
+        "id": "033"
+      },
+      "tamazula": {
+        "id": "034"
+      },
+      "tepehuanes": {
+        "id": "035"
+      },
+      "tlahualilo": {
+        "id": "036"
+      },
+      "topia": {
+        "id": "037"
+      },
+      "vicente guerrero": {
+        "id": "038"
+      },
+      "nuevo ideal": {
+        "id": "039"
+      }
+    }
+  },
+  "guanajuato": {
+    "id": "11",
+    "municipios": {
+      "abasolo": {
+        "id": "001"
+      },
+      "acambaro": {
+        "id": "002"
+      },
+      "san miguel de allende": {
+        "id": "003"
+      },
+      "apaseo el alto": {
+        "id": "004"
+      },
+      "apaseo el grande": {
+        "id": "005"
+      },
+      "atarjea": {
+        "id": "006"
+      },
+      "celaya": {
+        "id": "007"
+      },
+      "manuel doblado": {
+        "id": "008"
+      },
+      "comonfort": {
+        "id": "009"
+      },
+      "coroneo": {
+        "id": "010"
+      },
+      "cortazar": {
+        "id": "011"
+      },
+      "cueramaro": {
+        "id": "012"
+      },
+      "doctor mora": {
+        "id": "013"
+      },
+      "dolores hidalgo cuna de la independencia nacional": {
+        "id": "014"
+      },
+      "guanajuato": {
+        "id": "015"
+      },
+      "huanimaro": {
+        "id": "016"
+      },
+      "irapuato": {
+        "id": "017"
+      },
+      "jaral del progreso": {
+        "id": "018"
+      },
+      "jerecuaro": {
+        "id": "019"
+      },
+      "leon": {
+        "id": "020"
+      },
+      "moroleon": {
+        "id": "021"
+      },
+      "ocampo": {
+        "id": "022"
+      },
+      "penjamo": {
+        "id": "023"
+      },
+      "pueblo nuevo": {
+        "id": "024"
+      },
+      "purisima del rincon": {
+        "id": "025"
+      },
+      "romita": {
+        "id": "026"
+      },
+      "salamanca": {
+        "id": "027"
+      },
+      "salvatierra": {
+        "id": "028"
+      },
+      "san diego de la union": {
+        "id": "029"
+      },
+      "san felipe": {
+        "id": "030"
+      },
+      "san francisco del rincon": {
+        "id": "031"
+      },
+      "san jose iturbide": {
+        "id": "032"
+      },
+      "san luis de la paz": {
+        "id": "033"
+      },
+      "santa catarina": {
+        "id": "034"
+      },
+      "santa cruz de juventino rosas": {
+        "id": "035"
+      },
+      "santiago maravatio": {
+        "id": "036"
+      },
+      "silao de la victoria": {
+        "id": "037"
+      },
+      "tarandacuao": {
+        "id": "038"
+      },
+      "tarimoro": {
+        "id": "039"
+      },
+      "tierra blanca": {
+        "id": "040"
+      },
+      "uriangato": {
+        "id": "041"
+      },
+      "valle de santiago": {
+        "id": "042"
+      },
+      "victoria": {
+        "id": "043"
+      },
+      "villagran": {
+        "id": "044"
+      },
+      "xichu": {
+        "id": "045"
+      },
+      "yuriria": {
+        "id": "046"
+      }
+    }
+  },
+  "guerrero": {
+    "id": "12",
+    "municipios": {
+      "acapulco de juarez": {
+        "id": "001"
+      },
+      "ahuacuotzingo": {
+        "id": "002"
+      },
+      "ajuchitlan del progreso": {
+        "id": "003"
+      },
+      "alcozauca de guerrero": {
+        "id": "004"
+      },
+      "alpoyeca": {
+        "id": "005"
+      },
+      "apaxtla": {
+        "id": "006"
+      },
+      "arcelia": {
+        "id": "007"
+      },
+      "atenango del rio": {
+        "id": "008"
+      },
+      "atlamajalcingo del monte": {
+        "id": "009"
+      },
+      "atlixtac": {
+        "id": "010"
+      },
+      "atoyac de alvarez": {
+        "id": "011"
+      },
+      "ayutla de los libres": {
+        "id": "012"
+      },
+      "azoyu": {
+        "id": "013"
+      },
+      "benito juarez": {
+        "id": "014"
+      },
+      "buenavista de cuellar": {
+        "id": "015"
+      },
+      "coahuayutla de jose maria izazaga": {
+        "id": "016"
+      },
+      "cocula": {
+        "id": "017"
+      },
+      "copala": {
+        "id": "018"
+      },
+      "copalillo": {
+        "id": "019"
+      },
+      "copanatoyac": {
+        "id": "020"
+      },
+      "coyuca de benitez": {
+        "id": "021"
+      },
+      "coyuca de catalan": {
+        "id": "022"
+      },
+      "cuajinicuilapa": {
+        "id": "023"
+      },
+      "cualac": {
+        "id": "024"
+      },
+      "cuautepec": {
+        "id": "025"
+      },
+      "cuetzala del progreso": {
+        "id": "026"
+      },
+      "cutzamala de pinzon": {
+        "id": "027"
+      },
+      "chilapa de alvarez": {
+        "id": "028"
+      },
+      "chilpancingo de los bravo": {
+        "id": "029"
+      },
+      "florencio villarreal": {
+        "id": "030"
+      },
+      "general canuto a. neri": {
+        "id": "031"
+      },
+      "general heliodoro castillo": {
+        "id": "032"
+      },
+      "huamuxtitlan": {
+        "id": "033"
+      },
+      "huitzuco de los figueroa": {
+        "id": "034"
+      },
+      "iguala de la independencia": {
+        "id": "035"
+      },
+      "igualapa": {
+        "id": "036"
+      },
+      "ixcateopan de cuauhtemoc": {
+        "id": "037"
+      },
+      "zihuatanejo de azueta": {
+        "id": "038"
+      },
+      "juan r. escudero": {
+        "id": "039"
+      },
+      "leonardo bravo": {
+        "id": "040"
+      },
+      "malinaltepec": {
+        "id": "041"
+      },
+      "martir de cuilapan": {
+        "id": "042"
+      },
+      "metlatonoc": {
+        "id": "043"
+      },
+      "mochitlan": {
+        "id": "044"
+      },
+      "olinala": {
+        "id": "045"
+      },
+      "ometepec": {
+        "id": "046"
+      },
+      "pedro ascencio alquisiras": {
+        "id": "047"
+      },
+      "petatlan": {
+        "id": "048"
+      },
+      "pilcaya": {
+        "id": "049"
+      },
+      "pungarabato": {
+        "id": "050"
+      },
+      "quechultenango": {
+        "id": "051"
+      },
+      "san luis acatlan": {
+        "id": "052"
+      },
+      "san marcos": {
+        "id": "053"
+      },
+      "san miguel totolapan": {
+        "id": "054"
+      },
+      "taxco de alarcon": {
+        "id": "055"
+      },
+      "tecoanapa": {
+        "id": "056"
+      },
+      "tecpan de galeana": {
+        "id": "057"
+      },
+      "teloloapan": {
+        "id": "058"
+      },
+      "tepecoacuilco de trujano": {
+        "id": "059"
+      },
+      "tetipac": {
+        "id": "060"
+      },
+      "tixtla de guerrero": {
+        "id": "061"
+      },
+      "tlacoachistlahuaca": {
+        "id": "062"
+      },
+      "tlacoapa": {
+        "id": "063"
+      },
+      "tlalchapa": {
+        "id": "064"
+      },
+      "tlalixtaquilla de maldonado": {
+        "id": "065"
+      },
+      "tlapa de comonfort": {
+        "id": "066"
+      },
+      "tlapehuala": {
+        "id": "067"
+      },
+      "la union de isidoro montes de oca": {
+        "id": "068"
+      },
+      "xalpatlahuac": {
+        "id": "069"
+      },
+      "xochihuehuetlan": {
+        "id": "070"
+      },
+      "xochistlahuaca": {
+        "id": "071"
+      },
+      "zapotitlan tablas": {
+        "id": "072"
+      },
+      "zirandaro": {
+        "id": "073"
+      },
+      "zitlala": {
+        "id": "074"
+      },
+      "eduardo neri": {
+        "id": "075"
+      },
+      "acatepec": {
+        "id": "076"
+      },
+      "marquelia": {
+        "id": "077"
+      },
+      "cochoapa el grande": {
+        "id": "078"
+      },
+      "jose joaquin de herrera": {
+        "id": "079"
+      },
+      "juchitan": {
+        "id": "080"
+      },
+      "iliatenco": {
+        "id": "081"
+      },
+      "las vigas": {
+        "id": "082"
+      },
+      "nuu savi": {
+        "id": "083"
+      },
+      "santa cruz del rincon": {
+        "id": "084"
+      },
+      "san nicolas": {
+        "id": "085"
+      }
+    }
+  },
+  "hidalgo": {
+    "id": "13",
+    "municipios": {
+      "acatlan": {
+        "id": "001"
+      },
+      "acaxochitlan": {
+        "id": "002"
+      },
+      "actopan": {
+        "id": "003"
+      },
+      "agua blanca de iturbide": {
+        "id": "004"
+      },
+      "ajacuba": {
+        "id": "005"
+      },
+      "alfajayucan": {
+        "id": "006"
+      },
+      "almoloya": {
+        "id": "007"
+      },
+      "apan": {
+        "id": "008"
+      },
+      "el arenal": {
+        "id": "009"
+      },
+      "atitalaquia": {
+        "id": "010"
+      },
+      "atlapexco": {
+        "id": "011"
+      },
+      "atotonilco el grande": {
+        "id": "012"
+      },
+      "atotonilco de tula": {
+        "id": "013"
+      },
+      "calnali": {
+        "id": "014"
+      },
+      "cardonal": {
+        "id": "015"
+      },
+      "cuautepec de hinojosa": {
+        "id": "016"
+      },
+      "chapantongo": {
+        "id": "017"
+      },
+      "chapulhuacan": {
+        "id": "018"
+      },
+      "chilcuautla": {
+        "id": "019"
+      },
+      "eloxochitlan": {
+        "id": "020"
+      },
+      "emiliano zapata": {
+        "id": "021"
+      },
+      "epazoyucan": {
+        "id": "022"
+      },
+      "francisco i. madero": {
+        "id": "023"
+      },
+      "huasca de ocampo": {
+        "id": "024"
+      },
+      "huautla": {
+        "id": "025"
+      },
+      "huazalingo": {
+        "id": "026"
+      },
+      "huehuetla": {
+        "id": "027"
+      },
+      "huejutla de reyes": {
+        "id": "028"
+      },
+      "huichapan": {
+        "id": "029"
+      },
+      "ixmiquilpan": {
+        "id": "030"
+      },
+      "jacala de ledezma": {
+        "id": "031"
+      },
+      "jaltocan": {
+        "id": "032"
+      },
+      "juarez hidalgo": {
+        "id": "033"
+      },
+      "lolotla": {
+        "id": "034"
+      },
+      "metepec": {
+        "id": "035"
+      },
+      "san agustin metzquititlan": {
+        "id": "036"
+      },
+      "metztitlan": {
+        "id": "037"
+      },
+      "mineral del chico": {
+        "id": "038"
+      },
+      "mineral del monte": {
+        "id": "039"
+      },
+      "la mision": {
+        "id": "040"
+      },
+      "mixquiahuala de juarez": {
+        "id": "041"
+      },
+      "molango de escamilla": {
+        "id": "042"
+      },
+      "nicolas flores": {
+        "id": "043"
+      },
+      "nopala de villagran": {
+        "id": "044"
+      },
+      "omitlan de juarez": {
+        "id": "045"
+      },
+      "san felipe orizatlan": {
+        "id": "046"
+      },
+      "pacula": {
+        "id": "047"
+      },
+      "pachuca de soto": {
+        "id": "048"
+      },
+      "pisaflores": {
+        "id": "049"
+      },
+      "progreso de obregon": {
+        "id": "050"
+      },
+      "mineral de la reforma": {
+        "id": "051"
+      },
+      "san agustin tlaxiaca": {
+        "id": "052"
+      },
+      "san bartolo tutotepec": {
+        "id": "053"
+      },
+      "san salvador": {
+        "id": "054"
+      },
+      "santiago de anaya": {
+        "id": "055"
+      },
+      "santiago tulantepec de lugo guerrero": {
+        "id": "056"
+      },
+      "singuilucan": {
+        "id": "057"
+      },
+      "tasquillo": {
+        "id": "058"
+      },
+      "tecozautla": {
+        "id": "059"
+      },
+      "tenango de doria": {
+        "id": "060"
+      },
+      "tepeapulco": {
+        "id": "061"
+      },
+      "tepehuacan de guerrero": {
+        "id": "062"
+      },
+      "tepeji del rio de ocampo": {
+        "id": "063"
+      },
+      "tepetitlan": {
+        "id": "064"
+      },
+      "tetepango": {
+        "id": "065"
+      },
+      "villa de tezontepec": {
+        "id": "066"
+      },
+      "tezontepec de aldama": {
+        "id": "067"
+      },
+      "tianguistengo": {
+        "id": "068"
+      },
+      "tizayuca": {
+        "id": "069"
+      },
+      "tlahuelilpan": {
+        "id": "070"
+      },
+      "tlahuiltepa": {
+        "id": "071"
+      },
+      "tlanalapa": {
+        "id": "072"
+      },
+      "tlanchinol": {
+        "id": "073"
+      },
+      "tlaxcoapan": {
+        "id": "074"
+      },
+      "tolcayuca": {
+        "id": "075"
+      },
+      "tula de allende": {
+        "id": "076"
+      },
+      "tulancingo de bravo": {
+        "id": "077"
+      },
+      "xochiatipan": {
+        "id": "078"
+      },
+      "xochicoatlan": {
+        "id": "079"
+      },
+      "yahualica": {
+        "id": "080"
+      },
+      "zacualtipan de angeles": {
+        "id": "081"
+      },
+      "zapotlan de juarez": {
+        "id": "082"
+      },
+      "zempoala": {
+        "id": "083"
+      },
+      "zimapan": {
+        "id": "084"
+      }
+    }
+  },
+  "jalisco": {
+    "id": "14",
+    "municipios": {
+      "acatic": {
+        "id": "001"
+      },
+      "acatlan de juarez": {
+        "id": "002"
+      },
+      "ahualulco de mercado": {
+        "id": "003"
+      },
+      "amacueca": {
+        "id": "004"
+      },
+      "amatitan": {
+        "id": "005"
+      },
+      "ameca": {
+        "id": "006"
+      },
+      "san juanito de escobedo": {
+        "id": "007"
+      },
+      "arandas": {
+        "id": "008"
+      },
+      "el arenal": {
+        "id": "009"
+      },
+      "atemajac de brizuela": {
+        "id": "010"
+      },
+      "atengo": {
+        "id": "011"
+      },
+      "atenguillo": {
+        "id": "012"
+      },
+      "atotonilco el alto": {
+        "id": "013"
+      },
+      "atoyac": {
+        "id": "014"
+      },
+      "autlan de navarro": {
+        "id": "015"
+      },
+      "ayotlan": {
+        "id": "016"
+      },
+      "ayutla": {
+        "id": "017"
+      },
+      "la barca": {
+        "id": "018"
+      },
+      "bolanos": {
+        "id": "019"
+      },
+      "cabo corrientes": {
+        "id": "020"
+      },
+      "casimiro castillo": {
+        "id": "021"
+      },
+      "cihuatlan": {
+        "id": "022"
+      },
+      "zapotlan el grande": {
+        "id": "023"
+      },
+      "cocula": {
+        "id": "024"
+      },
+      "colotlan": {
+        "id": "025"
+      },
+      "concepcion de buenos aires": {
+        "id": "026"
+      },
+      "cuautitlan de garcia barragan": {
+        "id": "027"
+      },
+      "cuautla": {
+        "id": "028"
+      },
+      "cuquio": {
+        "id": "029"
+      },
+      "chapala": {
+        "id": "030"
+      },
+      "chimaltitan": {
+        "id": "031"
+      },
+      "chiquilistlan": {
+        "id": "032"
+      },
+      "degollado": {
+        "id": "033"
+      },
+      "ejutla": {
+        "id": "034"
+      },
+      "encarnacion de diaz": {
+        "id": "035"
+      },
+      "etzatlan": {
+        "id": "036"
+      },
+      "el grullo": {
+        "id": "037"
+      },
+      "guachinango": {
+        "id": "038"
+      },
+      "guadalajara": {
+        "id": "039"
+      },
+      "hostotipaquillo": {
+        "id": "040"
+      },
+      "huejucar": {
+        "id": "041"
+      },
+      "huejuquilla el alto": {
+        "id": "042"
+      },
+      "la huerta": {
+        "id": "043"
+      },
+      "ixtlahuacan de los membrillos": {
+        "id": "044"
+      },
+      "ixtlahuacan del rio": {
+        "id": "045"
+      },
+      "jalostotitlan": {
+        "id": "046"
+      },
+      "jamay": {
+        "id": "047"
+      },
+      "jesus maria": {
+        "id": "048"
+      },
+      "jilotlan de los dolores": {
+        "id": "049"
+      },
+      "jocotepec": {
+        "id": "050"
+      },
+      "juanacatlan": {
+        "id": "051"
+      },
+      "juchitlan": {
+        "id": "052"
+      },
+      "lagos de moreno": {
+        "id": "053"
+      },
+      "el limon": {
+        "id": "054"
+      },
+      "magdalena": {
+        "id": "055"
+      },
+      "santa maria del oro": {
+        "id": "056"
+      },
+      "la manzanilla de la paz": {
+        "id": "057"
+      },
+      "mascota": {
+        "id": "058"
+      },
+      "mazamitla": {
+        "id": "059"
+      },
+      "mexticacan": {
+        "id": "060"
+      },
+      "mezquitic": {
+        "id": "061"
+      },
+      "mixtlan": {
+        "id": "062"
+      },
+      "ocotlan": {
+        "id": "063"
+      },
+      "ojuelos de jalisco": {
+        "id": "064"
+      },
+      "pihuamo": {
+        "id": "065"
+      },
+      "poncitlan": {
+        "id": "066"
+      },
+      "puerto vallarta": {
+        "id": "067"
+      },
+      "villa purificacion": {
+        "id": "068"
+      },
+      "quitupan": {
+        "id": "069"
+      },
+      "el salto": {
+        "id": "070"
+      },
+      "san cristobal de la barranca": {
+        "id": "071"
+      },
+      "san diego de alejandria": {
+        "id": "072"
+      },
+      "san juan de los lagos": {
+        "id": "073"
+      },
+      "san julian": {
+        "id": "074"
+      },
+      "san marcos": {
+        "id": "075"
+      },
+      "san martin de bolanos": {
+        "id": "076"
+      },
+      "san martin hidalgo": {
+        "id": "077"
+      },
+      "san miguel el alto": {
+        "id": "078"
+      },
+      "gomez farias": {
+        "id": "079"
+      },
+      "san sebastian del oeste": {
+        "id": "080"
+      },
+      "santa maria de los angeles": {
+        "id": "081"
+      },
+      "sayula": {
+        "id": "082"
+      },
+      "tala": {
+        "id": "083"
+      },
+      "talpa de allende": {
+        "id": "084"
+      },
+      "tamazula de gordiano": {
+        "id": "085"
+      },
+      "tapalpa": {
+        "id": "086"
+      },
+      "tecalitlan": {
+        "id": "087"
+      },
+      "tecolotlan": {
+        "id": "088"
+      },
+      "techaluta de montenegro": {
+        "id": "089"
+      },
+      "tenamaxtlan": {
+        "id": "090"
+      },
+      "teocaltiche": {
+        "id": "091"
+      },
+      "teocuitatlan de corona": {
+        "id": "092"
+      },
+      "tepatitlan de morelos": {
+        "id": "093"
+      },
+      "tequila": {
+        "id": "094"
+      },
+      "teuchitlan": {
+        "id": "095"
+      },
+      "tizapan el alto": {
+        "id": "096"
+      },
+      "tlajomulco de zuniga": {
+        "id": "097"
+      },
+      "san pedro tlaquepaque": {
+        "id": "098"
+      },
+      "toliman": {
+        "id": "099"
+      },
+      "tomatlan": {
+        "id": "100"
+      },
+      "tonala": {
+        "id": "101"
+      },
+      "tonaya": {
+        "id": "102"
+      },
+      "tonila": {
+        "id": "103"
+      },
+      "totatiche": {
+        "id": "104"
+      },
+      "tototlan": {
+        "id": "105"
+      },
+      "tuxcacuesco": {
+        "id": "106"
+      },
+      "tuxcueca": {
+        "id": "107"
+      },
+      "tuxpan": {
+        "id": "108"
+      },
+      "union de san antonio": {
+        "id": "109"
+      },
+      "union de tula": {
+        "id": "110"
+      },
+      "valle de guadalupe": {
+        "id": "111"
+      },
+      "valle de juarez": {
+        "id": "112"
+      },
+      "san gabriel": {
+        "id": "113"
+      },
+      "villa corona": {
+        "id": "114"
+      },
+      "villa guerrero": {
+        "id": "115"
+      },
+      "villa hidalgo": {
+        "id": "116"
+      },
+      "canadas de obregon": {
+        "id": "117"
+      },
+      "yahualica de gonzalez gallo": {
+        "id": "118"
+      },
+      "zacoalco de torres": {
+        "id": "119"
+      },
+      "zapopan": {
+        "id": "120"
+      },
+      "zapotiltic": {
+        "id": "121"
+      },
+      "zapotitlan de vadillo": {
+        "id": "122"
+      },
+      "zapotlan del rey": {
+        "id": "123"
+      },
+      "zapotlanejo": {
+        "id": "124"
+      },
+      "san ignacio cerro gordo": {
+        "id": "125"
+      }
+    }
+  },
+  "mexico": {
+    "id": "15",
+    "municipios": {
+      "acambay de ruiz castaneda": {
+        "id": "001"
+      },
+      "acolman": {
+        "id": "002"
+      },
+      "aculco": {
+        "id": "003"
+      },
+      "almoloya de alquisiras": {
+        "id": "004"
+      },
+      "almoloya de juarez": {
+        "id": "005"
+      },
+      "almoloya del rio": {
+        "id": "006"
+      },
+      "amanalco": {
+        "id": "007"
+      },
+      "amatepec": {
+        "id": "008"
+      },
+      "amecameca": {
+        "id": "009"
+      },
+      "apaxco": {
+        "id": "010"
+      },
+      "atenco": {
+        "id": "011"
+      },
+      "atizapan": {
+        "id": "012"
+      },
+      "atizapan de zaragoza": {
+        "id": "013"
+      },
+      "atlacomulco": {
+        "id": "014"
+      },
+      "atlautla": {
+        "id": "015"
+      },
+      "axapusco": {
+        "id": "016"
+      },
+      "ayapango": {
+        "id": "017"
+      },
+      "calimaya": {
+        "id": "018"
+      },
+      "capulhuac": {
+        "id": "019"
+      },
+      "coacalco de berriozabal": {
+        "id": "020"
+      },
+      "coatepec harinas": {
+        "id": "021"
+      },
+      "cocotitlan": {
+        "id": "022"
+      },
+      "coyotepec": {
+        "id": "023"
+      },
+      "cuautitlan": {
+        "id": "024"
+      },
+      "chalco": {
+        "id": "025"
+      },
+      "chapa de mota": {
+        "id": "026"
+      },
+      "chapultepec": {
+        "id": "027"
+      },
+      "chiautla": {
+        "id": "028"
+      },
+      "chicoloapan": {
+        "id": "029"
+      },
+      "chiconcuac": {
+        "id": "030"
+      },
+      "chimalhuacan": {
+        "id": "031"
+      },
+      "donato guerra": {
+        "id": "032"
+      },
+      "ecatepec de morelos": {
+        "id": "033"
+      },
+      "ecatzingo": {
+        "id": "034"
+      },
+      "huehuetoca": {
+        "id": "035"
+      },
+      "hueypoxtla": {
+        "id": "036"
+      },
+      "huixquilucan": {
+        "id": "037"
+      },
+      "isidro fabela": {
+        "id": "038"
+      },
+      "ixtapaluca": {
+        "id": "039"
+      },
+      "ixtapan de la sal": {
+        "id": "040"
+      },
+      "ixtapan del oro": {
+        "id": "041"
+      },
+      "ixtlahuaca": {
+        "id": "042"
+      },
+      "xalatlaco": {
+        "id": "043"
+      },
+      "jaltenco": {
+        "id": "044"
+      },
+      "jilotepec": {
+        "id": "045"
+      },
+      "jilotzingo": {
+        "id": "046"
+      },
+      "jiquipilco": {
+        "id": "047"
+      },
+      "jocotitlan": {
+        "id": "048"
+      },
+      "joquicingo": {
+        "id": "049"
+      },
+      "juchitepec": {
+        "id": "050"
+      },
+      "lerma": {
+        "id": "051"
+      },
+      "malinalco": {
+        "id": "052"
+      },
+      "melchor ocampo": {
+        "id": "053"
+      },
+      "metepec": {
+        "id": "054"
+      },
+      "mexicaltzingo": {
+        "id": "055"
+      },
+      "morelos": {
+        "id": "056"
+      },
+      "naucalpan de juarez": {
+        "id": "057"
+      },
+      "nezahualcoyotl": {
+        "id": "058"
+      },
+      "nextlalpan": {
+        "id": "059"
+      },
+      "nicolas romero": {
+        "id": "060"
+      },
+      "nopaltepec": {
+        "id": "061"
+      },
+      "ocoyoacac": {
+        "id": "062"
+      },
+      "ocuilan": {
+        "id": "063"
+      },
+      "el oro": {
+        "id": "064"
+      },
+      "otumba": {
+        "id": "065"
+      },
+      "otzoloapan": {
+        "id": "066"
+      },
+      "otzolotepec": {
+        "id": "067"
+      },
+      "ozumba": {
+        "id": "068"
+      },
+      "papalotla": {
+        "id": "069"
+      },
+      "la paz": {
+        "id": "070"
+      },
+      "polotitlan": {
+        "id": "071"
+      },
+      "rayon": {
+        "id": "072"
+      },
+      "san antonio la isla": {
+        "id": "073"
+      },
+      "san felipe del progreso": {
+        "id": "074"
+      },
+      "san martin de las piramides": {
+        "id": "075"
+      },
+      "san mateo atenco": {
+        "id": "076"
+      },
+      "san simon de guerrero": {
+        "id": "077"
+      },
+      "santo tomas": {
+        "id": "078"
+      },
+      "soyaniquilpan de juarez": {
+        "id": "079"
+      },
+      "sultepec": {
+        "id": "080"
+      },
+      "tecamac": {
+        "id": "081"
+      },
+      "tejupilco": {
+        "id": "082"
+      },
+      "temamatla": {
+        "id": "083"
+      },
+      "temascalapa": {
+        "id": "084"
+      },
+      "temascalcingo": {
+        "id": "085"
+      },
+      "temascaltepec": {
+        "id": "086"
+      },
+      "temoaya": {
+        "id": "087"
+      },
+      "tenancingo": {
+        "id": "088"
+      },
+      "tenango del aire": {
+        "id": "089"
+      },
+      "tenango del valle": {
+        "id": "090"
+      },
+      "teoloyucan": {
+        "id": "091"
+      },
+      "teotihuacan": {
+        "id": "092"
+      },
+      "tepetlaoxtoc": {
+        "id": "093"
+      },
+      "tepetlixpa": {
+        "id": "094"
+      },
+      "tepotzotlan": {
+        "id": "095"
+      },
+      "tequixquiac": {
+        "id": "096"
+      },
+      "texcaltitlan": {
+        "id": "097"
+      },
+      "texcalyacac": {
+        "id": "098"
+      },
+      "texcoco": {
+        "id": "099"
+      },
+      "tezoyuca": {
+        "id": "100"
+      },
+      "tianguistenco": {
+        "id": "101"
+      },
+      "timilpan": {
+        "id": "102"
+      },
+      "tlalmanalco": {
+        "id": "103"
+      },
+      "tlalnepantla de baz": {
+        "id": "104"
+      },
+      "tlatlaya": {
+        "id": "105"
+      },
+      "toluca": {
+        "id": "106"
+      },
+      "tonatico": {
+        "id": "107"
+      },
+      "tultepec": {
+        "id": "108"
+      },
+      "tultitlan": {
+        "id": "109"
+      },
+      "valle de bravo": {
+        "id": "110"
+      },
+      "villa de allende": {
+        "id": "111"
+      },
+      "villa del carbon": {
+        "id": "112"
+      },
+      "villa guerrero": {
+        "id": "113"
+      },
+      "villa victoria": {
+        "id": "114"
+      },
+      "xonacatlan": {
+        "id": "115"
+      },
+      "zacazonapan": {
+        "id": "116"
+      },
+      "zacualpan": {
+        "id": "117"
+      },
+      "zinacantepec": {
+        "id": "118"
+      },
+      "zumpahuacan": {
+        "id": "119"
+      },
+      "zumpango": {
+        "id": "120"
+      },
+      "cuautitlan izcalli": {
+        "id": "121"
+      },
+      "valle de chalco solidaridad": {
+        "id": "122"
+      },
+      "luvianos": {
+        "id": "123"
+      },
+      "san jose del rincon": {
+        "id": "124"
+      },
+      "tonanitla": {
+        "id": "125"
+      }
+    }
+  },
+  "michoacan de ocampo": {
+    "id": "16",
+    "municipios": {
+      "acuitzio": {
+        "id": "001"
+      },
+      "aguililla": {
+        "id": "002"
+      },
+      "alvaro obregon": {
+        "id": "003"
+      },
+      "angamacutiro": {
+        "id": "004"
+      },
+      "angangueo": {
+        "id": "005"
+      },
+      "apatzingan": {
+        "id": "006"
+      },
+      "aporo": {
+        "id": "007"
+      },
+      "aquila": {
+        "id": "008"
+      },
+      "ario": {
+        "id": "009"
+      },
+      "arteaga": {
+        "id": "010"
+      },
+      "brisenas": {
+        "id": "011"
+      },
+      "buenavista": {
+        "id": "012"
+      },
+      "caracuaro": {
+        "id": "013"
+      },
+      "coahuayana": {
+        "id": "014"
+      },
+      "coalcoman de vazquez pallares": {
+        "id": "015"
+      },
+      "coeneo": {
+        "id": "016"
+      },
+      "contepec": {
+        "id": "017"
+      },
+      "copandaro": {
+        "id": "018"
+      },
+      "cotija": {
+        "id": "019"
+      },
+      "cuitzeo": {
+        "id": "020"
+      },
+      "charapan": {
+        "id": "021"
+      },
+      "charo": {
+        "id": "022"
+      },
+      "chavinda": {
+        "id": "023"
+      },
+      "cheran": {
+        "id": "024"
+      },
+      "chilchota": {
+        "id": "025"
+      },
+      "chinicuila": {
+        "id": "026"
+      },
+      "chucandiro": {
+        "id": "027"
+      },
+      "churintzio": {
+        "id": "028"
+      },
+      "churumuco": {
+        "id": "029"
+      },
+      "ecuandureo": {
+        "id": "030"
+      },
+      "epitacio huerta": {
+        "id": "031"
+      },
+      "erongaricuaro": {
+        "id": "032"
+      },
+      "gabriel zamora": {
+        "id": "033"
+      },
+      "hidalgo": {
+        "id": "034"
+      },
+      "la huacana": {
+        "id": "035"
+      },
+      "huandacareo": {
+        "id": "036"
+      },
+      "huaniqueo": {
+        "id": "037"
+      },
+      "huetamo": {
+        "id": "038"
+      },
+      "huiramba": {
+        "id": "039"
+      },
+      "indaparapeo": {
+        "id": "040"
+      },
+      "irimbo": {
+        "id": "041"
+      },
+      "ixtlan": {
+        "id": "042"
+      },
+      "jacona": {
+        "id": "043"
+      },
+      "jimenez": {
+        "id": "044"
+      },
+      "jiquilpan": {
+        "id": "045"
+      },
+      "juarez": {
+        "id": "046"
+      },
+      "jungapeo": {
+        "id": "047"
+      },
+      "lagunillas": {
+        "id": "048"
+      },
+      "madero": {
+        "id": "049"
+      },
+      "maravatio": {
+        "id": "050"
+      },
+      "marcos castellanos": {
+        "id": "051"
+      },
+      "lazaro cardenas": {
+        "id": "052"
+      },
+      "morelia": {
+        "id": "053"
+      },
+      "morelos": {
+        "id": "054"
+      },
+      "mugica": {
+        "id": "055"
+      },
+      "nahuatzen": {
+        "id": "056"
+      },
+      "nocupetaro": {
+        "id": "057"
+      },
+      "nuevo parangaricutiro": {
+        "id": "058"
+      },
+      "nuevo urecho": {
+        "id": "059"
+      },
+      "numaran": {
+        "id": "060"
+      },
+      "ocampo": {
+        "id": "061"
+      },
+      "pajacuaran": {
+        "id": "062"
+      },
+      "panindicuaro": {
+        "id": "063"
+      },
+      "paracuaro": {
+        "id": "064"
+      },
+      "paracho": {
+        "id": "065"
+      },
+      "patzcuaro": {
+        "id": "066"
+      },
+      "penjamillo": {
+        "id": "067"
+      },
+      "periban": {
+        "id": "068"
+      },
+      "la piedad": {
+        "id": "069"
+      },
+      "purepero": {
+        "id": "070"
+      },
+      "puruandiro": {
+        "id": "071"
+      },
+      "querendaro": {
+        "id": "072"
+      },
+      "quiroga": {
+        "id": "073"
+      },
+      "cojumatlan de regules": {
+        "id": "074"
+      },
+      "los reyes": {
+        "id": "075"
+      },
+      "sahuayo": {
+        "id": "076"
+      },
+      "san lucas": {
+        "id": "077"
+      },
+      "santa ana maya": {
+        "id": "078"
+      },
+      "salvador escalante": {
+        "id": "079"
+      },
+      "senguio": {
+        "id": "080"
+      },
+      "susupuato": {
+        "id": "081"
+      },
+      "tacambaro": {
+        "id": "082"
+      },
+      "tancitaro": {
+        "id": "083"
+      },
+      "tangamandapio": {
+        "id": "084"
+      },
+      "tangancicuaro": {
+        "id": "085"
+      },
+      "tanhuato": {
+        "id": "086"
+      },
+      "taretan": {
+        "id": "087"
+      },
+      "tarimbaro": {
+        "id": "088"
+      },
+      "tepalcatepec": {
+        "id": "089"
+      },
+      "tingambato": {
+        "id": "090"
+      },
+      "tinguindin": {
+        "id": "091"
+      },
+      "tiquicheo de nicolas romero": {
+        "id": "092"
+      },
+      "tlalpujahua": {
+        "id": "093"
+      },
+      "tlazazalca": {
+        "id": "094"
+      },
+      "tocumbo": {
+        "id": "095"
+      },
+      "tumbiscatio": {
+        "id": "096"
+      },
+      "turicato": {
+        "id": "097"
+      },
+      "tuxpan": {
+        "id": "098"
+      },
+      "tuzantla": {
+        "id": "099"
+      },
+      "tzintzuntzan": {
+        "id": "100"
+      },
+      "tzitzio": {
+        "id": "101"
+      },
+      "uruapan": {
+        "id": "102"
+      },
+      "venustiano carranza": {
+        "id": "103"
+      },
+      "villamar": {
+        "id": "104"
+      },
+      "vista hermosa": {
+        "id": "105"
+      },
+      "yurecuaro": {
+        "id": "106"
+      },
+      "zacapu": {
+        "id": "107"
+      },
+      "zamora": {
+        "id": "108"
+      },
+      "zinaparo": {
+        "id": "109"
+      },
+      "zinapecuaro": {
+        "id": "110"
+      },
+      "ziracuaretiro": {
+        "id": "111"
+      },
+      "zitacuaro": {
+        "id": "112"
+      },
+      "jose sixto verduzco": {
+        "id": "113"
+      }
+    }
+  },
+  "morelos": {
+    "id": "17",
+    "municipios": {
+      "amacuzac": {
+        "id": "001"
+      },
+      "atlatlahucan": {
+        "id": "002"
+      },
+      "axochiapan": {
+        "id": "003"
+      },
+      "ayala": {
+        "id": "004"
+      },
+      "coatlan del rio": {
+        "id": "005"
+      },
+      "cuautla": {
+        "id": "006"
+      },
+      "cuernavaca": {
+        "id": "007"
+      },
+      "emiliano zapata": {
+        "id": "008"
+      },
+      "huitzilac": {
+        "id": "009"
+      },
+      "jantetelco": {
+        "id": "010"
+      },
+      "jiutepec": {
+        "id": "011"
+      },
+      "jojutla": {
+        "id": "012"
+      },
+      "jonacatepec de leandro valle": {
+        "id": "013"
+      },
+      "mazatepec": {
+        "id": "014"
+      },
+      "miacatlan": {
+        "id": "015"
+      },
+      "ocuituco": {
+        "id": "016"
+      },
+      "puente de ixtla": {
+        "id": "017"
+      },
+      "temixco": {
+        "id": "018"
+      },
+      "tepalcingo": {
+        "id": "019"
+      },
+      "tepoztlan": {
+        "id": "020"
+      },
+      "tetecala": {
+        "id": "021"
+      },
+      "tetela del volcan": {
+        "id": "022"
+      },
+      "tlalnepantla": {
+        "id": "023"
+      },
+      "tlaltizapan de zapata": {
+        "id": "024"
+      },
+      "tlaquiltenango": {
+        "id": "025"
+      },
+      "tlayacapan": {
+        "id": "026"
+      },
+      "totolapan": {
+        "id": "027"
+      },
+      "xochitepec": {
+        "id": "028"
+      },
+      "yautepec": {
+        "id": "029"
+      },
+      "yecapixtla": {
+        "id": "030"
+      },
+      "zacatepec": {
+        "id": "031"
+      },
+      "zacualpan de amilpas": {
+        "id": "032"
+      },
+      "temoac": {
+        "id": "033"
+      },
+      "coatetelco": {
+        "id": "034"
+      },
+      "xoxocotla": {
+        "id": "035"
+      },
+      "hueyapan": {
+        "id": "036"
+      }
+    }
+  },
+  "nayarit": {
+    "id": "18",
+    "municipios": {
+      "acaponeta": {
+        "id": "001"
+      },
+      "ahuacatlan": {
+        "id": "002"
+      },
+      "amatlan de canas": {
+        "id": "003"
+      },
+      "compostela": {
+        "id": "004"
+      },
+      "huajicori": {
+        "id": "005"
+      },
+      "ixtlan del rio": {
+        "id": "006"
+      },
+      "jala": {
+        "id": "007"
+      },
+      "xalisco": {
+        "id": "008"
+      },
+      "del nayar": {
+        "id": "009"
+      },
+      "rosamorada": {
+        "id": "010"
+      },
+      "ruiz": {
+        "id": "011"
+      },
+      "san blas": {
+        "id": "012"
+      },
+      "san pedro lagunillas": {
+        "id": "013"
+      },
+      "santa maria del oro": {
+        "id": "014"
+      },
+      "santiago ixcuintla": {
+        "id": "015"
+      },
+      "tecuala": {
+        "id": "016"
+      },
+      "tepic": {
+        "id": "017"
+      },
+      "tuxpan": {
+        "id": "018"
+      },
+      "la yesca": {
+        "id": "019"
+      },
+      "bahia de banderas": {
+        "id": "020"
+      }
+    }
+  },
+  "nuevo leon": {
+    "id": "19",
+    "municipios": {
+      "abasolo": {
+        "id": "001"
+      },
+      "agualeguas": {
+        "id": "002"
+      },
+      "los aldamas": {
+        "id": "003"
+      },
+      "allende": {
+        "id": "004"
+      },
+      "anahuac": {
+        "id": "005"
+      },
+      "apodaca": {
+        "id": "006"
+      },
+      "aramberri": {
+        "id": "007"
+      },
+      "bustamante": {
+        "id": "008"
+      },
+      "cadereyta jimenez": {
+        "id": "009"
+      },
+      "el carmen": {
+        "id": "010"
+      },
+      "cerralvo": {
+        "id": "011"
+      },
+      "cienega de flores": {
+        "id": "012"
+      },
+      "china": {
+        "id": "013"
+      },
+      "doctor arroyo": {
+        "id": "014"
+      },
+      "doctor coss": {
+        "id": "015"
+      },
+      "doctor gonzalez": {
+        "id": "016"
+      },
+      "galeana": {
+        "id": "017"
+      },
+      "garcia": {
+        "id": "018"
+      },
+      "san pedro garza garcia": {
+        "id": "019"
+      },
+      "general bravo": {
+        "id": "020"
+      },
+      "general escobedo": {
+        "id": "021"
+      },
+      "general teran": {
+        "id": "022"
+      },
+      "general trevino": {
+        "id": "023"
+      },
+      "general zaragoza": {
+        "id": "024"
+      },
+      "general zuazua": {
+        "id": "025"
+      },
+      "guadalupe": {
+        "id": "026"
+      },
+      "los herreras": {
+        "id": "027"
+      },
+      "higueras": {
+        "id": "028"
+      },
+      "hualahuises": {
+        "id": "029"
+      },
+      "iturbide": {
+        "id": "030"
+      },
+      "juarez": {
+        "id": "031"
+      },
+      "lampazos de naranjo": {
+        "id": "032"
+      },
+      "linares": {
+        "id": "033"
+      },
+      "marin": {
+        "id": "034"
+      },
+      "melchor ocampo": {
+        "id": "035"
+      },
+      "mier y noriega": {
+        "id": "036"
+      },
+      "mina": {
+        "id": "037"
+      },
+      "montemorelos": {
+        "id": "038"
+      },
+      "monterrey": {
+        "id": "039"
+      },
+      "paras": {
+        "id": "040"
+      },
+      "pesqueria": {
+        "id": "041"
+      },
+      "los ramones": {
+        "id": "042"
+      },
+      "rayones": {
+        "id": "043"
+      },
+      "sabinas hidalgo": {
+        "id": "044"
+      },
+      "salinas victoria": {
+        "id": "045"
+      },
+      "san nicolas de los garza": {
+        "id": "046"
+      },
+      "hidalgo": {
+        "id": "047"
+      },
+      "santa catarina": {
+        "id": "048"
+      },
+      "santiago": {
+        "id": "049"
+      },
+      "vallecillo": {
+        "id": "050"
+      },
+      "villaldama": {
+        "id": "051"
+      }
+    }
+  },
+  "oaxaca": {
+    "id": "20",
+    "municipios": {
+      "abejones": {
+        "id": "001"
+      },
+      "acatlan de perez figueroa": {
+        "id": "002"
+      },
+      "asuncion cacalotepec": {
+        "id": "003"
+      },
+      "asuncion cuyotepeji": {
+        "id": "004"
+      },
+      "asuncion ixtaltepec": {
+        "id": "005"
+      },
+      "asuncion nochixtlan": {
+        "id": "006"
+      },
+      "asuncion ocotlan": {
+        "id": "007"
+      },
+      "asuncion tlacolulita": {
+        "id": "008"
+      },
+      "ayotzintepec": {
+        "id": "009"
+      },
+      "el barrio de la soledad": {
+        "id": "010"
+      },
+      "calihuala": {
+        "id": "011"
+      },
+      "candelaria loxicha": {
+        "id": "012"
+      },
+      "cienega de zimatlan": {
+        "id": "013"
+      },
+      "ciudad ixtepec": {
+        "id": "014"
+      },
+      "coatecas altas": {
+        "id": "015"
+      },
+      "coicoyan de las flores": {
+        "id": "016"
+      },
+      "la compania": {
+        "id": "017"
+      },
+      "concepcion buenavista": {
+        "id": "018"
+      },
+      "concepcion papalo": {
+        "id": "019"
+      },
+      "constancia del rosario": {
+        "id": "020"
+      },
+      "cosolapa": {
+        "id": "021"
+      },
+      "cosoltepec": {
+        "id": "022"
+      },
+      "cuilapam de guerrero": {
+        "id": "023"
+      },
+      "cuyamecalco villa de zaragoza": {
+        "id": "024"
+      },
+      "chahuites": {
+        "id": "025"
+      },
+      "chalcatongo de hidalgo": {
+        "id": "026"
+      },
+      "chiquihuitlan de benito juarez": {
+        "id": "027"
+      },
+      "heroica ciudad de ejutla de crespo": {
+        "id": "028"
+      },
+      "eloxochitlan de flores magon": {
+        "id": "029"
+      },
+      "el espinal": {
+        "id": "030"
+      },
+      "tamazulapam del espiritu santo": {
+        "id": "031"
+      },
+      "fresnillo de trujano": {
+        "id": "032"
+      },
+      "guadalupe etla": {
+        "id": "033"
+      },
+      "guadalupe de ramirez": {
+        "id": "034"
+      },
+      "guelatao de juarez": {
+        "id": "035"
+      },
+      "guevea de humboldt": {
+        "id": "036"
+      },
+      "mesones hidalgo": {
+        "id": "037"
+      },
+      "villa hidalgo yalalag": {
+        "id": "038"
+      },
+      "heroica ciudad de huajuapan de leon": {
+        "id": "039"
+      },
+      "huautepec": {
+        "id": "040"
+      },
+      "huautla de jimenez": {
+        "id": "041"
+      },
+      "ixtlan de juarez": {
+        "id": "042"
+      },
+      "heroica ciudad de juchitan de zaragoza": {
+        "id": "043"
+      },
+      "loma bonita": {
+        "id": "044"
+      },
+      "magdalena apasco": {
+        "id": "045"
+      },
+      "magdalena jaltepec": {
+        "id": "046"
+      },
+      "santa magdalena jicotlan": {
+        "id": "047"
+      },
+      "magdalena mixtepec": {
+        "id": "048"
+      },
+      "magdalena ocotlan": {
+        "id": "049"
+      },
+      "magdalena penasco": {
+        "id": "050"
+      },
+      "magdalena teitipac": {
+        "id": "051"
+      },
+      "magdalena tequisistlan": {
+        "id": "052"
+      },
+      "magdalena tlacotepec": {
+        "id": "053"
+      },
+      "magdalena zahuatlan": {
+        "id": "054"
+      },
+      "mariscala de juarez": {
+        "id": "055"
+      },
+      "martires de tacubaya": {
+        "id": "056"
+      },
+      "matias romero avendano": {
+        "id": "057"
+      },
+      "mazatlan villa de flores": {
+        "id": "058"
+      },
+      "miahuatlan de porfirio diaz": {
+        "id": "059"
+      },
+      "mixistlan de la reforma": {
+        "id": "060"
+      },
+      "monjas": {
+        "id": "061"
+      },
+      "natividad": {
+        "id": "062"
+      },
+      "nazareno etla": {
+        "id": "063"
+      },
+      "nejapa de madero": {
+        "id": "064"
+      },
+      "ixpantepec nieves": {
+        "id": "065"
+      },
+      "santiago niltepec": {
+        "id": "066"
+      },
+      "oaxaca de juarez": {
+        "id": "067"
+      },
+      "ocotlan de morelos": {
+        "id": "068"
+      },
+      "la pe": {
+        "id": "069"
+      },
+      "pinotepa de don luis": {
+        "id": "070"
+      },
+      "pluma hidalgo": {
+        "id": "071"
+      },
+      "san jose del progreso": {
+        "id": "072"
+      },
+      "putla villa de guerrero": {
+        "id": "073"
+      },
+      "santa catarina quioquitani": {
+        "id": "074"
+      },
+      "reforma de pineda": {
+        "id": "075"
+      },
+      "la reforma": {
+        "id": "076"
+      },
+      "reyes etla": {
+        "id": "077"
+      },
+      "rojas de cuauhtemoc": {
+        "id": "078"
+      },
+      "salina cruz": {
+        "id": "079"
+      },
+      "san agustin amatengo": {
+        "id": "080"
+      },
+      "san agustin atenango": {
+        "id": "081"
+      },
+      "san agustin chayuco": {
+        "id": "082"
+      },
+      "san agustin de las juntas": {
+        "id": "083"
+      },
+      "san agustin etla": {
+        "id": "084"
+      },
+      "san agustin loxicha": {
+        "id": "085"
+      },
+      "san agustin tlacotepec": {
+        "id": "086"
+      },
+      "san agustin yatareni": {
+        "id": "087"
+      },
+      "san andres cabecera nueva": {
+        "id": "088"
+      },
+      "san andres dinicuiti": {
+        "id": "089"
+      },
+      "san andres huaxpaltepec": {
+        "id": "090"
+      },
+      "san andres huayapam": {
+        "id": "091"
+      },
+      "san andres ixtlahuaca": {
+        "id": "092"
+      },
+      "san andres lagunas": {
+        "id": "093"
+      },
+      "san andres nuxino": {
+        "id": "094"
+      },
+      "san andres paxtlan": {
+        "id": "095"
+      },
+      "san andres sinaxtla": {
+        "id": "096"
+      },
+      "san andres solaga": {
+        "id": "097"
+      },
+      "san andres teotilalpam": {
+        "id": "098"
+      },
+      "san andres tepetlapa": {
+        "id": "099"
+      },
+      "san andres yaa": {
+        "id": "100"
+      },
+      "san andres zabache": {
+        "id": "101"
+      },
+      "san andres zautla": {
+        "id": "102"
+      },
+      "san antonino castillo velasco": {
+        "id": "103"
+      },
+      "san antonino el alto": {
+        "id": "104"
+      },
+      "san antonino monte verde": {
+        "id": "105"
+      },
+      "san antonio acutla": {
+        "id": "106"
+      },
+      "san antonio de la cal": {
+        "id": "107"
+      },
+      "san antonio huitepec": {
+        "id": "108"
+      },
+      "san antonio nanahuatipam": {
+        "id": "109"
+      },
+      "san antonio sinicahua": {
+        "id": "110"
+      },
+      "san antonio tepetlapa": {
+        "id": "111"
+      },
+      "san baltazar chichicapam": {
+        "id": "112"
+      },
+      "san baltazar loxicha": {
+        "id": "113"
+      },
+      "san baltazar yatzachi el bajo": {
+        "id": "114"
+      },
+      "san bartolo coyotepec": {
+        "id": "115"
+      },
+      "san bartolome ayautla": {
+        "id": "116"
+      },
+      "san bartolome loxicha": {
+        "id": "117"
+      },
+      "san bartolome quialana": {
+        "id": "118"
+      },
+      "san bartolome yucuane": {
+        "id": "119"
+      },
+      "san bartolome zoogocho": {
+        "id": "120"
+      },
+      "san bartolo soyaltepec": {
+        "id": "121"
+      },
+      "san bartolo yautepec": {
+        "id": "122"
+      },
+      "san bernardo mixtepec": {
+        "id": "123"
+      },
+      "heroica villa de san blas atempa": {
+        "id": "124"
+      },
+      "san carlos yautepec": {
+        "id": "125"
+      },
+      "san cristobal amatlan": {
+        "id": "126"
+      },
+      "san cristobal amoltepec": {
+        "id": "127"
+      },
+      "san cristobal lachirioag": {
+        "id": "128"
+      },
+      "san cristobal suchixtlahuaca": {
+        "id": "129"
+      },
+      "san dionisio del mar": {
+        "id": "130"
+      },
+      "san dionisio ocotepec": {
+        "id": "131"
+      },
+      "san dionisio ocotlan": {
+        "id": "132"
+      },
+      "san esteban atatlahuca": {
+        "id": "133"
+      },
+      "san felipe jalapa de diaz": {
+        "id": "134"
+      },
+      "san felipe tejalapam": {
+        "id": "135"
+      },
+      "san felipe usila": {
+        "id": "136"
+      },
+      "san francisco cahuacua": {
+        "id": "137"
+      },
+      "san francisco cajonos": {
+        "id": "138"
+      },
+      "san francisco chapulapa": {
+        "id": "139"
+      },
+      "san francisco chindua": {
+        "id": "140"
+      },
+      "san francisco del mar": {
+        "id": "141"
+      },
+      "san francisco huehuetlan": {
+        "id": "142"
+      },
+      "san francisco ixhuatan": {
+        "id": "143"
+      },
+      "san francisco jaltepetongo": {
+        "id": "144"
+      },
+      "san francisco lachigolo": {
+        "id": "145"
+      },
+      "san francisco logueche": {
+        "id": "146"
+      },
+      "san francisco nuxano": {
+        "id": "147"
+      },
+      "san francisco ozolotepec": {
+        "id": "148"
+      },
+      "san francisco sola": {
+        "id": "149"
+      },
+      "san francisco telixtlahuaca": {
+        "id": "150"
+      },
+      "san francisco teopan": {
+        "id": "151"
+      },
+      "san francisco tlapancingo": {
+        "id": "152"
+      },
+      "san gabriel mixtepec": {
+        "id": "153"
+      },
+      "san ildefonso amatlan": {
+        "id": "154"
+      },
+      "san ildefonso sola": {
+        "id": "155"
+      },
+      "san ildefonso villa alta": {
+        "id": "156"
+      },
+      "san jacinto amilpas": {
+        "id": "157"
+      },
+      "san jacinto tlacotepec": {
+        "id": "158"
+      },
+      "san jeronimo coatlan": {
+        "id": "159"
+      },
+      "san jeronimo silacayoapilla": {
+        "id": "160"
+      },
+      "san jeronimo sosola": {
+        "id": "161"
+      },
+      "san jeronimo taviche": {
+        "id": "162"
+      },
+      "san jeronimo tecoatl": {
+        "id": "163"
+      },
+      "san jorge nuchita": {
+        "id": "164"
+      },
+      "san jose ayuquila": {
+        "id": "165"
+      },
+      "san jose chiltepec": {
+        "id": "166"
+      },
+      "san jose del penasco": {
+        "id": "167"
+      },
+      "san jose estancia grande": {
+        "id": "168"
+      },
+      "san jose independencia": {
+        "id": "169"
+      },
+      "san jose lachiguiri": {
+        "id": "170"
+      },
+      "san jose tenango": {
+        "id": "171"
+      },
+      "san juan achiutla": {
+        "id": "172"
+      },
+      "san juan atepec": {
+        "id": "173"
+      },
+      "animas trujano": {
+        "id": "174"
+      },
+      "san juan bautista atatlahuca": {
+        "id": "175"
+      },
+      "san juan bautista coixtlahuaca": {
+        "id": "176"
+      },
+      "san juan bautista cuicatlan": {
+        "id": "177"
+      },
+      "san juan bautista guelache": {
+        "id": "178"
+      },
+      "san juan bautista jayacatlan": {
+        "id": "179"
+      },
+      "san juan bautista lo de soto": {
+        "id": "180"
+      },
+      "san juan bautista suchitepec": {
+        "id": "181"
+      },
+      "san juan bautista tlacoatzintepec": {
+        "id": "182"
+      },
+      "san juan bautista tlachichilco": {
+        "id": "183"
+      },
+      "san juan bautista tuxtepec": {
+        "id": "184"
+      },
+      "san juan cacahuatepec": {
+        "id": "185"
+      },
+      "san juan cieneguilla": {
+        "id": "186"
+      },
+      "san juan coatzospam": {
+        "id": "187"
+      },
+      "san juan colorado": {
+        "id": "188"
+      },
+      "san juan comaltepec": {
+        "id": "189"
+      },
+      "san juan cotzocon": {
+        "id": "190"
+      },
+      "san juan chicomezuchil": {
+        "id": "191"
+      },
+      "san juan chilateca": {
+        "id": "192"
+      },
+      "san juan del estado": {
+        "id": "193"
+      },
+      "san juan del rio": {
+        "id": "194"
+      },
+      "san juan diuxi": {
+        "id": "195"
+      },
+      "san juan evangelista analco": {
+        "id": "196"
+      },
+      "san juan guelavia": {
+        "id": "197"
+      },
+      "san juan guichicovi": {
+        "id": "198"
+      },
+      "san juan ihualtepec": {
+        "id": "199"
+      },
+      "san juan juquila mixes": {
+        "id": "200"
+      },
+      "san juan juquila vijanos": {
+        "id": "201"
+      },
+      "san juan lachao": {
+        "id": "202"
+      },
+      "san juan lachigalla": {
+        "id": "203"
+      },
+      "san juan lajarcia": {
+        "id": "204"
+      },
+      "san juan lalana": {
+        "id": "205"
+      },
+      "san juan de los cues": {
+        "id": "206"
+      },
+      "san juan mazatlan": {
+        "id": "207"
+      },
+      "san juan mixtepec": {
+        "id": "209"
+      },
+      "san juan numi": {
+        "id": "210"
+      },
+      "san juan ozolotepec": {
+        "id": "211"
+      },
+      "san juan petlapa": {
+        "id": "212"
+      },
+      "san juan quiahije": {
+        "id": "213"
+      },
+      "san juan quiotepec": {
+        "id": "214"
+      },
+      "san juan sayultepec": {
+        "id": "215"
+      },
+      "san juan tabaa": {
+        "id": "216"
+      },
+      "san juan tamazola": {
+        "id": "217"
+      },
+      "san juan teita": {
+        "id": "218"
+      },
+      "san juan teitipac": {
+        "id": "219"
+      },
+      "san juan tepeuxila": {
+        "id": "220"
+      },
+      "san juan teposcolula": {
+        "id": "221"
+      },
+      "san juan yaee": {
+        "id": "222"
+      },
+      "san juan yatzona": {
+        "id": "223"
+      },
+      "san juan yucuita": {
+        "id": "224"
+      },
+      "san lorenzo": {
+        "id": "225"
+      },
+      "san lorenzo albarradas": {
+        "id": "226"
+      },
+      "san lorenzo cacaotepec": {
+        "id": "227"
+      },
+      "san lorenzo cuaunecuiltitla": {
+        "id": "228"
+      },
+      "san lorenzo texmelucan": {
+        "id": "229"
+      },
+      "san lorenzo victoria": {
+        "id": "230"
+      },
+      "san lucas camotlan": {
+        "id": "231"
+      },
+      "san lucas ojitlan": {
+        "id": "232"
+      },
+      "san lucas quiavini": {
+        "id": "233"
+      },
+      "san lucas zoquiapam": {
+        "id": "234"
+      },
+      "san luis amatlan": {
+        "id": "235"
+      },
+      "san marcial ozolotepec": {
+        "id": "236"
+      },
+      "san marcos arteaga": {
+        "id": "237"
+      },
+      "heroico san martin de los cansecos": {
+        "id": "238"
+      },
+      "san martin huamelulpam": {
+        "id": "239"
+      },
+      "san martin itunyoso": {
+        "id": "240"
+      },
+      "san martin lachila": {
+        "id": "241"
+      },
+      "san martin peras": {
+        "id": "242"
+      },
+      "san martin tilcajete": {
+        "id": "243"
+      },
+      "san martin toxpalan": {
+        "id": "244"
+      },
+      "san martin zacatepec": {
+        "id": "245"
+      },
+      "san mateo cajonos": {
+        "id": "246"
+      },
+      "capulalpam de mendez": {
+        "id": "247"
+      },
+      "san mateo del mar": {
+        "id": "248"
+      },
+      "san mateo yoloxochitlan": {
+        "id": "249"
+      },
+      "san mateo etlatongo": {
+        "id": "250"
+      },
+      "san mateo nejapam": {
+        "id": "251"
+      },
+      "san mateo penasco": {
+        "id": "252"
+      },
+      "san mateo pinas": {
+        "id": "253"
+      },
+      "san mateo rio hondo": {
+        "id": "254"
+      },
+      "san mateo sindihui": {
+        "id": "255"
+      },
+      "san mateo tlapiltepec": {
+        "id": "256"
+      },
+      "san melchor betaza": {
+        "id": "257"
+      },
+      "san miguel achiutla": {
+        "id": "258"
+      },
+      "san miguel ahuehuetitlan": {
+        "id": "259"
+      },
+      "san miguel aloapam": {
+        "id": "260"
+      },
+      "san miguel amatitlan": {
+        "id": "261"
+      },
+      "san miguel amatlan": {
+        "id": "262"
+      },
+      "san miguel coatlan": {
+        "id": "263"
+      },
+      "san miguel chicahua": {
+        "id": "264"
+      },
+      "san miguel chimalapa": {
+        "id": "265"
+      },
+      "san miguel del puerto": {
+        "id": "266"
+      },
+      "san miguel del rio": {
+        "id": "267"
+      },
+      "san miguel ejutla": {
+        "id": "268"
+      },
+      "san miguel el grande": {
+        "id": "269"
+      },
+      "san miguel huautla": {
+        "id": "270"
+      },
+      "san miguel mixtepec": {
+        "id": "271"
+      },
+      "san miguel panixtlahuaca": {
+        "id": "272"
+      },
+      "san miguel peras": {
+        "id": "273"
+      },
+      "san miguel piedras": {
+        "id": "274"
+      },
+      "san miguel quetzaltepec": {
+        "id": "275"
+      },
+      "san miguel santa flor": {
+        "id": "276"
+      },
+      "villa sola de vega": {
+        "id": "277"
+      },
+      "san miguel soyaltepec": {
+        "id": "278"
+      },
+      "san miguel suchixtepec": {
+        "id": "279"
+      },
+      "villa talea de castro": {
+        "id": "280"
+      },
+      "san miguel tecomatlan": {
+        "id": "281"
+      },
+      "san miguel tenango": {
+        "id": "282"
+      },
+      "san miguel tequixtepec": {
+        "id": "283"
+      },
+      "san miguel tilquiapam": {
+        "id": "284"
+      },
+      "san miguel tlacamama": {
+        "id": "285"
+      },
+      "san miguel tlacotepec": {
+        "id": "286"
+      },
+      "san miguel tulancingo": {
+        "id": "287"
+      },
+      "san miguel yotao": {
+        "id": "288"
+      },
+      "san nicolas": {
+        "id": "289"
+      },
+      "san nicolas hidalgo": {
+        "id": "290"
+      },
+      "san pablo coatlan": {
+        "id": "291"
+      },
+      "san pablo cuatro venados": {
+        "id": "292"
+      },
+      "san pablo etla": {
+        "id": "293"
+      },
+      "san pablo huitzo": {
+        "id": "294"
+      },
+      "san pablo huixtepec": {
+        "id": "295"
+      },
+      "san pablo macuiltianguis": {
+        "id": "296"
+      },
+      "san pablo tijaltepec": {
+        "id": "297"
+      },
+      "san pablo villa de mitla": {
+        "id": "298"
+      },
+      "san pablo yaganiza": {
+        "id": "299"
+      },
+      "san pedro amuzgos": {
+        "id": "300"
+      },
+      "san pedro apostol": {
+        "id": "301"
+      },
+      "san pedro atoyac": {
+        "id": "302"
+      },
+      "san pedro cajonos": {
+        "id": "303"
+      },
+      "san pedro coxcaltepec cantaros": {
+        "id": "304"
+      },
+      "san pedro comitancillo": {
+        "id": "305"
+      },
+      "san pedro el alto": {
+        "id": "306"
+      },
+      "san pedro huamelula": {
+        "id": "307"
+      },
+      "san pedro huilotepec": {
+        "id": "308"
+      },
+      "san pedro ixcatlan": {
+        "id": "309"
+      },
+      "san pedro ixtlahuaca": {
+        "id": "310"
+      },
+      "san pedro jaltepetongo": {
+        "id": "311"
+      },
+      "san pedro jicayan": {
+        "id": "312"
+      },
+      "san pedro jocotipac": {
+        "id": "313"
+      },
+      "san pedro juchatengo": {
+        "id": "314"
+      },
+      "san pedro martir": {
+        "id": "315"
+      },
+      "san pedro martir quiechapa": {
+        "id": "316"
+      },
+      "san pedro martir yucuxaco": {
+        "id": "317"
+      },
+      "san pedro mixtepec": {
+        "id": "319"
+      },
+      "san pedro molinos": {
+        "id": "320"
+      },
+      "san pedro nopala": {
+        "id": "321"
+      },
+      "san pedro ocopetatillo": {
+        "id": "322"
+      },
+      "san pedro ocotepec": {
+        "id": "323"
+      },
+      "san pedro pochutla": {
+        "id": "324"
+      },
+      "san pedro quiatoni": {
+        "id": "325"
+      },
+      "san pedro sochiapam": {
+        "id": "326"
+      },
+      "san pedro tapanatepec": {
+        "id": "327"
+      },
+      "san pedro taviche": {
+        "id": "328"
+      },
+      "san pedro teozacoalco": {
+        "id": "329"
+      },
+      "san pedro teutila": {
+        "id": "330"
+      },
+      "san pedro tidaa": {
+        "id": "331"
+      },
+      "san pedro topiltepec": {
+        "id": "332"
+      },
+      "san pedro totolapam": {
+        "id": "333"
+      },
+      "villa de tututepec": {
+        "id": "334"
+      },
+      "san pedro yaneri": {
+        "id": "335"
+      },
+      "san pedro yolox": {
+        "id": "336"
+      },
+      "san pedro y san pablo ayutla": {
+        "id": "337"
+      },
+      "villa de etla": {
+        "id": "338"
+      },
+      "san pedro y san pablo teposcolula": {
+        "id": "339"
+      },
+      "san pedro y san pablo tequixtepec": {
+        "id": "340"
+      },
+      "san pedro yucunama": {
+        "id": "341"
+      },
+      "san raymundo jalpan": {
+        "id": "342"
+      },
+      "san sebastian abasolo": {
+        "id": "343"
+      },
+      "san sebastian coatlan": {
+        "id": "344"
+      },
+      "san sebastian ixcapa": {
+        "id": "345"
+      },
+      "san sebastian nicananduta": {
+        "id": "346"
+      },
+      "san sebastian rio hondo": {
+        "id": "347"
+      },
+      "san sebastian tecomaxtlahuaca": {
+        "id": "348"
+      },
+      "san sebastian teitipac": {
+        "id": "349"
+      },
+      "san sebastian tutla": {
+        "id": "350"
+      },
+      "san simon almolongas": {
+        "id": "351"
+      },
+      "san simon zahuatlan": {
+        "id": "352"
+      },
+      "santa ana": {
+        "id": "353"
+      },
+      "santa ana ateixtlahuaca": {
+        "id": "354"
+      },
+      "santa ana cuauhtemoc": {
+        "id": "355"
+      },
+      "santa ana del valle": {
+        "id": "356"
+      },
+      "santa ana tavela": {
+        "id": "357"
+      },
+      "santa ana tlapacoyan": {
+        "id": "358"
+      },
+      "santa ana yareni": {
+        "id": "359"
+      },
+      "santa ana zegache": {
+        "id": "360"
+      },
+      "santa catalina quieri": {
+        "id": "361"
+      },
+      "santa catarina cuixtla": {
+        "id": "362"
+      },
+      "santa catarina ixtepeji": {
+        "id": "363"
+      },
+      "santa catarina juquila": {
+        "id": "364"
+      },
+      "santa catarina lachatao": {
+        "id": "365"
+      },
+      "santa catarina loxicha": {
+        "id": "366"
+      },
+      "santa catarina mechoacan": {
+        "id": "367"
+      },
+      "santa catarina minas": {
+        "id": "368"
+      },
+      "santa catarina quiane": {
+        "id": "369"
+      },
+      "santa catarina tayata": {
+        "id": "370"
+      },
+      "santa catarina ticua": {
+        "id": "371"
+      },
+      "santa catarina yosonotu": {
+        "id": "372"
+      },
+      "santa catarina zapoquila": {
+        "id": "373"
+      },
+      "santa cruz acatepec": {
+        "id": "374"
+      },
+      "santa cruz amilpas": {
+        "id": "375"
+      },
+      "santa cruz de bravo": {
+        "id": "376"
+      },
+      "santa cruz itundujia": {
+        "id": "377"
+      },
+      "santa cruz mixtepec": {
+        "id": "378"
+      },
+      "santa cruz nundaco": {
+        "id": "379"
+      },
+      "santa cruz papalutla": {
+        "id": "380"
+      },
+      "santa cruz tacache de mina": {
+        "id": "381"
+      },
+      "santa cruz tacahua": {
+        "id": "382"
+      },
+      "santa cruz tayata": {
+        "id": "383"
+      },
+      "santa cruz xitla": {
+        "id": "384"
+      },
+      "santa cruz xoxocotlan": {
+        "id": "385"
+      },
+      "santa cruz zenzontepec": {
+        "id": "386"
+      },
+      "santa gertrudis": {
+        "id": "387"
+      },
+      "santa ines del monte": {
+        "id": "388"
+      },
+      "santa ines yatzeche": {
+        "id": "389"
+      },
+      "santa lucia del camino": {
+        "id": "390"
+      },
+      "santa lucia miahuatlan": {
+        "id": "391"
+      },
+      "santa lucia monteverde": {
+        "id": "392"
+      },
+      "santa lucia ocotlan": {
+        "id": "393"
+      },
+      "santa maria alotepec": {
+        "id": "394"
+      },
+      "santa maria apazco": {
+        "id": "395"
+      },
+      "santa maria la asuncion": {
+        "id": "396"
+      },
+      "heroica ciudad de tlaxiaco": {
+        "id": "397"
+      },
+      "ayoquezco de aldama": {
+        "id": "398"
+      },
+      "santa maria atzompa": {
+        "id": "399"
+      },
+      "santa maria camotlan": {
+        "id": "400"
+      },
+      "santa maria colotepec": {
+        "id": "401"
+      },
+      "santa maria cortijo": {
+        "id": "402"
+      },
+      "santa maria coyotepec": {
+        "id": "403"
+      },
+      "santa maria chachoapam": {
+        "id": "404"
+      },
+      "villa de chilapa de diaz": {
+        "id": "405"
+      },
+      "santa maria chilchotla": {
+        "id": "406"
+      },
+      "santa maria chimalapa": {
+        "id": "407"
+      },
+      "santa maria del rosario": {
+        "id": "408"
+      },
+      "santa maria del tule": {
+        "id": "409"
+      },
+      "santa maria ecatepec": {
+        "id": "410"
+      },
+      "santa maria guelace": {
+        "id": "411"
+      },
+      "santa maria guienagati": {
+        "id": "412"
+      },
+      "santa maria huatulco": {
+        "id": "413"
+      },
+      "santa maria huazolotitlan": {
+        "id": "414"
+      },
+      "santa maria ipalapa": {
+        "id": "415"
+      },
+      "santa maria ixcatlan": {
+        "id": "416"
+      },
+      "santa maria jacatepec": {
+        "id": "417"
+      },
+      "santa maria jalapa del marques": {
+        "id": "418"
+      },
+      "santa maria jaltianguis": {
+        "id": "419"
+      },
+      "santa maria lachixio": {
+        "id": "420"
+      },
+      "santa maria mixtequilla": {
+        "id": "421"
+      },
+      "santa maria nativitas": {
+        "id": "422"
+      },
+      "santa maria nduayaco": {
+        "id": "423"
+      },
+      "santa maria ozolotepec": {
+        "id": "424"
+      },
+      "santa maria papalo": {
+        "id": "425"
+      },
+      "santa maria penoles": {
+        "id": "426"
+      },
+      "santa maria petapa": {
+        "id": "427"
+      },
+      "santa maria quiegolani": {
+        "id": "428"
+      },
+      "santa maria sola": {
+        "id": "429"
+      },
+      "santa maria tataltepec": {
+        "id": "430"
+      },
+      "santa maria tecomavaca": {
+        "id": "431"
+      },
+      "santa maria temaxcalapa": {
+        "id": "432"
+      },
+      "santa maria temaxcaltepec": {
+        "id": "433"
+      },
+      "santa maria teopoxco": {
+        "id": "434"
+      },
+      "santa maria tepantlali": {
+        "id": "435"
+      },
+      "santa maria texcatitlan": {
+        "id": "436"
+      },
+      "santa maria tlahuitoltepec": {
+        "id": "437"
+      },
+      "santa maria tlalixtac": {
+        "id": "438"
+      },
+      "santa maria tonameca": {
+        "id": "439"
+      },
+      "santa maria totolapilla": {
+        "id": "440"
+      },
+      "santa maria xadani": {
+        "id": "441"
+      },
+      "santa maria yalina": {
+        "id": "442"
+      },
+      "santa maria yavesia": {
+        "id": "443"
+      },
+      "santa maria yolotepec": {
+        "id": "444"
+      },
+      "santa maria yosoyua": {
+        "id": "445"
+      },
+      "santa maria yucuhiti": {
+        "id": "446"
+      },
+      "santa maria zacatepec": {
+        "id": "447"
+      },
+      "santa maria zaniza": {
+        "id": "448"
+      },
+      "santa maria zoquitlan": {
+        "id": "449"
+      },
+      "santiago amoltepec": {
+        "id": "450"
+      },
+      "santiago apoala": {
+        "id": "451"
+      },
+      "santiago apostol": {
+        "id": "452"
+      },
+      "santiago astata": {
+        "id": "453"
+      },
+      "santiago atitlan": {
+        "id": "454"
+      },
+      "santiago ayuquililla": {
+        "id": "455"
+      },
+      "santiago cacaloxtepec": {
+        "id": "456"
+      },
+      "santiago camotlan": {
+        "id": "457"
+      },
+      "santiago comaltepec": {
+        "id": "458"
+      },
+      "villa de santiago chazumba": {
+        "id": "459"
+      },
+      "santiago choapam": {
+        "id": "460"
+      },
+      "santiago del rio": {
+        "id": "461"
+      },
+      "santiago huajolotitlan": {
+        "id": "462"
+      },
+      "santiago huauclilla": {
+        "id": "463"
+      },
+      "santiago ihuitlan plumas": {
+        "id": "464"
+      },
+      "santiago ixcuintepec": {
+        "id": "465"
+      },
+      "santiago ixtayutla": {
+        "id": "466"
+      },
+      "santiago jamiltepec": {
+        "id": "467"
+      },
+      "santiago jocotepec": {
+        "id": "468"
+      },
+      "santiago juxtlahuaca": {
+        "id": "469"
+      },
+      "santiago lachiguiri": {
+        "id": "470"
+      },
+      "santiago lalopa": {
+        "id": "471"
+      },
+      "santiago laollaga": {
+        "id": "472"
+      },
+      "santiago laxopa": {
+        "id": "473"
+      },
+      "santiago llano grande": {
+        "id": "474"
+      },
+      "santiago matatlan": {
+        "id": "475"
+      },
+      "santiago miltepec": {
+        "id": "476"
+      },
+      "santiago minas": {
+        "id": "477"
+      },
+      "santiago nacaltepec": {
+        "id": "478"
+      },
+      "santiago nejapilla": {
+        "id": "479"
+      },
+      "santiago nundiche": {
+        "id": "480"
+      },
+      "santiago nuyoo": {
+        "id": "481"
+      },
+      "santiago pinotepa nacional": {
+        "id": "482"
+      },
+      "santiago suchilquitongo": {
+        "id": "483"
+      },
+      "santiago tamazola": {
+        "id": "484"
+      },
+      "santiago tapextla": {
+        "id": "485"
+      },
+      "villa tejupam de la union": {
+        "id": "486"
+      },
+      "santiago tenango": {
+        "id": "487"
+      },
+      "santiago tepetlapa": {
+        "id": "488"
+      },
+      "santiago tetepec": {
+        "id": "489"
+      },
+      "santiago texcalcingo": {
+        "id": "490"
+      },
+      "santiago textitlan": {
+        "id": "491"
+      },
+      "santiago tilantongo": {
+        "id": "492"
+      },
+      "santiago tillo": {
+        "id": "493"
+      },
+      "santiago tlazoyaltepec": {
+        "id": "494"
+      },
+      "santiago xanica": {
+        "id": "495"
+      },
+      "santiago xiacui": {
+        "id": "496"
+      },
+      "santiago yaitepec": {
+        "id": "497"
+      },
+      "santiago yaveo": {
+        "id": "498"
+      },
+      "santiago yolomecatl": {
+        "id": "499"
+      },
+      "santiago yosondua": {
+        "id": "500"
+      },
+      "santiago yucuyachi": {
+        "id": "501"
+      },
+      "santiago zacatepec": {
+        "id": "502"
+      },
+      "santiago zoochila": {
+        "id": "503"
+      },
+      "nuevo zoquiapam": {
+        "id": "504"
+      },
+      "santo domingo ingenio": {
+        "id": "505"
+      },
+      "santo domingo albarradas": {
+        "id": "506"
+      },
+      "santo domingo armenta": {
+        "id": "507"
+      },
+      "santo domingo chihuitan": {
+        "id": "508"
+      },
+      "santo domingo de morelos": {
+        "id": "509"
+      },
+      "santo domingo ixcatlan": {
+        "id": "510"
+      },
+      "santo domingo nuxaa": {
+        "id": "511"
+      },
+      "santo domingo ozolotepec": {
+        "id": "512"
+      },
+      "santo domingo petapa": {
+        "id": "513"
+      },
+      "santo domingo roayaga": {
+        "id": "514"
+      },
+      "santo domingo tehuantepec": {
+        "id": "515"
+      },
+      "santo domingo teojomulco": {
+        "id": "516"
+      },
+      "santo domingo tepuxtepec": {
+        "id": "517"
+      },
+      "santo domingo tlatayapam": {
+        "id": "518"
+      },
+      "santo domingo tomaltepec": {
+        "id": "519"
+      },
+      "santo domingo tonala": {
+        "id": "520"
+      },
+      "santo domingo tonaltepec": {
+        "id": "521"
+      },
+      "santo domingo xagacia": {
+        "id": "522"
+      },
+      "santo domingo yanhuitlan": {
+        "id": "523"
+      },
+      "santo domingo yodohino": {
+        "id": "524"
+      },
+      "santo domingo zanatepec": {
+        "id": "525"
+      },
+      "santos reyes nopala": {
+        "id": "526"
+      },
+      "santos reyes papalo": {
+        "id": "527"
+      },
+      "santos reyes tepejillo": {
+        "id": "528"
+      },
+      "santos reyes yucuna": {
+        "id": "529"
+      },
+      "santo tomas jalieza": {
+        "id": "530"
+      },
+      "santo tomas mazaltepec": {
+        "id": "531"
+      },
+      "santo tomas ocotepec": {
+        "id": "532"
+      },
+      "santo tomas tamazulapan": {
+        "id": "533"
+      },
+      "san vicente coatlan": {
+        "id": "534"
+      },
+      "san vicente lachixio": {
+        "id": "535"
+      },
+      "san vicente nunu": {
+        "id": "536"
+      },
+      "silacayoapam": {
+        "id": "537"
+      },
+      "sitio de xitlapehua": {
+        "id": "538"
+      },
+      "soledad etla": {
+        "id": "539"
+      },
+      "villa de tamazulapam del progreso": {
+        "id": "540"
+      },
+      "tanetze de zaragoza": {
+        "id": "541"
+      },
+      "taniche": {
+        "id": "542"
+      },
+      "tataltepec de valdes": {
+        "id": "543"
+      },
+      "teococuilco de marcos perez": {
+        "id": "544"
+      },
+      "teotitlan de flores magon": {
+        "id": "545"
+      },
+      "teotitlan del valle": {
+        "id": "546"
+      },
+      "teotongo": {
+        "id": "547"
+      },
+      "tepelmeme villa de morelos": {
+        "id": "548"
+      },
+      "heroica villa tezoatlan de segura y luna, cuna de la independencia de oaxaca": {
+        "id": "549"
+      },
+      "san jeronimo tlacochahuaya": {
+        "id": "550"
+      },
+      "tlacolula de matamoros": {
+        "id": "551"
+      },
+      "tlacotepec plumas": {
+        "id": "552"
+      },
+      "tlalixtac de cabrera": {
+        "id": "553"
+      },
+      "totontepec villa de morelos": {
+        "id": "554"
+      },
+      "trinidad zaachila": {
+        "id": "555"
+      },
+      "la trinidad vista hermosa": {
+        "id": "556"
+      },
+      "union hidalgo": {
+        "id": "557"
+      },
+      "valerio trujano": {
+        "id": "558"
+      },
+      "san juan bautista valle nacional": {
+        "id": "559"
+      },
+      "villa diaz ordaz": {
+        "id": "560"
+      },
+      "yaxe": {
+        "id": "561"
+      },
+      "magdalena yodocono de porfirio diaz": {
+        "id": "562"
+      },
+      "yogana": {
+        "id": "563"
+      },
+      "yutanduchi de guerrero": {
+        "id": "564"
+      },
+      "villa de zaachila": {
+        "id": "565"
+      },
+      "san mateo yucutindoo": {
+        "id": "566"
+      },
+      "zapotitlan lagunas": {
+        "id": "567"
+      },
+      "zapotitlan palmas": {
+        "id": "568"
+      },
+      "santa ines de zaragoza": {
+        "id": "569"
+      },
+      "zimatlan de alvarez": {
+        "id": "570"
+      }
+    }
+  },
+  "puebla": {
+    "id": "21",
+    "municipios": {
+      "acajete": {
+        "id": "001"
+      },
+      "acateno": {
+        "id": "002"
+      },
+      "acatlan": {
+        "id": "003"
+      },
+      "acatzingo": {
+        "id": "004"
+      },
+      "acteopan": {
+        "id": "005"
+      },
+      "ahuacatlan": {
+        "id": "006"
+      },
+      "ahuatlan": {
+        "id": "007"
+      },
+      "ahuazotepec": {
+        "id": "008"
+      },
+      "ahuehuetitla": {
+        "id": "009"
+      },
+      "ajalpan": {
+        "id": "010"
+      },
+      "albino zertuche": {
+        "id": "011"
+      },
+      "aljojuca": {
+        "id": "012"
+      },
+      "altepexi": {
+        "id": "013"
+      },
+      "amixtlan": {
+        "id": "014"
+      },
+      "amozoc": {
+        "id": "015"
+      },
+      "aquixtla": {
+        "id": "016"
+      },
+      "atempan": {
+        "id": "017"
+      },
+      "atexcal": {
+        "id": "018"
+      },
+      "atlixco": {
+        "id": "019"
+      },
+      "atoyatempan": {
+        "id": "020"
+      },
+      "atzala": {
+        "id": "021"
+      },
+      "atzitzihuacan": {
+        "id": "022"
+      },
+      "atzitzintla": {
+        "id": "023"
+      },
+      "axutla": {
+        "id": "024"
+      },
+      "ayotoxco de guerrero": {
+        "id": "025"
+      },
+      "calpan": {
+        "id": "026"
+      },
+      "caltepec": {
+        "id": "027"
+      },
+      "camocuautla": {
+        "id": "028"
+      },
+      "caxhuacan": {
+        "id": "029"
+      },
+      "coatepec": {
+        "id": "030"
+      },
+      "coatzingo": {
+        "id": "031"
+      },
+      "cohetzala": {
+        "id": "032"
+      },
+      "cohuecan": {
+        "id": "033"
+      },
+      "coronango": {
+        "id": "034"
+      },
+      "coxcatlan": {
+        "id": "035"
+      },
+      "coyomeapan": {
+        "id": "036"
+      },
+      "coyotepec": {
+        "id": "037"
+      },
+      "cuapiaxtla de madero": {
+        "id": "038"
+      },
+      "cuautempan": {
+        "id": "039"
+      },
+      "cuautinchan": {
+        "id": "040"
+      },
+      "cuautlancingo": {
+        "id": "041"
+      },
+      "cuayuca de andrade": {
+        "id": "042"
+      },
+      "cuetzalan del progreso": {
+        "id": "043"
+      },
+      "cuyoaco": {
+        "id": "044"
+      },
+      "chalchicomula de sesma": {
+        "id": "045"
+      },
+      "chapulco": {
+        "id": "046"
+      },
+      "chiautla": {
+        "id": "047"
+      },
+      "chiautzingo": {
+        "id": "048"
+      },
+      "chiconcuautla": {
+        "id": "049"
+      },
+      "chichiquila": {
+        "id": "050"
+      },
+      "chietla": {
+        "id": "051"
+      },
+      "chigmecatitlan": {
+        "id": "052"
+      },
+      "chignahuapan": {
+        "id": "053"
+      },
+      "chignautla": {
+        "id": "054"
+      },
+      "chila": {
+        "id": "055"
+      },
+      "chila de la sal": {
+        "id": "056"
+      },
+      "honey": {
+        "id": "057"
+      },
+      "chilchotla": {
+        "id": "058"
+      },
+      "chinantla": {
+        "id": "059"
+      },
+      "domingo arenas": {
+        "id": "060"
+      },
+      "eloxochitlan": {
+        "id": "061"
+      },
+      "epatlan": {
+        "id": "062"
+      },
+      "esperanza": {
+        "id": "063"
+      },
+      "francisco z. mena": {
+        "id": "064"
+      },
+      "general felipe angeles": {
+        "id": "065"
+      },
+      "guadalupe": {
+        "id": "066"
+      },
+      "guadalupe victoria": {
+        "id": "067"
+      },
+      "hermenegildo galeana": {
+        "id": "068"
+      },
+      "huaquechula": {
+        "id": "069"
+      },
+      "huatlatlauca": {
+        "id": "070"
+      },
+      "huauchinango": {
+        "id": "071"
+      },
+      "huehuetla": {
+        "id": "072"
+      },
+      "huehuetlan el chico": {
+        "id": "073"
+      },
+      "huejotzingo": {
+        "id": "074"
+      },
+      "hueyapan": {
+        "id": "075"
+      },
+      "hueytamalco": {
+        "id": "076"
+      },
+      "hueytlalpan": {
+        "id": "077"
+      },
+      "huitzilan de serdan": {
+        "id": "078"
+      },
+      "huitziltepec": {
+        "id": "079"
+      },
+      "atlequizayan": {
+        "id": "080"
+      },
+      "ixcamilpa de guerrero": {
+        "id": "081"
+      },
+      "ixcaquixtla": {
+        "id": "082"
+      },
+      "ixtacamaxtitlan": {
+        "id": "083"
+      },
+      "ixtepec": {
+        "id": "084"
+      },
+      "izucar de matamoros": {
+        "id": "085"
+      },
+      "jalpan": {
+        "id": "086"
+      },
+      "jolalpan": {
+        "id": "087"
+      },
+      "jonotla": {
+        "id": "088"
+      },
+      "jopala": {
+        "id": "089"
+      },
+      "juan c. bonilla": {
+        "id": "090"
+      },
+      "juan galindo": {
+        "id": "091"
+      },
+      "juan n. mendez": {
+        "id": "092"
+      },
+      "lafragua": {
+        "id": "093"
+      },
+      "libres": {
+        "id": "094"
+      },
+      "la magdalena tlatlauquitepec": {
+        "id": "095"
+      },
+      "mazapiltepec de juarez": {
+        "id": "096"
+      },
+      "mixtla": {
+        "id": "097"
+      },
+      "molcaxac": {
+        "id": "098"
+      },
+      "canada morelos": {
+        "id": "099"
+      },
+      "naupan": {
+        "id": "100"
+      },
+      "nauzontla": {
+        "id": "101"
+      },
+      "nealtican": {
+        "id": "102"
+      },
+      "nicolas bravo": {
+        "id": "103"
+      },
+      "nopalucan": {
+        "id": "104"
+      },
+      "ocotepec": {
+        "id": "105"
+      },
+      "ocoyucan": {
+        "id": "106"
+      },
+      "olintla": {
+        "id": "107"
+      },
+      "oriental": {
+        "id": "108"
+      },
+      "pahuatlan": {
+        "id": "109"
+      },
+      "palmar de bravo": {
+        "id": "110"
+      },
+      "pantepec": {
+        "id": "111"
+      },
+      "petlalcingo": {
+        "id": "112"
+      },
+      "piaxtla": {
+        "id": "113"
+      },
+      "puebla": {
+        "id": "114"
+      },
+      "quecholac": {
+        "id": "115"
+      },
+      "quimixtlan": {
+        "id": "116"
+      },
+      "rafael lara grajales": {
+        "id": "117"
+      },
+      "los reyes de juarez": {
+        "id": "118"
+      },
+      "san andres cholula": {
+        "id": "119"
+      },
+      "san antonio canada": {
+        "id": "120"
+      },
+      "san diego la mesa tochimiltzingo": {
+        "id": "121"
+      },
+      "san felipe teotlalcingo": {
+        "id": "122"
+      },
+      "san felipe tepatlan": {
+        "id": "123"
+      },
+      "san gabriel chilac": {
+        "id": "124"
+      },
+      "san gregorio atzompa": {
+        "id": "125"
+      },
+      "san jeronimo tecuanipan": {
+        "id": "126"
+      },
+      "san jeronimo xayacatlan": {
+        "id": "127"
+      },
+      "san jose chiapa": {
+        "id": "128"
+      },
+      "san jose miahuatlan": {
+        "id": "129"
+      },
+      "san juan atenco": {
+        "id": "130"
+      },
+      "san juan atzompa": {
+        "id": "131"
+      },
+      "san martin texmelucan": {
+        "id": "132"
+      },
+      "san martin totoltepec": {
+        "id": "133"
+      },
+      "san matias tlalancaleca": {
+        "id": "134"
+      },
+      "san miguel ixitlan": {
+        "id": "135"
+      },
+      "san miguel xoxtla": {
+        "id": "136"
+      },
+      "san nicolas buenos aires": {
+        "id": "137"
+      },
+      "san nicolas de los ranchos": {
+        "id": "138"
+      },
+      "san pablo anicano": {
+        "id": "139"
+      },
+      "san pedro cholula": {
+        "id": "140"
+      },
+      "san pedro yeloixtlahuaca": {
+        "id": "141"
+      },
+      "san salvador el seco": {
+        "id": "142"
+      },
+      "san salvador el verde": {
+        "id": "143"
+      },
+      "san salvador huixcolotla": {
+        "id": "144"
+      },
+      "san sebastian tlacotepec": {
+        "id": "145"
+      },
+      "santa catarina tlaltempan": {
+        "id": "146"
+      },
+      "santa ines ahuatempan": {
+        "id": "147"
+      },
+      "santa isabel cholula": {
+        "id": "148"
+      },
+      "santiago miahuatlan": {
+        "id": "149"
+      },
+      "huehuetlan el grande": {
+        "id": "150"
+      },
+      "santo tomas hueyotlipan": {
+        "id": "151"
+      },
+      "soltepec": {
+        "id": "152"
+      },
+      "tecali de herrera": {
+        "id": "153"
+      },
+      "tecamachalco": {
+        "id": "154"
+      },
+      "tecomatlan": {
+        "id": "155"
+      },
+      "tehuacan": {
+        "id": "156"
+      },
+      "tehuitzingo": {
+        "id": "157"
+      },
+      "tenampulco": {
+        "id": "158"
+      },
+      "teopantlan": {
+        "id": "159"
+      },
+      "teotlalco": {
+        "id": "160"
+      },
+      "tepanco de lopez": {
+        "id": "161"
+      },
+      "tepango de rodriguez": {
+        "id": "162"
+      },
+      "tepatlaxco de hidalgo": {
+        "id": "163"
+      },
+      "tepeaca": {
+        "id": "164"
+      },
+      "tepemaxalco": {
+        "id": "165"
+      },
+      "tepeojuma": {
+        "id": "166"
+      },
+      "tepetzintla": {
+        "id": "167"
+      },
+      "tepexco": {
+        "id": "168"
+      },
+      "tepexi de rodriguez": {
+        "id": "169"
+      },
+      "tepeyahualco": {
+        "id": "170"
+      },
+      "tepeyahualco de cuauhtemoc": {
+        "id": "171"
+      },
+      "tetela de ocampo": {
+        "id": "172"
+      },
+      "teteles de avila castillo": {
+        "id": "173"
+      },
+      "teziutlan": {
+        "id": "174"
+      },
+      "tianguismanalco": {
+        "id": "175"
+      },
+      "tilapa": {
+        "id": "176"
+      },
+      "tlacotepec de benito juarez": {
+        "id": "177"
+      },
+      "tlacuilotepec": {
+        "id": "178"
+      },
+      "tlachichuca": {
+        "id": "179"
+      },
+      "tlahuapan": {
+        "id": "180"
+      },
+      "tlaltenango": {
+        "id": "181"
+      },
+      "tlanepantla": {
+        "id": "182"
+      },
+      "tlaola": {
+        "id": "183"
+      },
+      "tlapacoya": {
+        "id": "184"
+      },
+      "tlapanala": {
+        "id": "185"
+      },
+      "tlatlauquitepec": {
+        "id": "186"
+      },
+      "tlaxco": {
+        "id": "187"
+      },
+      "tochimilco": {
+        "id": "188"
+      },
+      "tochtepec": {
+        "id": "189"
+      },
+      "totoltepec de guerrero": {
+        "id": "190"
+      },
+      "tulcingo": {
+        "id": "191"
+      },
+      "tuzamapan de galeana": {
+        "id": "192"
+      },
+      "tzicatlacoyan": {
+        "id": "193"
+      },
+      "venustiano carranza": {
+        "id": "194"
+      },
+      "vicente guerrero": {
+        "id": "195"
+      },
+      "xayacatlan de bravo": {
+        "id": "196"
+      },
+      "xicotepec": {
+        "id": "197"
+      },
+      "xicotlan": {
+        "id": "198"
+      },
+      "xiutetelco": {
+        "id": "199"
+      },
+      "xochiapulco": {
+        "id": "200"
+      },
+      "xochiltepec": {
+        "id": "201"
+      },
+      "xochitlan de vicente suarez": {
+        "id": "202"
+      },
+      "xochitlan todos santos": {
+        "id": "203"
+      },
+      "yaonahuac": {
+        "id": "204"
+      },
+      "yehualtepec": {
+        "id": "205"
+      },
+      "zacapala": {
+        "id": "206"
+      },
+      "zacapoaxtla": {
+        "id": "207"
+      },
+      "zacatlan": {
+        "id": "208"
+      },
+      "zapotitlan": {
+        "id": "209"
+      },
+      "zapotitlan de mendez": {
+        "id": "210"
+      },
+      "zaragoza": {
+        "id": "211"
+      },
+      "zautla": {
+        "id": "212"
+      },
+      "zihuateutla": {
+        "id": "213"
+      },
+      "zinacatepec": {
+        "id": "214"
+      },
+      "zongozotla": {
+        "id": "215"
+      },
+      "zoquiapan": {
+        "id": "216"
+      },
+      "zoquitlan": {
+        "id": "217"
+      }
+    }
+  },
+  "queretaro": {
+    "id": "22",
+    "municipios": {
+      "amealco de bonfil": {
+        "id": "001"
+      },
+      "pinal de amoles": {
+        "id": "002"
+      },
+      "arroyo seco": {
+        "id": "003"
+      },
+      "cadereyta de montes": {
+        "id": "004"
+      },
+      "colon": {
+        "id": "005"
+      },
+      "corregidora": {
+        "id": "006"
+      },
+      "ezequiel montes": {
+        "id": "007"
+      },
+      "huimilpan": {
+        "id": "008"
+      },
+      "jalpan de serra": {
+        "id": "009"
+      },
+      "landa de matamoros": {
+        "id": "010"
+      },
+      "el marques": {
+        "id": "011"
+      },
+      "pedro escobedo": {
+        "id": "012"
+      },
+      "penamiller": {
+        "id": "013"
+      },
+      "queretaro": {
+        "id": "014"
+      },
+      "san joaquin": {
+        "id": "015"
+      },
+      "san juan del rio": {
+        "id": "016"
+      },
+      "tequisquiapan": {
+        "id": "017"
+      },
+      "toliman": {
+        "id": "018"
+      }
+    }
+  },
+  "quintana roo": {
+    "id": "23",
+    "municipios": {
+      "cozumel": {
+        "id": "001"
+      },
+      "felipe carrillo puerto": {
+        "id": "002"
+      },
+      "isla mujeres": {
+        "id": "003"
+      },
+      "othon p. blanco": {
+        "id": "004"
+      },
+      "benito juarez": {
+        "id": "005"
+      },
+      "jose maria morelos": {
+        "id": "006"
+      },
+      "lazaro cardenas": {
+        "id": "007"
+      },
+      "solidaridad": {
+        "id": "008"
+      },
+      "tulum": {
+        "id": "009"
+      },
+      "bacalar": {
+        "id": "010"
+      },
+      "puerto morelos": {
+        "id": "011"
+      }
+    }
+  },
+  "san luis potosi": {
+    "id": "24",
+    "municipios": {
+      "ahualulco del sonido 13": {
+        "id": "001"
+      },
+      "alaquines": {
+        "id": "002"
+      },
+      "aquismon": {
+        "id": "003"
+      },
+      "armadillo de los infante": {
+        "id": "004"
+      },
+      "cardenas": {
+        "id": "005"
+      },
+      "catorce": {
+        "id": "006"
+      },
+      "cedral": {
+        "id": "007"
+      },
+      "cerritos": {
+        "id": "008"
+      },
+      "cerro de san pedro": {
+        "id": "009"
+      },
+      "ciudad del maiz": {
+        "id": "010"
+      },
+      "ciudad fernandez": {
+        "id": "011"
+      },
+      "tancanhuitz": {
+        "id": "012"
+      },
+      "ciudad valles": {
+        "id": "013"
+      },
+      "coxcatlan": {
+        "id": "014"
+      },
+      "charcas": {
+        "id": "015"
+      },
+      "ebano": {
+        "id": "016"
+      },
+      "guadalcazar": {
+        "id": "017"
+      },
+      "huehuetlan": {
+        "id": "018"
+      },
+      "lagunillas": {
+        "id": "019"
+      },
+      "matehuala": {
+        "id": "020"
+      },
+      "mexquitic de carmona": {
+        "id": "021"
+      },
+      "moctezuma": {
+        "id": "022"
+      },
+      "rayon": {
+        "id": "023"
+      },
+      "rioverde": {
+        "id": "024"
+      },
+      "salinas": {
+        "id": "025"
+      },
+      "san antonio": {
+        "id": "026"
+      },
+      "san ciro de acosta": {
+        "id": "027"
+      },
+      "san luis potosi": {
+        "id": "028"
+      },
+      "san martin chalchicuautla": {
+        "id": "029"
+      },
+      "san nicolas tolentino": {
+        "id": "030"
+      },
+      "santa catarina": {
+        "id": "031"
+      },
+      "santa maria del rio": {
+        "id": "032"
+      },
+      "santo domingo": {
+        "id": "033"
+      },
+      "san vicente tancuayalab": {
+        "id": "034"
+      },
+      "soledad de graciano sanchez": {
+        "id": "035"
+      },
+      "tamasopo": {
+        "id": "036"
+      },
+      "tamazunchale": {
+        "id": "037"
+      },
+      "tampacan": {
+        "id": "038"
+      },
+      "tampamolon corona": {
+        "id": "039"
+      },
+      "tamuin": {
+        "id": "040"
+      },
+      "tanlajas": {
+        "id": "041"
+      },
+      "tanquian de escobedo": {
+        "id": "042"
+      },
+      "tierra nueva": {
+        "id": "043"
+      },
+      "vanegas": {
+        "id": "044"
+      },
+      "venado": {
+        "id": "045"
+      },
+      "villa de arriaga": {
+        "id": "046"
+      },
+      "villa de guadalupe": {
+        "id": "047"
+      },
+      "villa de la paz": {
+        "id": "048"
+      },
+      "villa de ramos": {
+        "id": "049"
+      },
+      "villa de reyes": {
+        "id": "050"
+      },
+      "villa hidalgo": {
+        "id": "051"
+      },
+      "villa juarez": {
+        "id": "052"
+      },
+      "axtla de terrazas": {
+        "id": "053"
+      },
+      "xilitla": {
+        "id": "054"
+      },
+      "zaragoza": {
+        "id": "055"
+      },
+      "villa de arista": {
+        "id": "056"
+      },
+      "matlapa": {
+        "id": "057"
+      },
+      "el naranjo": {
+        "id": "058"
+      },
+      "villa de pozos": {
+        "id": "059"
+      }
+    }
+  },
+  "sinaloa": {
+    "id": "25",
+    "municipios": {
+      "ahome": {
+        "id": "001"
+      },
+      "angostura": {
+        "id": "002"
+      },
+      "badiraguato": {
+        "id": "003"
+      },
+      "concordia": {
+        "id": "004"
+      },
+      "cosala": {
+        "id": "005"
+      },
+      "culiacan": {
+        "id": "006"
+      },
+      "choix": {
+        "id": "007"
+      },
+      "elota": {
+        "id": "008"
+      },
+      "escuinapa": {
+        "id": "009"
+      },
+      "el fuerte": {
+        "id": "010"
+      },
+      "guasave": {
+        "id": "011"
+      },
+      "mazatlan": {
+        "id": "012"
+      },
+      "mocorito": {
+        "id": "013"
+      },
+      "rosario": {
+        "id": "014"
+      },
+      "salvador alvarado": {
+        "id": "015"
+      },
+      "san ignacio": {
+        "id": "016"
+      },
+      "sinaloa": {
+        "id": "017"
+      },
+      "navolato": {
+        "id": "018"
+      },
+      "eldorado": {
+        "id": "019"
+      },
+      "juan jose rios": {
+        "id": "020"
+      }
+    }
+  },
+  "sonora": {
+    "id": "26",
+    "municipios": {
+      "aconchi": {
+        "id": "001"
+      },
+      "agua prieta": {
+        "id": "002"
+      },
+      "alamos": {
+        "id": "003"
+      },
+      "altar": {
+        "id": "004"
+      },
+      "arivechi": {
+        "id": "005"
+      },
+      "arizpe": {
+        "id": "006"
+      },
+      "atil": {
+        "id": "007"
+      },
+      "bacadehuachi": {
+        "id": "008"
+      },
+      "bacanora": {
+        "id": "009"
+      },
+      "bacerac": {
+        "id": "010"
+      },
+      "bacoachi": {
+        "id": "011"
+      },
+      "bacum": {
+        "id": "012"
+      },
+      "banamichi": {
+        "id": "013"
+      },
+      "baviacora": {
+        "id": "014"
+      },
+      "bavispe": {
+        "id": "015"
+      },
+      "benjamin hill": {
+        "id": "016"
+      },
+      "caborca": {
+        "id": "017"
+      },
+      "cajeme": {
+        "id": "018"
+      },
+      "cananea": {
+        "id": "019"
+      },
+      "carbo": {
+        "id": "020"
+      },
+      "la colorada": {
+        "id": "021"
+      },
+      "cucurpe": {
+        "id": "022"
+      },
+      "cumpas": {
+        "id": "023"
+      },
+      "divisaderos": {
+        "id": "024"
+      },
+      "empalme": {
+        "id": "025"
+      },
+      "etchojoa": {
+        "id": "026"
+      },
+      "fronteras": {
+        "id": "027"
+      },
+      "granados": {
+        "id": "028"
+      },
+      "guaymas": {
+        "id": "029"
+      },
+      "hermosillo": {
+        "id": "030"
+      },
+      "huachinera": {
+        "id": "031"
+      },
+      "huasabas": {
+        "id": "032"
+      },
+      "huatabampo": {
+        "id": "033"
+      },
+      "huepac": {
+        "id": "034"
+      },
+      "imuris": {
+        "id": "035"
+      },
+      "magdalena": {
+        "id": "036"
+      },
+      "mazatan": {
+        "id": "037"
+      },
+      "moctezuma": {
+        "id": "038"
+      },
+      "naco": {
+        "id": "039"
+      },
+      "nacori chico": {
+        "id": "040"
+      },
+      "nacozari de garcia": {
+        "id": "041"
+      },
+      "navojoa": {
+        "id": "042"
+      },
+      "nogales": {
+        "id": "043"
+      },
+      "onavas": {
+        "id": "044"
+      },
+      "opodepe": {
+        "id": "045"
+      },
+      "oquitoa": {
+        "id": "046"
+      },
+      "pitiquito": {
+        "id": "047"
+      },
+      "puerto penasco": {
+        "id": "048"
+      },
+      "quiriego": {
+        "id": "049"
+      },
+      "rayon": {
+        "id": "050"
+      },
+      "rosario": {
+        "id": "051"
+      },
+      "sahuaripa": {
+        "id": "052"
+      },
+      "san felipe de jesus": {
+        "id": "053"
+      },
+      "san javier": {
+        "id": "054"
+      },
+      "san luis rio colorado": {
+        "id": "055"
+      },
+      "san miguel de horcasitas": {
+        "id": "056"
+      },
+      "san pedro de la cueva": {
+        "id": "057"
+      },
+      "santa ana": {
+        "id": "058"
+      },
+      "santa cruz": {
+        "id": "059"
+      },
+      "saric": {
+        "id": "060"
+      },
+      "soyopa": {
+        "id": "061"
+      },
+      "suaqui grande": {
+        "id": "062"
+      },
+      "tepache": {
+        "id": "063"
+      },
+      "trincheras": {
+        "id": "064"
+      },
+      "tubutama": {
+        "id": "065"
+      },
+      "ures": {
+        "id": "066"
+      },
+      "villa hidalgo": {
+        "id": "067"
+      },
+      "villa pesqueira": {
+        "id": "068"
+      },
+      "yecora": {
+        "id": "069"
+      },
+      "general plutarco elias calles": {
+        "id": "070"
+      },
+      "benito juarez": {
+        "id": "071"
+      },
+      "san ignacio rio muerto": {
+        "id": "072"
+      }
+    }
+  },
+  "tabasco": {
+    "id": "27",
+    "municipios": {
+      "balancan": {
+        "id": "001"
+      },
+      "cardenas": {
+        "id": "002"
+      },
+      "centla": {
+        "id": "003"
+      },
+      "centro": {
+        "id": "004"
+      },
+      "comalcalco": {
+        "id": "005"
+      },
+      "cunduacan": {
+        "id": "006"
+      },
+      "emiliano zapata": {
+        "id": "007"
+      },
+      "huimanguillo": {
+        "id": "008"
+      },
+      "jalapa": {
+        "id": "009"
+      },
+      "jalpa de mendez": {
+        "id": "010"
+      },
+      "jonuta": {
+        "id": "011"
+      },
+      "macuspana": {
+        "id": "012"
+      },
+      "nacajuca": {
+        "id": "013"
+      },
+      "paraiso": {
+        "id": "014"
+      },
+      "tacotalpa": {
+        "id": "015"
+      },
+      "teapa": {
+        "id": "016"
+      },
+      "tenosique": {
+        "id": "017"
+      }
+    }
+  },
+  "tamaulipas": {
+    "id": "28",
+    "municipios": {
+      "abasolo": {
+        "id": "001"
+      },
+      "aldama": {
+        "id": "002"
+      },
+      "altamira": {
+        "id": "003"
+      },
+      "antiguo morelos": {
+        "id": "004"
+      },
+      "burgos": {
+        "id": "005"
+      },
+      "bustamante": {
+        "id": "006"
+      },
+      "camargo": {
+        "id": "007"
+      },
+      "casas": {
+        "id": "008"
+      },
+      "ciudad madero": {
+        "id": "009"
+      },
+      "cruillas": {
+        "id": "010"
+      },
+      "gomez farias": {
+        "id": "011"
+      },
+      "gonzalez": {
+        "id": "012"
+      },
+      "guemez": {
+        "id": "013"
+      },
+      "guerrero": {
+        "id": "014"
+      },
+      "gustavo diaz ordaz": {
+        "id": "015"
+      },
+      "hidalgo": {
+        "id": "016"
+      },
+      "jaumave": {
+        "id": "017"
+      },
+      "jimenez": {
+        "id": "018"
+      },
+      "llera": {
+        "id": "019"
+      },
+      "mainero": {
+        "id": "020"
+      },
+      "el mante": {
+        "id": "021"
+      },
+      "matamoros": {
+        "id": "022"
+      },
+      "mendez": {
+        "id": "023"
+      },
+      "mier": {
+        "id": "024"
+      },
+      "miguel aleman": {
+        "id": "025"
+      },
+      "miquihuana": {
+        "id": "026"
+      },
+      "nuevo laredo": {
+        "id": "027"
+      },
+      "nuevo morelos": {
+        "id": "028"
+      },
+      "ocampo": {
+        "id": "029"
+      },
+      "padilla": {
+        "id": "030"
+      },
+      "palmillas": {
+        "id": "031"
+      },
+      "reynosa": {
+        "id": "032"
+      },
+      "rio bravo": {
+        "id": "033"
+      },
+      "san carlos": {
+        "id": "034"
+      },
+      "san fernando": {
+        "id": "035"
+      },
+      "san nicolas": {
+        "id": "036"
+      },
+      "soto la marina": {
+        "id": "037"
+      },
+      "tampico": {
+        "id": "038"
+      },
+      "tula": {
+        "id": "039"
+      },
+      "valle hermoso": {
+        "id": "040"
+      },
+      "victoria": {
+        "id": "041"
+      },
+      "villagran": {
+        "id": "042"
+      },
+      "xicotencatl": {
+        "id": "043"
+      }
+    }
+  },
+  "tlaxcala": {
+    "id": "29",
+    "municipios": {
+      "amaxac de guerrero": {
+        "id": "001"
+      },
+      "apetatitlan de antonio carvajal": {
+        "id": "002"
+      },
+      "atlangatepec": {
+        "id": "003"
+      },
+      "atltzayanca": {
+        "id": "004"
+      },
+      "apizaco": {
+        "id": "005"
+      },
+      "calpulalpan": {
+        "id": "006"
+      },
+      "el carmen tequexquitla": {
+        "id": "007"
+      },
+      "cuapiaxtla": {
+        "id": "008"
+      },
+      "cuaxomulco": {
+        "id": "009"
+      },
+      "chiautempan": {
+        "id": "010"
+      },
+      "munoz de domingo arenas": {
+        "id": "011"
+      },
+      "espanita": {
+        "id": "012"
+      },
+      "huamantla": {
+        "id": "013"
+      },
+      "hueyotlipan": {
+        "id": "014"
+      },
+      "ixtacuixtla de mariano matamoros": {
+        "id": "015"
+      },
+      "ixtenco": {
+        "id": "016"
+      },
+      "mazatecochco de jose maria morelos": {
+        "id": "017"
+      },
+      "contla de juan cuamatzi": {
+        "id": "018"
+      },
+      "tepetitla de lardizabal": {
+        "id": "019"
+      },
+      "sanctorum de lazaro cardenas": {
+        "id": "020"
+      },
+      "nanacamilpa de mariano arista": {
+        "id": "021"
+      },
+      "acuamanala de miguel hidalgo": {
+        "id": "022"
+      },
+      "nativitas": {
+        "id": "023"
+      },
+      "panotla": {
+        "id": "024"
+      },
+      "san pablo del monte": {
+        "id": "025"
+      },
+      "santa cruz tlaxcala": {
+        "id": "026"
+      },
+      "tenancingo": {
+        "id": "027"
+      },
+      "teolocholco": {
+        "id": "028"
+      },
+      "tepeyanco": {
+        "id": "029"
+      },
+      "terrenate": {
+        "id": "030"
+      },
+      "tetla de la solidaridad": {
+        "id": "031"
+      },
+      "tetlatlahuca": {
+        "id": "032"
+      },
+      "tlaxcala": {
+        "id": "033"
+      },
+      "tlaxco": {
+        "id": "034"
+      },
+      "tocatlan": {
+        "id": "035"
+      },
+      "totolac": {
+        "id": "036"
+      },
+      "ziltlaltepec de trinidad sanchez santos": {
+        "id": "037"
+      },
+      "tzompantepec": {
+        "id": "038"
+      },
+      "xaloztoc": {
+        "id": "039"
+      },
+      "xaltocan": {
+        "id": "040"
+      },
+      "papalotla de xicohtencatl": {
+        "id": "041"
+      },
+      "xicohtzinco": {
+        "id": "042"
+      },
+      "yauhquemehcan": {
+        "id": "043"
+      },
+      "zacatelco": {
+        "id": "044"
+      },
+      "benito juarez": {
+        "id": "045"
+      },
+      "emiliano zapata": {
+        "id": "046"
+      },
+      "lazaro cardenas": {
+        "id": "047"
+      },
+      "la magdalena tlaltelulco": {
+        "id": "048"
+      },
+      "san damian texoloc": {
+        "id": "049"
+      },
+      "san francisco tetlanohcan": {
+        "id": "050"
+      },
+      "san jeronimo zacualpan": {
+        "id": "051"
+      },
+      "san jose teacalco": {
+        "id": "052"
+      },
+      "san juan huactzinco": {
+        "id": "053"
+      },
+      "san lorenzo axocomanitla": {
+        "id": "054"
+      },
+      "san lucas tecopilco": {
+        "id": "055"
+      },
+      "santa ana nopalucan": {
+        "id": "056"
+      },
+      "santa apolonia teacalco": {
+        "id": "057"
+      },
+      "santa catarina ayometla": {
+        "id": "058"
+      },
+      "santa cruz quilehtla": {
+        "id": "059"
+      },
+      "santa isabel xiloxoxtla": {
+        "id": "060"
+      }
+    }
+  },
+  "veracruz de ignacio de la llave": {
+    "id": "30",
+    "municipios": {
+      "acajete": {
+        "id": "001"
+      },
+      "acatlan": {
+        "id": "002"
+      },
+      "acayucan": {
+        "id": "003"
+      },
+      "actopan": {
+        "id": "004"
+      },
+      "acula": {
+        "id": "005"
+      },
+      "acultzingo": {
+        "id": "006"
+      },
+      "camaron de tejeda": {
+        "id": "007"
+      },
+      "alpatlahuac": {
+        "id": "008"
+      },
+      "alto lucero de gutierrez barrios": {
+        "id": "009"
+      },
+      "altotonga": {
+        "id": "010"
+      },
+      "alvarado": {
+        "id": "011"
+      },
+      "amatitlan": {
+        "id": "012"
+      },
+      "naranjos amatlan": {
+        "id": "013"
+      },
+      "amatlan de los reyes": {
+        "id": "014"
+      },
+      "angel r. cabada": {
+        "id": "015"
+      },
+      "la antigua": {
+        "id": "016"
+      },
+      "apazapan": {
+        "id": "017"
+      },
+      "aquila": {
+        "id": "018"
+      },
+      "astacinga": {
+        "id": "019"
+      },
+      "atlahuilco": {
+        "id": "020"
+      },
+      "atoyac": {
+        "id": "021"
+      },
+      "atzacan": {
+        "id": "022"
+      },
+      "atzalan": {
+        "id": "023"
+      },
+      "tlaltetela": {
+        "id": "024"
+      },
+      "ayahualulco": {
+        "id": "025"
+      },
+      "banderilla": {
+        "id": "026"
+      },
+      "benito juarez": {
+        "id": "027"
+      },
+      "boca del rio": {
+        "id": "028"
+      },
+      "calcahualco": {
+        "id": "029"
+      },
+      "camerino z. mendoza": {
+        "id": "030"
+      },
+      "carrillo puerto": {
+        "id": "031"
+      },
+      "catemaco": {
+        "id": "032"
+      },
+      "cazones de herrera": {
+        "id": "033"
+      },
+      "cerro azul": {
+        "id": "034"
+      },
+      "citlaltepetl": {
+        "id": "035"
+      },
+      "coacoatzintla": {
+        "id": "036"
+      },
+      "coahuitlan": {
+        "id": "037"
+      },
+      "coatepec": {
+        "id": "038"
+      },
+      "coatzacoalcos": {
+        "id": "039"
+      },
+      "coatzintla": {
+        "id": "040"
+      },
+      "coetzala": {
+        "id": "041"
+      },
+      "colipa": {
+        "id": "042"
+      },
+      "comapa": {
+        "id": "043"
+      },
+      "cordoba": {
+        "id": "044"
+      },
+      "cosamaloapan de carpio": {
+        "id": "045"
+      },
+      "cosautlan de carvajal": {
+        "id": "046"
+      },
+      "coscomatepec": {
+        "id": "047"
+      },
+      "cosoleacaque": {
+        "id": "048"
+      },
+      "cotaxtla": {
+        "id": "049"
+      },
+      "coxquihui": {
+        "id": "050"
+      },
+      "coyutla": {
+        "id": "051"
+      },
+      "cuichapa": {
+        "id": "052"
+      },
+      "cuitlahuac": {
+        "id": "053"
+      },
+      "chacaltianguis": {
+        "id": "054"
+      },
+      "chalma": {
+        "id": "055"
+      },
+      "chiconamel": {
+        "id": "056"
+      },
+      "chiconquiaco": {
+        "id": "057"
+      },
+      "chicontepec": {
+        "id": "058"
+      },
+      "chinameca": {
+        "id": "059"
+      },
+      "chinampa de gorostiza": {
+        "id": "060"
+      },
+      "las choapas": {
+        "id": "061"
+      },
+      "chocaman": {
+        "id": "062"
+      },
+      "chontla": {
+        "id": "063"
+      },
+      "chumatlan": {
+        "id": "064"
+      },
+      "emiliano zapata": {
+        "id": "065"
+      },
+      "espinal": {
+        "id": "066"
+      },
+      "filomeno mata": {
+        "id": "067"
+      },
+      "fortin": {
+        "id": "068"
+      },
+      "gutierrez zamora": {
+        "id": "069"
+      },
+      "hidalgotitlan": {
+        "id": "070"
+      },
+      "huatusco": {
+        "id": "071"
+      },
+      "huayacocotla": {
+        "id": "072"
+      },
+      "hueyapan de ocampo": {
+        "id": "073"
+      },
+      "huiloapan de cuauhtemoc": {
+        "id": "074"
+      },
+      "ignacio de la llave": {
+        "id": "075"
+      },
+      "ilamatlan": {
+        "id": "076"
+      },
+      "isla": {
+        "id": "077"
+      },
+      "ixcatepec": {
+        "id": "078"
+      },
+      "ixhuacan de los reyes": {
+        "id": "079"
+      },
+      "ixhuatlan del cafe": {
+        "id": "080"
+      },
+      "ixhuatlancillo": {
+        "id": "081"
+      },
+      "ixhuatlan del sureste": {
+        "id": "082"
+      },
+      "ixhuatlan de madero": {
+        "id": "083"
+      },
+      "ixmatlahuacan": {
+        "id": "084"
+      },
+      "ixtaczoquitlan": {
+        "id": "085"
+      },
+      "jalacingo": {
+        "id": "086"
+      },
+      "xalapa": {
+        "id": "087"
+      },
+      "jalcomulco": {
+        "id": "088"
+      },
+      "jaltipan": {
+        "id": "089"
+      },
+      "jamapa": {
+        "id": "090"
+      },
+      "jesus carranza": {
+        "id": "091"
+      },
+      "xico": {
+        "id": "092"
+      },
+      "jilotepec": {
+        "id": "093"
+      },
+      "juan rodriguez clara": {
+        "id": "094"
+      },
+      "juchique de ferrer": {
+        "id": "095"
+      },
+      "landero y coss": {
+        "id": "096"
+      },
+      "lerdo de tejada": {
+        "id": "097"
+      },
+      "magdalena": {
+        "id": "098"
+      },
+      "maltrata": {
+        "id": "099"
+      },
+      "manlio fabio altamirano": {
+        "id": "100"
+      },
+      "mariano escobedo": {
+        "id": "101"
+      },
+      "martinez de la torre": {
+        "id": "102"
+      },
+      "mecatlan": {
+        "id": "103"
+      },
+      "mecayapan": {
+        "id": "104"
+      },
+      "medellin de bravo": {
+        "id": "105"
+      },
+      "miahuatlan": {
+        "id": "106"
+      },
+      "las minas": {
+        "id": "107"
+      },
+      "minatitlan": {
+        "id": "108"
+      },
+      "misantla": {
+        "id": "109"
+      },
+      "mixtla de altamirano": {
+        "id": "110"
+      },
+      "moloacan": {
+        "id": "111"
+      },
+      "naolinco": {
+        "id": "112"
+      },
+      "naranjal": {
+        "id": "113"
+      },
+      "nautla": {
+        "id": "114"
+      },
+      "nogales": {
+        "id": "115"
+      },
+      "oluta": {
+        "id": "116"
+      },
+      "omealca": {
+        "id": "117"
+      },
+      "orizaba": {
+        "id": "118"
+      },
+      "otatitlan": {
+        "id": "119"
+      },
+      "oteapan": {
+        "id": "120"
+      },
+      "ozuluama de mascarenas": {
+        "id": "121"
+      },
+      "pajapan": {
+        "id": "122"
+      },
+      "panuco": {
+        "id": "123"
+      },
+      "papantla": {
+        "id": "124"
+      },
+      "paso del macho": {
+        "id": "125"
+      },
+      "paso de ovejas": {
+        "id": "126"
+      },
+      "la perla": {
+        "id": "127"
+      },
+      "perote": {
+        "id": "128"
+      },
+      "platon sanchez": {
+        "id": "129"
+      },
+      "playa vicente": {
+        "id": "130"
+      },
+      "poza rica de hidalgo": {
+        "id": "131"
+      },
+      "las vigas de ramirez": {
+        "id": "132"
+      },
+      "pueblo viejo": {
+        "id": "133"
+      },
+      "puente nacional": {
+        "id": "134"
+      },
+      "rafael delgado": {
+        "id": "135"
+      },
+      "rafael lucio": {
+        "id": "136"
+      },
+      "los reyes": {
+        "id": "137"
+      },
+      "rio blanco": {
+        "id": "138"
+      },
+      "saltabarranca": {
+        "id": "139"
+      },
+      "san andres tenejapan": {
+        "id": "140"
+      },
+      "san andres tuxtla": {
+        "id": "141"
+      },
+      "san juan evangelista": {
+        "id": "142"
+      },
+      "santiago tuxtla": {
+        "id": "143"
+      },
+      "sayula de aleman": {
+        "id": "144"
+      },
+      "soconusco": {
+        "id": "145"
+      },
+      "sochiapa": {
+        "id": "146"
+      },
+      "soledad atzompa": {
+        "id": "147"
+      },
+      "soledad de doblado": {
+        "id": "148"
+      },
+      "soteapan": {
+        "id": "149"
+      },
+      "tamalin": {
+        "id": "150"
+      },
+      "tamiahua": {
+        "id": "151"
+      },
+      "tampico alto": {
+        "id": "152"
+      },
+      "tancoco": {
+        "id": "153"
+      },
+      "tantima": {
+        "id": "154"
+      },
+      "tantoyuca": {
+        "id": "155"
+      },
+      "tatatila": {
+        "id": "156"
+      },
+      "castillo de teayo": {
+        "id": "157"
+      },
+      "tecolutla": {
+        "id": "158"
+      },
+      "tehuipango": {
+        "id": "159"
+      },
+      "alamo temapache": {
+        "id": "160"
+      },
+      "tempoal": {
+        "id": "161"
+      },
+      "tenampa": {
+        "id": "162"
+      },
+      "tenochtitlan": {
+        "id": "163"
+      },
+      "teocelo": {
+        "id": "164"
+      },
+      "tepatlaxco": {
+        "id": "165"
+      },
+      "tepetlan": {
+        "id": "166"
+      },
+      "tepetzintla": {
+        "id": "167"
+      },
+      "tequila": {
+        "id": "168"
+      },
+      "jose azueta": {
+        "id": "169"
+      },
+      "texcatepec": {
+        "id": "170"
+      },
+      "texhuacan": {
+        "id": "171"
+      },
+      "texistepec": {
+        "id": "172"
+      },
+      "tezonapa": {
+        "id": "173"
+      },
+      "tierra blanca": {
+        "id": "174"
+      },
+      "tihuatlan": {
+        "id": "175"
+      },
+      "tlacojalpan": {
+        "id": "176"
+      },
+      "tlacolulan": {
+        "id": "177"
+      },
+      "tlacotalpan": {
+        "id": "178"
+      },
+      "tlacotepec de mejia": {
+        "id": "179"
+      },
+      "tlachichilco": {
+        "id": "180"
+      },
+      "tlalixcoyan": {
+        "id": "181"
+      },
+      "tlalnelhuayocan": {
+        "id": "182"
+      },
+      "tlapacoyan": {
+        "id": "183"
+      },
+      "tlaquilpa": {
+        "id": "184"
+      },
+      "tlilapan": {
+        "id": "185"
+      },
+      "tomatlan": {
+        "id": "186"
+      },
+      "tonayan": {
+        "id": "187"
+      },
+      "totutla": {
+        "id": "188"
+      },
+      "tuxpan": {
+        "id": "189"
+      },
+      "tuxtilla": {
+        "id": "190"
+      },
+      "ursulo galvan": {
+        "id": "191"
+      },
+      "vega de alatorre": {
+        "id": "192"
+      },
+      "veracruz": {
+        "id": "193"
+      },
+      "villa aldama": {
+        "id": "194"
+      },
+      "xoxocotla": {
+        "id": "195"
+      },
+      "yanga": {
+        "id": "196"
+      },
+      "yecuatla": {
+        "id": "197"
+      },
+      "zacualpan": {
+        "id": "198"
+      },
+      "zaragoza": {
+        "id": "199"
+      },
+      "zentla": {
+        "id": "200"
+      },
+      "zongolica": {
+        "id": "201"
+      },
+      "zontecomatlan de lopez y fuentes": {
+        "id": "202"
+      },
+      "zozocolco de hidalgo": {
+        "id": "203"
+      },
+      "agua dulce": {
+        "id": "204"
+      },
+      "el higo": {
+        "id": "205"
+      },
+      "nanchital de lazaro cardenas del rio": {
+        "id": "206"
+      },
+      "tres valles": {
+        "id": "207"
+      },
+      "carlos a. carrillo": {
+        "id": "208"
+      },
+      "tatahuicapan de juarez": {
+        "id": "209"
+      },
+      "uxpanapa": {
+        "id": "210"
+      },
+      "san rafael": {
+        "id": "211"
+      },
+      "santiago sochiapan": {
+        "id": "212"
+      }
+    }
+  },
+  "yucatan": {
+    "id": "31",
+    "municipios": {
+      "abala": {
+        "id": "001"
+      },
+      "acanceh": {
+        "id": "002"
+      },
+      "akil": {
+        "id": "003"
+      },
+      "baca": {
+        "id": "004"
+      },
+      "bokoba": {
+        "id": "005"
+      },
+      "buctzotz": {
+        "id": "006"
+      },
+      "cacalchen": {
+        "id": "007"
+      },
+      "calotmul": {
+        "id": "008"
+      },
+      "cansahcab": {
+        "id": "009"
+      },
+      "cantamayec": {
+        "id": "010"
+      },
+      "celestun": {
+        "id": "011"
+      },
+      "cenotillo": {
+        "id": "012"
+      },
+      "conkal": {
+        "id": "013"
+      },
+      "cuncunul": {
+        "id": "014"
+      },
+      "cuzama": {
+        "id": "015"
+      },
+      "chacsinkin": {
+        "id": "016"
+      },
+      "chankom": {
+        "id": "017"
+      },
+      "chapab": {
+        "id": "018"
+      },
+      "chemax": {
+        "id": "019"
+      },
+      "chicxulub pueblo": {
+        "id": "020"
+      },
+      "chichimila": {
+        "id": "021"
+      },
+      "chikindzonot": {
+        "id": "022"
+      },
+      "chochola": {
+        "id": "023"
+      },
+      "chumayel": {
+        "id": "024"
+      },
+      "dzan": {
+        "id": "025"
+      },
+      "dzemul": {
+        "id": "026"
+      },
+      "dzidzantun": {
+        "id": "027"
+      },
+      "dzilam de bravo": {
+        "id": "028"
+      },
+      "dzilam gonzalez": {
+        "id": "029"
+      },
+      "dzitas": {
+        "id": "030"
+      },
+      "dzoncauich": {
+        "id": "031"
+      },
+      "espita": {
+        "id": "032"
+      },
+      "halacho": {
+        "id": "033"
+      },
+      "hocaba": {
+        "id": "034"
+      },
+      "hoctun": {
+        "id": "035"
+      },
+      "homun": {
+        "id": "036"
+      },
+      "huhi": {
+        "id": "037"
+      },
+      "hunucma": {
+        "id": "038"
+      },
+      "ixil": {
+        "id": "039"
+      },
+      "izamal": {
+        "id": "040"
+      },
+      "kanasin": {
+        "id": "041"
+      },
+      "kantunil": {
+        "id": "042"
+      },
+      "kaua": {
+        "id": "043"
+      },
+      "kinchil": {
+        "id": "044"
+      },
+      "kopoma": {
+        "id": "045"
+      },
+      "mama": {
+        "id": "046"
+      },
+      "mani": {
+        "id": "047"
+      },
+      "maxcanu": {
+        "id": "048"
+      },
+      "mayapan": {
+        "id": "049"
+      },
+      "merida": {
+        "id": "050"
+      },
+      "mococha": {
+        "id": "051"
+      },
+      "motul": {
+        "id": "052"
+      },
+      "muna": {
+        "id": "053"
+      },
+      "muxupip": {
+        "id": "054"
+      },
+      "opichen": {
+        "id": "055"
+      },
+      "oxkutzcab": {
+        "id": "056"
+      },
+      "panaba": {
+        "id": "057"
+      },
+      "peto": {
+        "id": "058"
+      },
+      "progreso": {
+        "id": "059"
+      },
+      "quintana roo": {
+        "id": "060"
+      },
+      "rio lagartos": {
+        "id": "061"
+      },
+      "sacalum": {
+        "id": "062"
+      },
+      "samahil": {
+        "id": "063"
+      },
+      "sanahcat": {
+        "id": "064"
+      },
+      "san felipe": {
+        "id": "065"
+      },
+      "santa elena": {
+        "id": "066"
+      },
+      "seye": {
+        "id": "067"
+      },
+      "sinanche": {
+        "id": "068"
+      },
+      "sotuta": {
+        "id": "069"
+      },
+      "sucila": {
+        "id": "070"
+      },
+      "sudzal": {
+        "id": "071"
+      },
+      "suma": {
+        "id": "072"
+      },
+      "tahdziu": {
+        "id": "073"
+      },
+      "tahmek": {
+        "id": "074"
+      },
+      "teabo": {
+        "id": "075"
+      },
+      "tecoh": {
+        "id": "076"
+      },
+      "tekal de venegas": {
+        "id": "077"
+      },
+      "tekanto": {
+        "id": "078"
+      },
+      "tekax": {
+        "id": "079"
+      },
+      "tekit": {
+        "id": "080"
+      },
+      "tekom": {
+        "id": "081"
+      },
+      "telchac pueblo": {
+        "id": "082"
+      },
+      "telchac puerto": {
+        "id": "083"
+      },
+      "temax": {
+        "id": "084"
+      },
+      "temozon": {
+        "id": "085"
+      },
+      "tepakan": {
+        "id": "086"
+      },
+      "tetiz": {
+        "id": "087"
+      },
+      "teya": {
+        "id": "088"
+      },
+      "ticul": {
+        "id": "089"
+      },
+      "timucuy": {
+        "id": "090"
+      },
+      "tinum": {
+        "id": "091"
+      },
+      "tixcacalcupul": {
+        "id": "092"
+      },
+      "tixkokob": {
+        "id": "093"
+      },
+      "tixmehuac": {
+        "id": "094"
+      },
+      "tixpehual": {
+        "id": "095"
+      },
+      "tizimin": {
+        "id": "096"
+      },
+      "tunkas": {
+        "id": "097"
+      },
+      "tzucacab": {
+        "id": "098"
+      },
+      "uayma": {
+        "id": "099"
+      },
+      "ucu": {
+        "id": "100"
+      },
+      "uman": {
+        "id": "101"
+      },
+      "valladolid": {
+        "id": "102"
+      },
+      "xocchel": {
+        "id": "103"
+      },
+      "yaxcaba": {
+        "id": "104"
+      },
+      "yaxkukul": {
+        "id": "105"
+      },
+      "yobain": {
+        "id": "106"
+      }
+    }
+  },
+  "zacatecas": {
+    "id": "32",
+    "municipios": {
+      "apozol": {
+        "id": "001"
+      },
+      "apulco": {
+        "id": "002"
+      },
+      "atolinga": {
+        "id": "003"
+      },
+      "benito juarez": {
+        "id": "004"
+      },
+      "calera": {
+        "id": "005"
+      },
+      "canitas de felipe pescador": {
+        "id": "006"
+      },
+      "concepcion del oro": {
+        "id": "007"
+      },
+      "cuauhtemoc": {
+        "id": "008"
+      },
+      "chalchihuites": {
+        "id": "009"
+      },
+      "fresnillo": {
+        "id": "010"
+      },
+      "trinidad garcia de la cadena": {
+        "id": "011"
+      },
+      "genaro codina": {
+        "id": "012"
+      },
+      "general enrique estrada": {
+        "id": "013"
+      },
+      "general francisco r. murguia": {
+        "id": "014"
+      },
+      "el plateado de joaquin amaro": {
+        "id": "015"
+      },
+      "general panfilo natera": {
+        "id": "016"
+      },
+      "guadalupe": {
+        "id": "017"
+      },
+      "huanusco": {
+        "id": "018"
+      },
+      "jalpa": {
+        "id": "019"
+      },
+      "jerez": {
+        "id": "020"
+      },
+      "jimenez del teul": {
+        "id": "021"
+      },
+      "juan aldama": {
+        "id": "022"
+      },
+      "juchipila": {
+        "id": "023"
+      },
+      "loreto": {
+        "id": "024"
+      },
+      "luis moya": {
+        "id": "025"
+      },
+      "mazapil": {
+        "id": "026"
+      },
+      "melchor ocampo": {
+        "id": "027"
+      },
+      "mezquital del oro": {
+        "id": "028"
+      },
+      "miguel auza": {
+        "id": "029"
+      },
+      "momax": {
+        "id": "030"
+      },
+      "monte escobedo": {
+        "id": "031"
+      },
+      "morelos": {
+        "id": "032"
+      },
+      "moyahua de estrada": {
+        "id": "033"
+      },
+      "nochistlan de mejia": {
+        "id": "034"
+      },
+      "noria de angeles": {
+        "id": "035"
+      },
+      "ojocaliente": {
+        "id": "036"
+      },
+      "panuco": {
+        "id": "037"
+      },
+      "pinos": {
+        "id": "038"
+      },
+      "rio grande": {
+        "id": "039"
+      },
+      "sain alto": {
+        "id": "040"
+      },
+      "el salvador": {
+        "id": "041"
+      },
+      "sombrerete": {
+        "id": "042"
+      },
+      "susticacan": {
+        "id": "043"
+      },
+      "tabasco": {
+        "id": "044"
+      },
+      "tepechitlan": {
+        "id": "045"
+      },
+      "tepetongo": {
+        "id": "046"
+      },
+      "teul de gonzalez ortega": {
+        "id": "047"
+      },
+      "tlaltenango de sanchez roman": {
+        "id": "048"
+      },
+      "valparaiso": {
+        "id": "049"
+      },
+      "vetagrande": {
+        "id": "050"
+      },
+      "villa de cos": {
+        "id": "051"
+      },
+      "villa garcia": {
+        "id": "052"
+      },
+      "villa gonzalez ortega": {
+        "id": "053"
+      },
+      "villa hidalgo": {
+        "id": "054"
+      },
+      "villanueva": {
+        "id": "055"
+      },
+      "zacatecas": {
+        "id": "056"
+      },
+      "trancoso": {
+        "id": "057"
+      },
+      "santa maria de la paz": {
+        "id": "058"
+      }
+    }
+  }
+}

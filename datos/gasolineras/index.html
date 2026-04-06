@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gasolina México</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:     #f5f5f7;
+            --white:  #ffffff;
+            --text:   #1d1d1f;
+            --sec:    #6e6e73;
+            --ter:    #aeaeb2;
+            --border: #d2d2d7;
+            --accent: #0071e3;
+            --green:  #34c759;
+            --orange: #ff9500;
+            --red:    #ff3b30;
+            --r:      14px;
+            --rs:     8px;
+            --sh:     0 2px 12px rgba(0,0,0,0.06);
+            --shm:    0 8px 24px rgba(0,0,0,0.10);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 32px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 600; }
+        .navbar-right { font-size: 0.78rem; color: var(--sec); }
+
+        /* ── Hero ── */
+        .hero {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 36px 32px 28px;
+            text-align: center;
+        }
+
+        .hero h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+        .hero p  { font-size: 0.95rem; color: var(--sec); margin-bottom: 24px; }
+
+        .search-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .ac-wrap { position: relative; flex: 1; min-width: 190px; }
+
+        .ac-wrap label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--sec);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .ac-input {
+            width: 100%;
+            padding: 11px 15px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text);
+            background: var(--white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .ac-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,0.12); }
+        .ac-input:disabled { background: var(--bg); color: var(--ter); cursor: not-allowed; }
+        .ac-input::placeholder { color: var(--ter); }
+
+        .drop {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0; right: 0;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r);
+            box-shadow: var(--shm);
+            max-height: 210px;
+            overflow-y: auto;
+            z-index: 999;
+            display: none;
+        }
+
+        .drop.open { display: block; }
+
+        .drop-item {
+            padding: 9px 15px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.12s;
+        }
+
+        .drop-item:hover { background: var(--bg); }
+
+        .d-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+        .d-badge.ok { background: #d4f5e2; color: #1a7a45; }
+        .d-badge.no { background: #f0f0f0; color: var(--ter); }
+        .drop-empty { padding: 11px 15px; font-size: 0.83rem; color: var(--ter); text-align: center; }
+
+        .btn-ver {
+            padding: 11px 26px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--r);
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn-ver:hover { background: #0077ed; box-shadow: 0 4px 14px rgba(0,113,227,0.32); }
+        .btn-ver:active { transform: scale(0.97); }
+        .btn-ver:disabled { background: var(--border); color: var(--ter); cursor: not-allowed; box-shadow: none; }
+
+        /* ── Contenedor ── */
+        .wrap { max-width: 1500px; margin: 0 auto; padding: 28px 20px; }
+
+        /* ── Pantallas ── */
+        .screen-welcome {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 52vh; text-align: center; color: var(--sec);
+        }
+
+        .screen-welcome .ico { font-size: 3.2rem; margin-bottom: 14px; }
+        .screen-welcome h2  { font-size: 1.2rem; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+        .screen-welcome p   { font-size: 0.88rem; max-width: 360px; line-height: 1.6; }
+
+        .screen-prox {
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 52vh; text-align: center;
+        }
+
+        .screen-prox .ico { font-size: 3.2rem; margin-bottom: 14px; }
+        .screen-prox h2   { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
+        .screen-prox p    { font-size: 0.92rem; color: var(--sec); max-width: 380px; line-height: 1.6; margin-bottom: 14px; }
+
+        .chip-prox {
+            display: inline-block; background: #fff3cd; color: #856404;
+            padding: 5px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+        }
+
+        /* ── Dashboard ── */
+        .dashboard { display: none; }
+
+        /* ── Pills ── */
+        .pills-row { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; flex-wrap: wrap; }
+
+        .pills-label { font-size: 0.72rem; font-weight: 600; color: var(--sec); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .pill {
+            padding: 6px 18px;
+            border: 1.5px solid var(--border);
+            background: var(--white);
+            border-radius: 999px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.86rem;
+            font-weight: 500;
+            color: var(--sec);
+            transition: all 0.18s;
+        }
+
+        .pill:hover  { border-color: var(--accent); color: var(--accent); }
+        .pill.active { background: var(--text); border-color: var(--text); color: white; }
+        .pill:disabled { opacity: 0.28; cursor: not-allowed; }
+
+        .sec-label { font-size: 0.8rem; color: var(--sec); margin-bottom: 11px; }
+
+        /* ── KPIs ── */
+        .kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+
+        .kpi {
+            background: var(--white); border-radius: var(--r); padding: 18px 18px 14px;
+            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+
+        .kpi:hover { transform: translateY(-2px); box-shadow: var(--shm); }
+
+        .kpi-v { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; color: var(--text); }
+        .kpi-l { font-size: 0.7rem; font-weight: 500; color: var(--ter); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi.min .kpi-v { color: var(--green); }
+        .kpi.max .kpi-v { color: var(--red); }
+
+        /* ── Layout 3 columnas ── */
+        .grid3 {
+            display: grid;
+            grid-template-columns: minmax(0,1.6fr) minmax(220px,0.8fr) minmax(220px,0.65fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--white); border-radius: var(--r);
+            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); overflow: hidden;
+        }
+
+        .card-head {
+            padding: 13px 16px; border-bottom: 1px solid var(--bg);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px;
+        }
+
+        .card-title { font-size: 0.86rem; font-weight: 600; }
+
+        /* ── Controles del mapa ── */
+        .map-head-row {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px; padding: 13px 16px;
+            border-bottom: 1px solid var(--bg);
+        }
+
+        .map-head-left  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .map-head-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .leyenda { display: flex; gap: 12px; font-size: 0.73rem; color: var(--sec); align-items: center; }
+        .leyenda-item { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+        .map-btn {
+            padding: 5px 11px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            border-radius: 999px;
+            font-family: inherit;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--sec);
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+
+        .map-btn:hover  { border-color: var(--accent); color: var(--accent); }
+        .map-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        /* ── Hint ubicación manual ── */
+        .map-hint {
+            background: rgba(255,255,255,0.93);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 10px 14px;
+            font-size: 0.78rem;
+            color: var(--sec);
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: var(--sh);
+            display: none;
+        }
+
+        .map-hint.visible { display: block; }
+
+        /* ── Mapa ── */
+        .map-wrapper { position: relative; }
+        #map { height: 560px; width: 100%; }
+
+        /* ── Tabla ranking ── */
+        .t-scroll { max-height: 560px; overflow-y: auto; }
+
+        .tabla { width: 100%; border-collapse: collapse; }
+
+        .tabla th {
+            padding: 8px 13px; text-align: left; font-size: 0.66rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px; color: var(--ter);
+            background: var(--bg); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 1;
+        }
+
+        .tabla td { padding: 9px 13px; font-size: 0.8rem; border-bottom: 1px solid var(--bg); }
+        .tabla tr:last-child td { border-bottom: none; }
+        .tabla tr:hover td { background: var(--bg); cursor: pointer; }
+
+        .tabla tr.sel td { background: #eef5ff; border-left: 3px solid var(--accent); }
+        .tabla tr.sel td:first-child { padding-left: 10px; }
+
+        /* ── Badges ── */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.66rem; font-weight: 600; }
+        .b-b { background: #d4f5e2; color: #1a7a45; }
+        .b-p { background: #fff3cd; color: #856404; }
+        .b-c { background: #fde8e8; color: #9b2335; }
+        .p-b { color: var(--green); font-weight: 700; }
+        .p-p { color: var(--orange); font-weight: 700; }
+        .p-c { color: var(--red); font-weight: 700; }
+
+        /* ── Panel detalle (columna 3, desktop) ── */
+        .detail-panel { display: flex; flex-direction: column; gap: 14px; }
+
+        .detail-card {
+            background: var(--white); border-radius: var(--r);
+            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); padding: 18px;
+        }
+
+        .detail-card.filled { box-shadow: var(--shm); }
+
+        .detail-placeholder {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 140px; text-align: center; color: var(--ter); gap: 8px;
+        }
+
+        .detail-placeholder-ico { font-size: 1.8rem; }
+        .detail-placeholder-txt { font-size: 0.78rem; line-height: 1.5; }
+
+        .detail-nombre { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
+        .detail-dir    { font-size: 0.74rem; color: var(--sec); margin-bottom: 3px; }
+        .detail-meta   { font-size: 0.7rem; color: var(--ter); margin-bottom: 14px; }
+
+        .detail-precios { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+
+        .dp-item { background: var(--bg); border-radius: var(--rs); padding: 9px 6px; text-align: center; }
+        .dp-tipo { font-size: 0.62rem; font-weight: 600; color: var(--ter); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+        .dp-val  { font-size: 1rem; font-weight: 700; color: var(--text); }
+        .dp-val.na { font-size: 0.76rem; color: var(--ter); font-weight: 400; }
+
+        /* ── Cerca de ti ── */
+        .cerca-card { background: var(--white); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+
+        .cerca-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 14px; border-bottom: 1px solid var(--bg);
+            cursor: pointer; transition: background 0.12s; gap: 8px;
+        }
+
+        .cerca-item:last-child { border-bottom: none; }
+        .cerca-item:hover { background: var(--bg); }
+
+        .cerca-info { flex: 1; min-width: 0; }
+        .cerca-nombre { font-size: 0.78rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cerca-dist   { font-size: 0.68rem; color: var(--ter); }
+        .cerca-precio { font-size: 0.82rem; font-weight: 700; flex-shrink: 0; }
+        .cerca-placeholder { padding: 16px; text-align: center; font-size: 0.8rem; color: var(--ter); line-height: 1.5; }
+
+        /* ── Detalle inline (tablet/mobile) ── */
+        /* Aparece debajo del ranking cuando la columna 3 desaparece */
+        .detail-inline {
+            display: none;
+            background: var(--white);
+            border-radius: var(--r);
+            box-shadow: var(--sh);
+            border: 1px solid rgba(0,0,0,0.03);
+            padding: 18px;
+            margin-top: 14px;
+        }
+
+        .detail-inline.visible { display: block; animation: fadeUp 0.2s ease; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Footer ── */
+        .footer { text-align: center; padding: 24px; font-size: 0.73rem; color: var(--ter); margin-top: 8px; }
+
+        /* ── Tooltip ── */
+        .leaflet-tooltip {
+            border-radius: 8px !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.14) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.8rem !important;
+            padding: 8px 12px !important;
+        }
+
+        /* ── Cursor al fijar ubicación ── */
+        .map-pin-mode { cursor: crosshair !important; }
+
+        /* ── Responsive ── */
+        @media (max-width: 1100px) {
+            .grid3 { grid-template-columns: minmax(0,1.4fr) minmax(200px,0.75fr); }
+            .detail-panel { display: none; }   /* oculta columna 3 */
+        }
+
+        @media (max-width: 800px) {
+            .grid3 { grid-template-columns: 1fr; }
+            .kpis  { grid-template-columns: repeat(2,1fr); }
+        }
+
+        @media (max-width: 520px) {
+            .navbar { padding: 0 14px; }
+            .hero   { padding: 24px 14px 20px; }
+            .wrap   { padding: 18px 12px; }
+            .hero h1 { font-size: 1.6rem; }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">⛽ Gasolina México</div>
+    <div class="navbar-right" id="nav-right">Datos CRE</div>
+</nav>
+
+<!-- Hero / Buscador -->
+<div class="hero">
+    <h1>Encuentra la gasolina más barata</h1>
+    <p>Precios actualizados por municipio · México</p>
+
+    <div class="search-row">
+        <div class="ac-wrap" id="wrap-estado">
+            <label>Estado</label>
+            <input id="inp-estado" class="ac-input"
+                   placeholder="Busca un estado..."
+                   autocomplete="off"
+                   oninput="filtrarEstados()"
+                   onfocus="abrirDrop('estado')" />
+            <div class="drop" id="drop-estado"></div>
+        </div>
+
+        <div class="ac-wrap" id="wrap-municipio">
+            <label>Municipio</label>
+            <input id="inp-municipio" class="ac-input"
+                   placeholder="Busca un municipio..."
+                   autocomplete="off"
+                   disabled
+                   oninput="filtrarMunicipios()"
+                   onfocus="abrirDrop('municipio')" />
+            <div class="drop" id="drop-municipio"></div>
+        </div>
+
+        <div style="align-self:flex-end">
+            <button class="btn-ver" id="btn-ver" onclick="cargarCiudad()" disabled>
+                Ver precios →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido -->
+<div class="wrap">
+
+    <!-- Bienvenida -->
+    <div class="screen-welcome" id="sc-welcome">
+        <div class="ico">🗺️</div>
+        <h2>Selecciona tu municipio</h2>
+        <p>Elige estado y municipio para ver precios y encontrar la gasolina más barata cerca de ti.</p>
+    </div>
+
+    <!-- Próximamente -->
+    <div class="screen-prox" id="sc-prox">
+        <div class="ico">🚧</div>
+        <h2>Próximamente</h2>
+        <p id="prox-txt">Aún no tenemos datos para este municipio.</p>
+        <span class="chip-prox">⏳ En desarrollo</span>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+
+        <!-- Pills combustible -->
+        <div class="pills-row">
+            <span class="pills-label">Combustible</span>
+            <button class="pill active" id="pill-magna"   onclick="setCombustible('Magna')">Magna</button>
+            <button class="pill"        id="pill-premium" onclick="setCombustible('Premium')">Premium</button>
+            <button class="pill"        id="pill-diesel"  onclick="setCombustible('Diesel')">Diesel</button>
+        </div>
+
+        <div class="sec-label" id="sec-label">—</div>
+
+        <!-- KPIs -->
+        <div class="kpis">
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-prom">--</div>
+                <div class="kpi-l">Promedio</div>
+            </div>
+            <div class="kpi min">
+                <div class="kpi-v" id="kpi-min">--</div>
+                <div class="kpi-l">Mínimo</div>
+            </div>
+            <div class="kpi max">
+                <div class="kpi-v" id="kpi-max">--</div>
+                <div class="kpi-l">Máximo</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-est">--</div>
+                <div class="kpi-l">Estaciones</div>
+            </div>
+        </div>
+
+        <!-- Grid 3 columnas -->
+        <div class="grid3">
+
+            <!-- COLUMNA 1: MAPA -->
+            <div>
+                <div class="card">
+                    <!-- Header del mapa -->
+                    <div class="map-head-row">
+                        <div class="map-head-left">
+                            <span class="card-title" id="mapa-titulo">Gasolineras</span>
+                            <div class="leyenda">
+                                <div class="leyenda-item"><div class="dot" style="background:#34c759"></div>Barato</div>
+                                <div class="leyenda-item"><div class="dot" style="background:#ff9500"></div>Promedio</div>
+                                <div class="leyenda-item"><div class="dot" style="background:#ff3b30"></div>Caro</div>
+                            </div>
+                        </div>
+                        <div class="map-head-right">
+                            <button class="map-btn" id="mbtn-ubicame"  onclick="ubicarme()">📍 Mi ubicación</button>
+                            <button class="map-btn" id="mbtn-fijar"    onclick="toggleModoFijar()">📌 Fijar punto</button>
+                            <button class="map-btn" id="mbtn-quitar"   onclick="quitarUbicacion()" style="display:none">✕ Quitar punto</button>
+                        </div>
+                    </div>
+
+                    <!-- Mapa -->
+                    <div class="map-wrapper">
+                        <div id="map"></div>
+                        <div class="map-hint" id="map-hint">
+                            Haz clic en el mapa para fijar tu ubicación
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 2: RANKING -->
+            <div>
+                <div class="card" style="overflow:hidden;">
+                    <div class="card-head">
+                        <span class="card-title" id="rank-titulo">🏆 Top 10 más baratas</span>
+                    </div>
+                    <div class="t-scroll">
+                        <table class="tabla">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Estación</th>
+                                    <th>Precio</th>
+                                    <th>Cat.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rank-body">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;color:#ccc;padding:18px">
+                                        Cargando...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detalle INLINE: visible en tablet/móvil, debajo del ranking -->
+                <div class="detail-inline" id="detail-inline">
+                    <div class="detail-nombre" id="di-nombre">—</div>
+                    <div class="detail-dir"    id="di-dir">—</div>
+                    <div class="detail-meta"   id="di-meta">—</div>
+                    <div class="detail-precios">
+                        <div class="dp-item">
+                            <div class="dp-tipo">Magna</div>
+                            <div class="dp-val" id="di-magna">--</div>
+                        </div>
+                        <div class="dp-item">
+                            <div class="dp-tipo">Premium</div>
+                            <div class="dp-val" id="di-premium">--</div>
+                        </div>
+                        <div class="dp-item">
+                            <div class="dp-tipo">Diesel</div>
+                            <div class="dp-val" id="di-diesel">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 3: DETALLE + CERCA (solo desktop) -->
+            <div class="detail-panel">
+
+                <div class="detail-card" id="detail-card">
+                    <div class="detail-placeholder" id="detail-ph">
+                        <div class="detail-placeholder-ico">⛽</div>
+                        <div class="detail-placeholder-txt">
+                            Haz clic en un punto del mapa<br>o en una fila del ranking
+                        </div>
+                    </div>
+                    <div id="detail-content" style="display:none">
+                        <div class="detail-nombre" id="d-nombre">—</div>
+                        <div class="detail-dir"    id="d-dir">—</div>
+                        <div class="detail-meta"   id="d-meta">—</div>
+                        <div class="detail-precios">
+                            <div class="dp-item">
+                                <div class="dp-tipo">Magna</div>
+                                <div class="dp-val" id="d-magna">--</div>
+                            </div>
+                            <div class="dp-item">
+                                <div class="dp-tipo">Premium</div>
+                                <div class="dp-val" id="d-premium">--</div>
+                            </div>
+                            <div class="dp-item">
+                                <div class="dp-tipo">Diesel</div>
+                                <div class="dp-val" id="d-diesel">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cerca-card" id="cerca-card">
+                    <div class="card-head">
+                        <span class="card-title">📍 Cerca de ti</span>
+                    </div>
+                    <div id="cerca-body">
+                        <div class="cerca-placeholder">
+                            Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- /grid3 -->
+
+        <div class="footer">
+            Fuente: Comisión Reguladora de Energía (CRE) · México
+        </div>
+
+    </div><!-- /dashboard -->
+
+</div><!-- /wrap -->
+
+<script>
+// ─────────────────────────────────────────────
+//  DATOS INYECTADOS POR PYTHON
+// ─────────────────────────────────────────────
+const CATALOGO = {"aguascalientes": ["aguascalientes", "asientos", "calvillo", "cosio", "el llano", "jesus maria", "pabellon de arteaga", "rincon de romos", "san francisco de los romo", "san jose de gracia", "tepezala"], "baja california": ["ensenada", "mexicali", "playas de rosarito", "san felipe", "san quintin", "tecate", "tijuana"], "baja california sur": ["comondu", "la paz", "loreto", "los cabos", "mulege"], "campeche": ["calakmul", "calkini", "campeche", "candelaria", "carmen", "champoton", "dzitbalche", "escarcega", "hecelchakan", "hopelchen", "palizada", "seybaplaya", "tenabo"], "chiapas": ["acacoyagua", "acala", "acapetahua", "aldama", "altamirano", "amatan", "amatenango de la frontera", "amatenango del valle", "angel albino corzo", "arriaga", "bejucal de ocampo", "bella vista", "benemerito de las americas", "berriozabal", "bochil", "cacahoatan", "capitan luis angel vidal", "catazaja", "chalchihuitan", "chamula", "chanal", "chapultenango", "chenalho", "chiapa de corzo", "chiapilla", "chicoasen", "chicomuselo", "chilon", "cintalapa de figueroa", "coapilla", "comitan de dominguez", "copainala", "el bosque", "el parral", "el porvenir", "emiliano zapata", "escuintla", "francisco leon", "frontera comalapa", "frontera hidalgo", "honduras de la sierra", "huehuetan", "huitiupan", "huixtan", "huixtla", "ixhuatan", "ixtacomitan", "ixtapa", "ixtapangajoya", "jiquipilas", "jitotol", "juarez", "la concordia", "la grandeza", "la independencia", "la libertad", "la trinitaria", "larrainzar", "las margaritas", "las rosas", "mapastepec", "maravilla tenejapa", "marques de comillas", "mazapa de madero", "mazatan", "metapa", "mezcalapa", "mitontic", "montecristo de guerrero", "motozintla", "nicolas ruiz", "ocosingo", "ocotepec", "ocozocoautla de espinosa", "ostuacan", "osumacinta", "oxchuc", "palenque", "pantelho", "pantepec", "pichucalco", "pijijiapan", "pueblo nuevo solistahuacan", "rayon", "reforma", "rincon chamula san pedro", "sabanilla", "salto de agua", "san andres duraznal", "san cristobal de las casas", "san fernando", "san juan cancuc", "san lucas", "santiago el pinar", "siltepec", "simojovel", "sitala", "socoltenango", "solosuchiapa", "soyalo", "suchiapa", "suchiate", "sunuapa", "tapachula", "tapalapa", "tapilula", "tecpatan", "tenejapa", "teopisca", "tila", "tonala", "totolapa", "tumbala", "tuxtla chico", "tuxtla gutierrez", "tuzantan", "tzimol", "union juarez", "venustiano carranza", "villa comaltitlan", "villa corzo", "villaflores", "yajalon", "zinacantan"], "chihuahua": ["ahumada", "aldama", "allende", "aquiles serdan", "ascension", "bachiniva", "balleza", "batopilas de manuel gomez morin", "bocoyna", "buenaventura", "camargo", "carichi", "casas grandes", "chihuahua", "chinipas", "coronado", "coyame del sotol", "cuauhtemoc", "cusihuiriachi", "delicias", "dr. belisario dominguez", "el tule", "galeana", "gomez farias", "gran morelos", "guachochi", "guadalupe", "guadalupe y calvo", "guazapares", "guerrero", "hidalgo del parral", "huejotitan", "ignacio zaragoza", "janos", "jimenez", "juarez", "julimes", "la cruz", "lopez", "madera", "maguarichi", "manuel benavides", "matachi", "matamoros", "meoqui", "morelos", "moris", "namiquipa", "nonoava", "nuevo casas grandes", "ocampo", "ojinaga", "praxedis g. guerrero", "riva palacio", "rosales", "rosario", "san francisco de borja", "san francisco de conchos", "san francisco del oro", "santa barbara", "santa isabel", "satevo", "saucillo", "temosachic", "urique", "uruachi", "valle de zaragoza"], "ciudad de mexico": ["alvaro obregon", "azcapotzalco", "benito juarez", "coyoacan", "cuajimalpa de morelos", "cuauhtemoc", "gustavo a. madero", "iztacalco", "iztapalapa", "la magdalena contreras", "miguel hidalgo", "milpa alta", "tlahuac", "tlalpan", "venustiano carranza", "xochimilco"], "coahuila de zaragoza": ["abasolo", "acuna", "allende", "arteaga", "candela", "castanos", "cuatro cienegas", "escobedo", "francisco i. madero", "frontera", "general cepeda", "guerrero", "hidalgo", "jimenez", "juarez", "lamadrid", "matamoros", "monclova", "morelos", "muzquiz", "nadadores", "nava", "ocampo", "parras", "piedras negras", "progreso", "ramos arizpe", "sabinas", "sacramento", "saltillo", "san buenaventura", "san juan de sabinas", "san pedro", "sierra mojada", "torreon", "viesca", "villa union", "zaragoza"], "colima": ["armeria", "colima", "comala", "coquimatlan", "cuauhtemoc", "ixtlahuacan", "manzanillo", "minatitlan", "tecoman", "villa de alvarez"], "durango": ["canatlan", "canelas", "coneto de comonfort", "cuencame", "durango", "el oro", "general simon bolivar", "gomez palacio", "guadalupe victoria", "guanacevi", "hidalgo", "inde", "lerdo", "mapimi", "mezquital", "nazas", "nombre de dios", "nuevo ideal", "ocampo", "otaez", "panuco de coronado", "penon blanco", "poanas", "pueblo nuevo", "rodeo", "san bernardo", "san dimas", "san juan de guadalupe", "san juan del rio", "san luis del cordero", "san pedro del gallo", "santa clara", "santiago papasquiaro", "suchil", "tamazula", "tepehuanes", "tlahualilo", "topia", "vicente guerrero"], "guanajuato": ["abasolo", "acambaro", "apaseo el alto", "apaseo el grande", "atarjea", "celaya", "comonfort", "coroneo", "cortazar", "cueramaro", "doctor mora", "dolores hidalgo cuna de la independencia nacional", "guanajuato", "huanimaro", "irapuato", "jaral del progreso", "jerecuaro", "leon", "manuel doblado", "moroleon", "ocampo", "penjamo", "pueblo nuevo", "purisima del rincon", "romita", "salamanca", "salvatierra", "san diego de la union", "san felipe", "san francisco del rincon", "san jose iturbide", "san luis de la paz", "san miguel de allende", "santa catarina", "santa cruz de juventino rosas", "santiago maravatio", "silao de la victoria", "tarandacuao", "tarimoro", "tierra blanca", "uriangato", "valle de santiago", "victoria", "villagran", "xichu", "yuriria"], "guerrero": ["acapulco de juarez", "acatepec", "ahuacuotzingo", "ajuchitlan del progreso", "alcozauca de guerrero", "alpoyeca", "apaxtla", "arcelia", "atenango del rio", "atlamajalcingo del monte", "atlixtac", "atoyac de alvarez", "ayutla de los libres", "azoyu", "benito juarez", "buenavista de cuellar", "chilapa de alvarez", "chilpancingo de los bravo", "coahuayutla de jose maria izazaga", "cochoapa el grande", "cocula", "copala", "copalillo", "copanatoyac", "coyuca de benitez", "coyuca de catalan", "cuajinicuilapa", "cualac", "cuautepec", "cuetzala del progreso", "cutzamala de pinzon", "eduardo neri", "florencio villarreal", "general canuto a. neri", "general heliodoro castillo", "huamuxtitlan", "huitzuco de los figueroa", "iguala de la independencia", "igualapa", "iliatenco", "ixcateopan de cuauhtemoc", "jose joaquin de herrera", "juan r. escudero", "juchitan", "la union de isidoro montes de oca", "las vigas", "leonardo bravo", "malinaltepec", "marquelia", "martir de cuilapan", "metlatonoc", "mochitlan", "nuu savi", "olinala", "ometepec", "pedro ascencio alquisiras", "petatlan", "pilcaya", "pungarabato", "quechultenango", "san luis acatlan", "san marcos", "san miguel totolapan", "san nicolas", "santa cruz del rincon", "taxco de alarcon", "tecoanapa", "tecpan de galeana", "teloloapan", "tepecoacuilco de trujano", "tetipac", "tixtla de guerrero", "tlacoachistlahuaca", "tlacoapa", "tlalchapa", "tlalixtaquilla de maldonado", "tlapa de comonfort", "tlapehuala", "xalpatlahuac", "xochihuehuetlan", "xochistlahuaca", "zapotitlan tablas", "zihuatanejo de azueta", "zirandaro", "zitlala"], "hidalgo": ["acatlan", "acaxochitlan", "actopan", "agua blanca de iturbide", "ajacuba", "alfajayucan", "almoloya", "apan", "atitalaquia", "atlapexco", "atotonilco de tula", "atotonilco el grande", "calnali", "cardonal", "chapantongo", "chapulhuacan", "chilcuautla", "cuautepec de hinojosa", "el arenal", "eloxochitlan", "emiliano zapata", "epazoyucan", "francisco i. madero", "huasca de ocampo", "huautla", "huazalingo", "huehuetla", "huejutla de reyes", "huichapan", "ixmiquilpan", "jacala de ledezma", "jaltocan", "juarez hidalgo", "la mision", "lolotla", "metepec", "metztitlan", "mineral de la reforma", "mineral del chico", "mineral del monte", "mixquiahuala de juarez", "molango de escamilla", "nicolas flores", "nopala de villagran", "omitlan de juarez", "pachuca de soto", "pacula", "pisaflores", "progreso de obregon", "san agustin metzquititlan", "san agustin tlaxiaca", "san bartolo tutotepec", "san felipe orizatlan", "san salvador", "santiago de anaya", "santiago tulantepec de lugo guerrero", "singuilucan", "tasquillo", "tecozautla", "tenango de doria", "tepeapulco", "tepehuacan de guerrero", "tepeji del rio de ocampo", "tepetitlan", "tetepango", "tezontepec de aldama", "tianguistengo", "tizayuca", "tlahuelilpan", "tlahuiltepa", "tlanalapa", "tlanchinol", "tlaxcoapan", "tolcayuca", "tula de allende", "tulancingo de bravo", "villa de tezontepec", "xochiatipan", "xochicoatlan", "yahualica", "zacualtipan de angeles", "zapotlan de juarez", "zempoala", "zimapan"], "jalisco": ["acatic", "acatlan de juarez", "ahualulco de mercado", "amacueca", "amatitan", "ameca", "arandas", "atemajac de brizuela", "atengo", "atenguillo", "atotonilco el alto", "atoyac", "autlan de navarro", "ayotlan", "ayutla", "bolanos", "cabo corrientes", "canadas de obregon", "casimiro castillo", "chapala", "chimaltitan", "chiquilistlan", "cihuatlan", "cocula", "colotlan", "concepcion de buenos aires", "cuautitlan de garcia barragan", "cuautla", "cuquio", "degollado", "ejutla", "el arenal", "el grullo", "el limon", "el salto", "encarnacion de diaz", "etzatlan", "gomez farias", "guachinango", "guadalajara", "hostotipaquillo", "huejucar", "huejuquilla el alto", "ixtlahuacan de los membrillos", "ixtlahuacan del rio", "jalostotitlan", "jamay", "jesus maria", "jilotlan de los dolores", "jocotepec", "juanacatlan", "juchitlan", "la barca", "la huerta", "la manzanilla de la paz", "lagos de moreno", "magdalena", "mascota", "mazamitla", "mexticacan", "mezquitic", "mixtlan", "ocotlan", "ojuelos de jalisco", "pihuamo", "poncitlan", "puerto vallarta", "quitupan", "san cristobal de la barranca", "san diego de alejandria", "san gabriel", "san ignacio cerro gordo", "san juan de los lagos", "san juanito de escobedo", "san julian", "san marcos", "san martin de bolanos", "san martin hidalgo", "san miguel el alto", "san pedro tlaquepaque", "san sebastian del oeste", "santa maria de los angeles", "santa maria del oro", "sayula", "tala", "talpa de allende", "tamazula de gordiano", "tapalpa", "tecalitlan", "techaluta de montenegro", "tecolotlan", "tenamaxtlan", "teocaltiche", "teocuitatlan de corona", "tepatitlan de morelos", "tequila", "teuchitlan", "tizapan el alto", "tlajomulco de zuniga", "toliman", "tomatlan", "tonala", "tonaya", "tonila", "totatiche", "tototlan", "tuxcacuesco", "tuxcueca", "tuxpan", "union de san antonio", "union de tula", "valle de guadalupe", "valle de juarez", "villa corona", "villa guerrero", "villa hidalgo", "villa purificacion", "yahualica de gonzalez gallo", "zacoalco de torres", "zapopan", "zapotiltic", "zapotitlan de vadillo", "zapotlan del rey", "zapotlan el grande", "zapotlanejo"], "mexico": ["acambay de ruiz castaneda", "acolman", "aculco", "almoloya de alquisiras", "almoloya de juarez", "almoloya del rio", "amanalco", "amatepec", "amecameca", "apaxco", "atenco", "atizapan", "atizapan de zaragoza", "atlacomulco", "atlautla", "axapusco", "ayapango", "calimaya", "capulhuac", "chalco", "chapa de mota", "chapultepec", "chiautla", "chicoloapan", "chiconcuac", "chimalhuacan", "coacalco de berriozabal", "coatepec harinas", "cocotitlan", "coyotepec", "cuautitlan", "cuautitlan izcalli", "donato guerra", "ecatepec de morelos", "ecatzingo", "el oro", "huehuetoca", "hueypoxtla", "huixquilucan", "isidro fabela", "ixtapaluca", "ixtapan de la sal", "ixtapan del oro", "ixtlahuaca", "jaltenco", "jilotepec", "jilotzingo", "jiquipilco", "jocotitlan", "joquicingo", "juchitepec", "la paz", "lerma", "luvianos", "malinalco", "melchor ocampo", "metepec", "mexicaltzingo", "morelos", "naucalpan de juarez", "nextlalpan", "nezahualcoyotl", "nicolas romero", "nopaltepec", "ocoyoacac", "ocuilan", "otumba", "otzoloapan", "otzolotepec", "ozumba", "papalotla", "polotitlan", "rayon", "san antonio la isla", "san felipe del progreso", "san jose del rincon", "san martin de las piramides", "san mateo atenco", "san simon de guerrero", "santo tomas", "soyaniquilpan de juarez", "sultepec", "tecamac", "tejupilco", "temamatla", "temascalapa", "temascalcingo", "temascaltepec", "temoaya", "tenancingo", "tenango del aire", "tenango del valle", "teoloyucan", "teotihuacan", "tepetlaoxtoc", "tepetlixpa", "tepotzotlan", "tequixquiac", "texcaltitlan", "texcalyacac", "texcoco", "tezoyuca", "tianguistenco", "timilpan", "tlalmanalco", "tlalnepantla de baz", "tlatlaya", "toluca", "tonanitla", "tonatico", "tultepec", "tultitlan", "valle de bravo", "valle de chalco solidaridad", "villa de allende", "villa del carbon", "villa guerrero", "villa victoria", "xalatlaco", "xonacatlan", "zacazonapan", "zacualpan", "zinacantepec", "zumpahuacan", "zumpango"], "michoacan de ocampo": ["acuitzio", "aguililla", "alvaro obregon", "angamacutiro", "angangueo", "apatzingan", "aporo", "aquila", "ario", "arteaga", "brisenas", "buenavista", "caracuaro", "charapan", "charo", "chavinda", "cheran", "chilchota", "chinicuila", "chucandiro", "churintzio", "churumuco", "coahuayana", "coalcoman de vazquez pallares", "coeneo", "cojumatlan de regules", "contepec", "copandaro", "cotija", "cuitzeo", "ecuandureo", "epitacio huerta", "erongaricuaro", "gabriel zamora", "hidalgo", "huandacareo", "huaniqueo", "huetamo", "huiramba", "indaparapeo", "irimbo", "ixtlan", "jacona", "jimenez", "jiquilpan", "jose sixto verduzco", "juarez", "jungapeo", "la huacana", "la piedad", "lagunillas", "lazaro cardenas", "los reyes", "madero", "maravatio", "marcos castellanos", "morelia", "morelos", "mugica", "nahuatzen", "nocupetaro", "nuevo parangaricutiro", "nuevo urecho", "numaran", "ocampo", "pajacuaran", "panindicuaro", "paracho", "paracuaro", "patzcuaro", "penjamillo", "periban", "purepero", "puruandiro", "querendaro", "quiroga", "sahuayo", "salvador escalante", "san lucas", "santa ana maya", "senguio", "susupuato", "tacambaro", "tancitaro", "tangamandapio", "tangancicuaro", "tanhuato", "taretan", "tarimbaro", "tepalcatepec", "tingambato", "tinguindin", "tiquicheo de nicolas romero", "tlalpujahua", "tlazazalca", "tocumbo", "tumbiscatio", "turicato", "tuxpan", "tuzantla", "tzintzuntzan", "tzitzio", "uruapan", "venustiano carranza", "villamar", "vista hermosa", "yurecuaro", "zacapu", "zamora", "zinaparo", "zinapecuaro", "ziracuaretiro", "zitacuaro"], "morelos": ["amacuzac", "atlatlahucan", "axochiapan", "ayala", "coatetelco", "coatlan del rio", "cuautla", "cuernavaca", "emiliano zapata", "hueyapan", "huitzilac", "jantetelco", "jiutepec", "jojutla", "jonacatepec de leandro valle", "mazatepec", "miacatlan", "ocuituco", "puente de ixtla", "temixco", "temoac", "tepalcingo", "tepoztlan", "tetecala", "tetela del volcan", "tlalnepantla", "tlaltizapan de zapata", "tlaquiltenango", "tlayacapan", "totolapan", "xochitepec", "xoxocotla", "yautepec", "yecapixtla", "zacatepec", "zacualpan de amilpas"], "nayarit": ["acaponeta", "ahuacatlan", "amatlan de canas", "bahia de banderas", "compostela", "del nayar", "huajicori", "ixtlan del rio", "jala", "la yesca", "rosamorada", "ruiz", "san blas", "san pedro lagunillas", "santa maria del oro", "santiago ixcuintla", "tecuala", "tepic", "tuxpan", "xalisco"], "nuevo leon": ["abasolo", "agualeguas", "allende", "anahuac", "apodaca", "aramberri", "bustamante", "cadereyta jimenez", "cerralvo", "china", "cienega de flores", "doctor arroyo", "doctor coss", "doctor gonzalez", "el carmen", "galeana", "garcia", "general bravo", "general escobedo", "general teran", "general trevino", "general zaragoza", "general zuazua", "guadalupe", "hidalgo", "higueras", "hualahuises", "iturbide", "juarez", "lampazos de naranjo", "linares", "los aldamas", "los herreras", "los ramones", "marin", "melchor ocampo", "mier y noriega", "mina", "montemorelos", "monterrey", "paras", "pesqueria", "rayones", "sabinas hidalgo", "salinas victoria", "san nicolas de los garza", "san pedro garza garcia", "santa catarina", "santiago", "vallecillo", "villaldama"], "oaxaca": ["abejones", "acatlan de perez figueroa", "animas trujano", "asuncion cacalotepec", "asuncion cuyotepeji", "asuncion ixtaltepec", "asuncion nochixtlan", "asuncion ocotlan", "asuncion tlacolulita", "ayoquezco de aldama", "ayotzintepec", "calihuala", "candelaria loxicha", "capulalpam de mendez", "chahuites", "chalcatongo de hidalgo", "chiquihuitlan de benito juarez", "cienega de zimatlan", "ciudad ixtepec", "coatecas altas", "coicoyan de las flores", "concepcion buenavista", "concepcion papalo", "constancia del rosario", "cosolapa", "cosoltepec", "cuilapam de guerrero", "cuyamecalco villa de zaragoza", "el barrio de la soledad", "el espinal", "eloxochitlan de flores magon", "fresnillo de trujano", "guadalupe de ramirez", "guadalupe etla", "guelatao de juarez", "guevea de humboldt", "heroica ciudad de ejutla de crespo", "heroica ciudad de huajuapan de leon", "heroica ciudad de juchitan de zaragoza", "heroica ciudad de tlaxiaco", "heroica villa de san blas atempa", "heroica villa tezoatlan de segura y luna, cuna de la independencia de oaxaca", "heroico san martin de los cansecos", "huautepec", "huautla de jimenez", "ixpantepec nieves", "ixtlan de juarez", "la compania", "la pe", "la reforma", "la trinidad vista hermosa", "loma bonita", "magdalena apasco", "magdalena jaltepec", "magdalena mixtepec", "magdalena ocotlan", "magdalena penasco", "magdalena teitipac", "magdalena tequisistlan", "magdalena tlacotepec", "magdalena yodocono de porfirio diaz", "magdalena zahuatlan", "mariscala de juarez", "martires de tacubaya", "matias romero avendano", "mazatlan villa de flores", "mesones hidalgo", "miahuatlan de porfirio diaz", "mixistlan de la reforma", "monjas", "natividad", "nazareno etla", "nejapa de madero", "nuevo zoquiapam", "oaxaca de juarez", "ocotlan de morelos", "pinotepa de don luis", "pluma hidalgo", "putla villa de guerrero", "reforma de pineda", "reyes etla", "rojas de cuauhtemoc", "salina cruz", "san agustin amatengo", "san agustin atenango", "san agustin chayuco", "san agustin de las juntas", "san agustin etla", "san agustin loxicha", "san agustin tlacotepec", "san agustin yatareni", "san andres cabecera nueva", "san andres dinicuiti", "san andres huaxpaltepec", "san andres huayapam", "san andres ixtlahuaca", "san andres lagunas", "san andres nuxino", "san andres paxtlan", "san andres sinaxtla", "san andres solaga", "san andres teotilalpam", "san andres tepetlapa", "san andres yaa", "san andres zabache", "san andres zautla", "san antonino castillo velasco", "san antonino el alto", "san antonino monte verde", "san antonio acutla", "san antonio de la cal", "san antonio huitepec", "san antonio nanahuatipam", "san antonio sinicahua", "san antonio tepetlapa", "san baltazar chichicapam", "san baltazar loxicha", "san baltazar yatzachi el bajo", "san bartolo coyotepec", "san bartolo soyaltepec", "san bartolo yautepec", "san bartolome ayautla", "san bartolome loxicha", "san bartolome quialana", "san bartolome yucuane", "san bartolome zoogocho", "san bernardo mixtepec", "san carlos yautepec", "san cristobal amatlan", "san cristobal amoltepec", "san cristobal lachirioag", "san cristobal suchixtlahuaca", "san dionisio del mar", "san dionisio ocotepec", "san dionisio ocotlan", "san esteban atatlahuca", "san felipe jalapa de diaz", "san felipe tejalapam", "san felipe usila", "san francisco cahuacua", "san francisco cajonos", "san francisco chapulapa", "san francisco chindua", "san francisco del mar", "san francisco huehuetlan", "san francisco ixhuatan", "san francisco jaltepetongo", "san francisco lachigolo", "san francisco logueche", "san francisco nuxano", "san francisco ozolotepec", "san francisco sola", "san francisco telixtlahuaca", "san francisco teopan", "san francisco tlapancingo", "san gabriel mixtepec", "san ildefonso amatlan", "san ildefonso sola", "san ildefonso villa alta", "san jacinto amilpas", "san jacinto tlacotepec", "san jeronimo coatlan", "san jeronimo silacayoapilla", "san jeronimo sosola", "san jeronimo taviche", "san jeronimo tecoatl", "san jeronimo tlacochahuaya", "san jorge nuchita", "san jose ayuquila", "san jose chiltepec", "san jose del penasco", "san jose del progreso", "san jose estancia grande", "san jose independencia", "san jose lachiguiri", "san jose tenango", "san juan achiutla", "san juan atepec", "san juan bautista atatlahuca", "san juan bautista coixtlahuaca", "san juan bautista cuicatlan", "san juan bautista guelache", "san juan bautista jayacatlan", "san juan bautista lo de soto", "san juan bautista suchitepec", "san juan bautista tlachichilco", "san juan bautista tlacoatzintepec", "san juan bautista tuxtepec", "san juan bautista valle nacional", "san juan cacahuatepec", "san juan chicomezuchil", "san juan chilateca", "san juan cieneguilla", "san juan coatzospam", "san juan colorado", "san juan comaltepec", "san juan cotzocon", "san juan de los cues", "san juan del estado", "san juan del rio", "san juan diuxi", "san juan evangelista analco", "san juan guelavia", "san juan guichicovi", "san juan ihualtepec", "san juan juquila mixes", "san juan juquila vijanos", "san juan lachao", "san juan lachigalla", "san juan lajarcia", "san juan lalana", "san juan mazatlan", "san juan mixtepec", "san juan numi", "san juan ozolotepec", "san juan petlapa", "san juan quiahije", "san juan quiotepec", "san juan sayultepec", "san juan tabaa", "san juan tamazola", "san juan teita", "san juan teitipac", "san juan tepeuxila", "san juan teposcolula", "san juan yaee", "san juan yatzona", "san juan yucuita", "san lorenzo", "san lorenzo albarradas", "san lorenzo cacaotepec", "san lorenzo cuaunecuiltitla", "san lorenzo texmelucan", "san lorenzo victoria", "san lucas camotlan", "san lucas ojitlan", "san lucas quiavini", "san lucas zoquiapam", "san luis amatlan", "san marcial ozolotepec", "san marcos arteaga", "san martin huamelulpam", "san martin itunyoso", "san martin lachila", "san martin peras", "san martin tilcajete", "san martin toxpalan", "san martin zacatepec", "san mateo cajonos", "san mateo del mar", "san mateo etlatongo", "san mateo nejapam", "san mateo penasco", "san mateo pinas", "san mateo rio hondo", "san mateo sindihui", "san mateo tlapiltepec", "san mateo yoloxochitlan", "san mateo yucutindoo", "san melchor betaza", "san miguel achiutla", "san miguel ahuehuetitlan", "san miguel aloapam", "san miguel amatitlan", "san miguel amatlan", "san miguel chicahua", "san miguel chimalapa", "san miguel coatlan", "san miguel del puerto", "san miguel del rio", "san miguel ejutla", "san miguel el grande", "san miguel huautla", "san miguel mixtepec", "san miguel panixtlahuaca", "san miguel peras", "san miguel piedras", "san miguel quetzaltepec", "san miguel santa flor", "san miguel soyaltepec", "san miguel suchixtepec", "san miguel tecomatlan", "san miguel tenango", "san miguel tequixtepec", "san miguel tilquiapam", "san miguel tlacamama", "san miguel tlacotepec", "san miguel tulancingo", "san miguel yotao", "san nicolas", "san nicolas hidalgo", "san pablo coatlan", "san pablo cuatro venados", "san pablo etla", "san pablo huitzo", "san pablo huixtepec", "san pablo macuiltianguis", "san pablo tijaltepec", "san pablo villa de mitla", "san pablo yaganiza", "san pedro amuzgos", "san pedro apostol", "san pedro atoyac", "san pedro cajonos", "san pedro comitancillo", "san pedro coxcaltepec cantaros", "san pedro el alto", "san pedro huamelula", "san pedro huilotepec", "san pedro ixcatlan", "san pedro ixtlahuaca", "san pedro jaltepetongo", "san pedro jicayan", "san pedro jocotipac", "san pedro juchatengo", "san pedro martir", "san pedro martir quiechapa", "san pedro martir yucuxaco", "san pedro mixtepec", "san pedro molinos", "san pedro nopala", "san pedro ocopetatillo", "san pedro ocotepec", "san pedro pochutla", "san pedro quiatoni", "san pedro sochiapam", "san pedro tapanatepec", "san pedro taviche", "san pedro teozacoalco", "san pedro teutila", "san pedro tidaa", "san pedro topiltepec", "san pedro totolapam", "san pedro y san pablo ayutla", "san pedro y san pablo teposcolula", "san pedro y san pablo tequixtepec", "san pedro yaneri", "san pedro yolox", "san pedro yucunama", "san raymundo jalpan", "san sebastian abasolo", "san sebastian coatlan", "san sebastian ixcapa", "san sebastian nicananduta", "san sebastian rio hondo", "san sebastian tecomaxtlahuaca", "san sebastian teitipac", "san sebastian tutla", "san simon almolongas", "san simon zahuatlan", "san vicente coatlan", "san vicente lachixio", "san vicente nunu", "santa ana", "santa ana ateixtlahuaca", "santa ana cuauhtemoc", "santa ana del valle", "santa ana tavela", "santa ana tlapacoyan", "santa ana yareni", "santa ana zegache", "santa catalina quieri", "santa catarina cuixtla", "santa catarina ixtepeji", "santa catarina juquila", "santa catarina lachatao", "santa catarina loxicha", "santa catarina mechoacan", "santa catarina minas", "santa catarina quiane", "santa catarina quioquitani", "santa catarina tayata", "santa catarina ticua", "santa catarina yosonotu", "santa catarina zapoquila", "santa cruz acatepec", "santa cruz amilpas", "santa cruz de bravo", "santa cruz itundujia", "santa cruz mixtepec", "santa cruz nundaco", "santa cruz papalutla", "santa cruz tacache de mina", "santa cruz tacahua", "santa cruz tayata", "santa cruz xitla", "santa cruz xoxocotlan", "santa cruz zenzontepec", "santa gertrudis", "santa ines de zaragoza", "santa ines del monte", "santa ines yatzeche", "santa lucia del camino", "santa lucia miahuatlan", "santa lucia monteverde", "santa lucia ocotlan", "santa magdalena jicotlan", "santa maria alotepec", "santa maria apazco", "santa maria atzompa", "santa maria camotlan", "santa maria chachoapam", "santa maria chilchotla", "santa maria chimalapa", "santa maria colotepec", "santa maria cortijo", "santa maria coyotepec", "santa maria del rosario", "santa maria del tule", "santa maria ecatepec", "santa maria guelace", "santa maria guienagati", "santa maria huatulco", "santa maria huazolotitlan", "santa maria ipalapa", "santa maria ixcatlan", "santa maria jacatepec", "santa maria jalapa del marques", "santa maria jaltianguis", "santa maria la asuncion", "santa maria lachixio", "santa maria mixtequilla", "santa maria nativitas", "santa maria nduayaco", "santa maria ozolotepec", "santa maria papalo", "santa maria penoles", "santa maria petapa", "santa maria quiegolani", "santa maria sola", "santa maria tataltepec", "santa maria tecomavaca", "santa maria temaxcalapa", "santa maria temaxcaltepec", "santa maria teopoxco", "santa maria tepantlali", "santa maria texcatitlan", "santa maria tlahuitoltepec", "santa maria tlalixtac", "santa maria tonameca", "santa maria totolapilla", "santa maria xadani", "santa maria yalina", "santa maria yavesia", "santa maria yolotepec", "santa maria yosoyua", "santa maria yucuhiti", "santa maria zacatepec", "santa maria zaniza", "santa maria zoquitlan", "santiago amoltepec", "santiago apoala", "santiago apostol", "santiago astata", "santiago atitlan", "santiago ayuquililla", "santiago cacaloxtepec", "santiago camotlan", "santiago choapam", "santiago comaltepec", "santiago del rio", "santiago huajolotitlan", "santiago huauclilla", "santiago ihuitlan plumas", "santiago ixcuintepec", "santiago ixtayutla", "santiago jamiltepec", "santiago jocotepec", "santiago juxtlahuaca", "santiago lachiguiri", "santiago lalopa", "santiago laollaga", "santiago laxopa", "santiago llano grande", "santiago matatlan", "santiago miltepec", "santiago minas", "santiago nacaltepec", "santiago nejapilla", "santiago niltepec", "santiago nundiche", "santiago nuyoo", "santiago pinotepa nacional", "santiago suchilquitongo", "santiago tamazola", "santiago tapextla", "santiago tenango", "santiago tepetlapa", "santiago tetepec", "santiago texcalcingo", "santiago textitlan", "santiago tilantongo", "santiago tillo", "santiago tlazoyaltepec", "santiago xanica", "santiago xiacui", "santiago yaitepec", "santiago yaveo", "santiago yolomecatl", "santiago yosondua", "santiago yucuyachi", "santiago zacatepec", "santiago zoochila", "santo domingo albarradas", "santo domingo armenta", "santo domingo chihuitan", "santo domingo de morelos", "santo domingo ingenio", "santo domingo ixcatlan", "santo domingo nuxaa", "santo domingo ozolotepec", "santo domingo petapa", "santo domingo roayaga", "santo domingo tehuantepec", "santo domingo teojomulco", "santo domingo tepuxtepec", "santo domingo tlatayapam", "santo domingo tomaltepec", "santo domingo tonala", "santo domingo tonaltepec", "santo domingo xagacia", "santo domingo yanhuitlan", "santo domingo yodohino", "santo domingo zanatepec", "santo tomas jalieza", "santo tomas mazaltepec", "santo tomas ocotepec", "santo tomas tamazulapan", "santos reyes nopala", "santos reyes papalo", "santos reyes tepejillo", "santos reyes yucuna", "silacayoapam", "sitio de xitlapehua", "soledad etla", "tamazulapam del espiritu santo", "tanetze de zaragoza", "taniche", "tataltepec de valdes", "teococuilco de marcos perez", "teotitlan de flores magon", "teotitlan del valle", "teotongo", "tepelmeme villa de morelos", "tlacolula de matamoros", "tlacotepec plumas", "tlalixtac de cabrera", "totontepec villa de morelos", "trinidad zaachila", "union hidalgo", "valerio trujano", "villa de chilapa de diaz", "villa de etla", "villa de santiago chazumba", "villa de tamazulapam del progreso", "villa de tututepec", "villa de zaachila", "villa diaz ordaz", "villa hidalgo yalalag", "villa sola de vega", "villa talea de castro", "villa tejupam de la union", "yaxe", "yogana", "yutanduchi de guerrero", "zapotitlan lagunas", "zapotitlan palmas", "zimatlan de alvarez"], "puebla": ["acajete", "acateno", "acatlan", "acatzingo", "acteopan", "ahuacatlan", "ahuatlan", "ahuazotepec", "ahuehuetitla", "ajalpan", "albino zertuche", "aljojuca", "altepexi", "amixtlan", "amozoc", "aquixtla", "atempan", "atexcal", "atlequizayan", "atlixco", "atoyatempan", "atzala", "atzitzihuacan", "atzitzintla", "axutla", "ayotoxco de guerrero", "calpan", "caltepec", "camocuautla", "canada morelos", "caxhuacan", "chalchicomula de sesma", "chapulco", "chiautla", "chiautzingo", "chichiquila", "chiconcuautla", "chietla", "chigmecatitlan", "chignahuapan", "chignautla", "chila", "chila de la sal", "chilchotla", "chinantla", "coatepec", "coatzingo", "cohetzala", "cohuecan", "coronango", "coxcatlan", "coyomeapan", "coyotepec", "cuapiaxtla de madero", "cuautempan", "cuautinchan", "cuautlancingo", "cuayuca de andrade", "cuetzalan del progreso", "cuyoaco", "domingo arenas", "eloxochitlan", "epatlan", "esperanza", "francisco z. mena", "general felipe angeles", "guadalupe", "guadalupe victoria", "hermenegildo galeana", "honey", "huaquechula", "huatlatlauca", "huauchinango", "huehuetla", "huehuetlan el chico", "huehuetlan el grande", "huejotzingo", "hueyapan", "hueytamalco", "hueytlalpan", "huitzilan de serdan", "huitziltepec", "ixcamilpa de guerrero", "ixcaquixtla", "ixtacamaxtitlan", "ixtepec", "izucar de matamoros", "jalpan", "jolalpan", "jonotla", "jopala", "juan c. bonilla", "juan galindo", "juan n. mendez", "la magdalena tlatlauquitepec", "lafragua", "libres", "los reyes de juarez", "mazapiltepec de juarez", "mixtla", "molcaxac", "naupan", "nauzontla", "nealtican", "nicolas bravo", "nopalucan", "ocotepec", "ocoyucan", "olintla", "oriental", "pahuatlan", "palmar de bravo", "pantepec", "petlalcingo", "piaxtla", "puebla", "quecholac", "quimixtlan", "rafael lara grajales", "san andres cholula", "san antonio canada", "san diego la mesa tochimiltzingo", "san felipe teotlalcingo", "san felipe tepatlan", "san gabriel chilac", "san gregorio atzompa", "san jeronimo tecuanipan", "san jeronimo xayacatlan", "san jose chiapa", "san jose miahuatlan", "san juan atenco", "san juan atzompa", "san martin texmelucan", "san martin totoltepec", "san matias tlalancaleca", "san miguel ixitlan", "san miguel xoxtla", "san nicolas buenos aires", "san nicolas de los ranchos", "san pablo anicano", "san pedro cholula", "san pedro yeloixtlahuaca", "san salvador el seco", "san salvador el verde", "san salvador huixcolotla", "san sebastian tlacotepec", "santa catarina tlaltempan", "santa ines ahuatempan", "santa isabel cholula", "santiago miahuatlan", "santo tomas hueyotlipan", "soltepec", "tecali de herrera", "tecamachalco", "tecomatlan", "tehuacan", "tehuitzingo", "tenampulco", "teopantlan", "teotlalco", "tepanco de lopez", "tepango de rodriguez", "tepatlaxco de hidalgo", "tepeaca", "tepemaxalco", "tepeojuma", "tepetzintla", "tepexco", "tepexi de rodriguez", "tepeyahualco", "tepeyahualco de cuauhtemoc", "tetela de ocampo", "teteles de avila castillo", "teziutlan", "tianguismanalco", "tilapa", "tlachichuca", "tlacotepec de benito juarez", "tlacuilotepec", "tlahuapan", "tlaltenango", "tlanepantla", "tlaola", "tlapacoya", "tlapanala", "tlatlauquitepec", "tlaxco", "tochimilco", "tochtepec", "totoltepec de guerrero", "tulcingo", "tuzamapan de galeana", "tzicatlacoyan", "venustiano carranza", "vicente guerrero", "xayacatlan de bravo", "xicotepec", "xicotlan", "xiutetelco", "xochiapulco", "xochiltepec", "xochitlan de vicente suarez", "xochitlan todos santos", "yaonahuac", "yehualtepec", "zacapala", "zacapoaxtla", "zacatlan", "zapotitlan", "zapotitlan de mendez", "zaragoza", "zautla", "zihuateutla", "zinacatepec", "zongozotla", "zoquiapan", "zoquitlan"], "queretaro": ["amealco de bonfil", "arroyo seco", "cadereyta de montes", "colon", "corregidora", "el marques", "ezequiel montes", "huimilpan", "jalpan de serra", "landa de matamoros", "pedro escobedo", "penamiller", "pinal de amoles", "queretaro", "san joaquin", "san juan del rio", "tequisquiapan", "toliman"], "quintana roo": ["bacalar", "benito juarez", "cozumel", "felipe carrillo puerto", "isla mujeres", "jose maria morelos", "lazaro cardenas", "othon p. blanco", "puerto morelos", "solidaridad", "tulum"], "san luis potosi": ["ahualulco del sonido 13", "alaquines", "aquismon", "armadillo de los infante", "axtla de terrazas", "cardenas", "catorce", "cedral", "cerritos", "cerro de san pedro", "charcas", "ciudad del maiz", "ciudad fernandez", "ciudad valles", "coxcatlan", "ebano", "el naranjo", "guadalcazar", "huehuetlan", "lagunillas", "matehuala", "matlapa", "mexquitic de carmona", "moctezuma", "rayon", "rioverde", "salinas", "san antonio", "san ciro de acosta", "san luis potosi", "san martin chalchicuautla", "san nicolas tolentino", "san vicente tancuayalab", "santa catarina", "santa maria del rio", "santo domingo", "soledad de graciano sanchez", "tamasopo", "tamazunchale", "tampacan", "tampamolon corona", "tamuin", "tancanhuitz", "tanlajas", "tanquian de escobedo", "tierra nueva", "vanegas", "venado", "villa de arista", "villa de arriaga", "villa de guadalupe", "villa de la paz", "villa de pozos", "villa de ramos", "villa de reyes", "villa hidalgo", "villa juarez", "xilitla", "zaragoza"], "sinaloa": ["ahome", "angostura", "badiraguato", "choix", "concordia", "cosala", "culiacan", "el fuerte", "eldorado", "elota", "escuinapa", "guasave", "juan jose rios", "mazatlan", "mocorito", "navolato", "rosario", "salvador alvarado", "san ignacio", "sinaloa"], "sonora": ["aconchi", "agua prieta", "alamos", "altar", "arivechi", "arizpe", "atil", "bacadehuachi", "bacanora", "bacerac", "bacoachi", "bacum", "banamichi", "baviacora", "bavispe", "benito juarez", "benjamin hill", "caborca", "cajeme", "cananea", "carbo", "cucurpe", "cumpas", "divisaderos", "empalme", "etchojoa", "fronteras", "general plutarco elias calles", "granados", "guaymas", "hermosillo", "huachinera", "huasabas", "huatabampo", "huepac", "imuris", "la colorada", "magdalena", "mazatan", "moctezuma", "naco", "nacori chico", "nacozari de garcia", "navojoa", "nogales", "onavas", "opodepe", "oquitoa", "pitiquito", "puerto penasco", "quiriego", "rayon", "rosario", "sahuaripa", "san felipe de jesus", "san ignacio rio muerto", "san javier", "san luis rio colorado", "san miguel de horcasitas", "san pedro de la cueva", "santa ana", "santa cruz", "saric", "soyopa", "suaqui grande", "tepache", "trincheras", "tubutama", "ures", "villa hidalgo", "villa pesqueira", "yecora"], "tabasco": ["balancan", "cardenas", "centla", "centro", "comalcalco", "cunduacan", "emiliano zapata", "huimanguillo", "jalapa", "jalpa de mendez", "jonuta", "macuspana", "nacajuca", "paraiso", "tacotalpa", "teapa", "tenosique"], "tamaulipas": ["abasolo", "aldama", "altamira", "antiguo morelos", "burgos", "bustamante", "camargo", "casas", "ciudad madero", "cruillas", "el mante", "gomez farias", "gonzalez", "guemez", "guerrero", "gustavo diaz ordaz", "hidalgo", "jaumave", "jimenez", "llera", "mainero", "matamoros", "mendez", "mier", "miguel aleman", "miquihuana", "nuevo laredo", "nuevo morelos", "ocampo", "padilla", "palmillas", "reynosa", "rio bravo", "san carlos", "san fernando", "san nicolas", "soto la marina", "tampico", "tula", "valle hermoso", "victoria", "villagran", "xicotencatl"], "tlaxcala": ["acuamanala de miguel hidalgo", "amaxac de guerrero", "apetatitlan de antonio carvajal", "apizaco", "atlangatepec", "atltzayanca", "benito juarez", "calpulalpan", "chiautempan", "contla de juan cuamatzi", "cuapiaxtla", "cuaxomulco", "el carmen tequexquitla", "emiliano zapata", "espanita", "huamantla", "hueyotlipan", "ixtacuixtla de mariano matamoros", "ixtenco", "la magdalena tlaltelulco", "lazaro cardenas", "mazatecochco de jose maria morelos", "munoz de domingo arenas", "nanacamilpa de mariano arista", "nativitas", "panotla", "papalotla de xicohtencatl", "san damian texoloc", "san francisco tetlanohcan", "san jeronimo zacualpan", "san jose teacalco", "san juan huactzinco", "san lorenzo axocomanitla", "san lucas tecopilco", "san pablo del monte", "sanctorum de lazaro cardenas", "santa ana nopalucan", "santa apolonia teacalco", "santa catarina ayometla", "santa cruz quilehtla", "santa cruz tlaxcala", "santa isabel xiloxoxtla", "tenancingo", "teolocholco", "tepetitla de lardizabal", "tepeyanco", "terrenate", "tetla de la solidaridad", "tetlatlahuca", "tlaxcala", "tlaxco", "tocatlan", "totolac", "tzompantepec", "xaloztoc", "xaltocan", "xicohtzinco", "yauhquemehcan", "zacatelco", "ziltlaltepec de trinidad sanchez santos"], "veracruz de ignacio de la llave": ["acajete", "acatlan", "acayucan", "actopan", "acula", "acultzingo", "agua dulce", "alamo temapache", "alpatlahuac", "alto lucero de gutierrez barrios", "altotonga", "alvarado", "amatitlan", "amatlan de los reyes", "angel r. cabada", "apazapan", "aquila", "astacinga", "atlahuilco", "atoyac", "atzacan", "atzalan", "ayahualulco", "banderilla", "benito juarez", "boca del rio", "calcahualco", "camaron de tejeda", "camerino z. mendoza", "carlos a. carrillo", "carrillo puerto", "castillo de teayo", "catemaco", "cazones de herrera", "cerro azul", "chacaltianguis", "chalma", "chiconamel", "chiconquiaco", "chicontepec", "chinameca", "chinampa de gorostiza", "chocaman", "chontla", "chumatlan", "citlaltepetl", "coacoatzintla", "coahuitlan", "coatepec", "coatzacoalcos", "coatzintla", "coetzala", "colipa", "comapa", "cordoba", "cosamaloapan de carpio", "cosautlan de carvajal", "coscomatepec", "cosoleacaque", "cotaxtla", "coxquihui", "coyutla", "cuichapa", "cuitlahuac", "el higo", "emiliano zapata", "espinal", "filomeno mata", "fortin", "gutierrez zamora", "hidalgotitlan", "huatusco", "huayacocotla", "hueyapan de ocampo", "huiloapan de cuauhtemoc", "ignacio de la llave", "ilamatlan", "isla", "ixcatepec", "ixhuacan de los reyes", "ixhuatlan de madero", "ixhuatlan del cafe", "ixhuatlan del sureste", "ixhuatlancillo", "ixmatlahuacan", "ixtaczoquitlan", "jalacingo", "jalcomulco", "jaltipan", "jamapa", "jesus carranza", "jilotepec", "jose azueta", "juan rodriguez clara", "juchique de ferrer", "la antigua", "la perla", "landero y coss", "las choapas", "las minas", "las vigas de ramirez", "lerdo de tejada", "los reyes", "magdalena", "maltrata", "manlio fabio altamirano", "mariano escobedo", "martinez de la torre", "mecatlan", "mecayapan", "medellin de bravo", "miahuatlan", "minatitlan", "misantla", "mixtla de altamirano", "moloacan", "nanchital de lazaro cardenas del rio", "naolinco", "naranjal", "naranjos amatlan", "nautla", "nogales", "oluta", "omealca", "orizaba", "otatitlan", "oteapan", "ozuluama de mascarenas", "pajapan", "panuco", "papantla", "paso de ovejas", "paso del macho", "perote", "platon sanchez", "playa vicente", "poza rica de hidalgo", "pueblo viejo", "puente nacional", "rafael delgado", "rafael lucio", "rio blanco", "saltabarranca", "san andres tenejapan", "san andres tuxtla", "san juan evangelista", "san rafael", "santiago sochiapan", "santiago tuxtla", "sayula de aleman", "sochiapa", "soconusco", "soledad atzompa", "soledad de doblado", "soteapan", "tamalin", "tamiahua", "tampico alto", "tancoco", "tantima", "tantoyuca", "tatahuicapan de juarez", "tatatila", "tecolutla", "tehuipango", "tempoal", "tenampa", "tenochtitlan", "teocelo", "tepatlaxco", "tepetlan", "tepetzintla", "tequila", "texcatepec", "texhuacan", "texistepec", "tezonapa", "tierra blanca", "tihuatlan", "tlachichilco", "tlacojalpan", "tlacolulan", "tlacotalpan", "tlacotepec de mejia", "tlalixcoyan", "tlalnelhuayocan", "tlaltetela", "tlapacoyan", "tlaquilpa", "tlilapan", "tomatlan", "tonayan", "totutla", "tres valles", "tuxpan", "tuxtilla", "ursulo galvan", "uxpanapa", "vega de alatorre", "veracruz", "villa aldama", "xalapa", "xico", "xoxocotla", "yanga", "yecuatla", "zacualpan", "zaragoza", "zentla", "zongolica", "zontecomatlan de lopez y fuentes", "zozocolco de hidalgo"], "yucatan": ["abala", "acanceh", "akil", "baca", "bokoba", "buctzotz", "cacalchen", "calotmul", "cansahcab", "cantamayec", "celestun", "cenotillo", "chacsinkin", "chankom", "chapab", "chemax", "chichimila", "chicxulub pueblo", "chikindzonot", "chochola", "chumayel", "conkal", "cuncunul", "cuzama", "dzan", "dzemul", "dzidzantun", "dzilam de bravo", "dzilam gonzalez", "dzitas", "dzoncauich", "espita", "halacho", "hocaba", "hoctun", "homun", "huhi", "hunucma", "ixil", "izamal", "kanasin", "kantunil", "kaua", "kinchil", "kopoma", "mama", "mani", "maxcanu", "mayapan", "merida", "mococha", "motul", "muna", "muxupip", "opichen", "oxkutzcab", "panaba", "peto", "progreso", "quintana roo", "rio lagartos", "sacalum", "samahil", "san felipe", "sanahcat", "santa elena", "seye", "sinanche", "sotuta", "sucila", "sudzal", "suma", "tahdziu", "tahmek", "teabo", "tecoh", "tekal de venegas", "tekanto", "tekax", "tekit", "tekom", "telchac pueblo", "telchac puerto", "temax", "temozon", "tepakan", "tetiz", "teya", "ticul", "timucuy", "tinum", "tixcacalcupul", "tixkokob", "tixmehuac", "tixpehual", "tizimin", "tunkas", "tzucacab", "uayma", "ucu", "uman", "valladolid", "xocchel", "yaxcaba", "yaxkukul", "yobain"], "zacatecas": ["apozol", "apulco", "atolinga", "benito juarez", "calera", "canitas de felipe pescador", "chalchihuites", "concepcion del oro", "cuauhtemoc", "el plateado de joaquin amaro", "el salvador", "fresnillo", "genaro codina", "general enrique estrada", "general francisco r. murguia", "general panfilo natera", "guadalupe", "huanusco", "jalpa", "jerez", "jimenez del teul", "juan aldama", "juchipila", "loreto", "luis moya", "mazapil", "melchor ocampo", "mezquital del oro", "miguel auza", "momax", "monte escobedo", "morelos", "moyahua de estrada", "nochistlan de mejia", "noria de angeles", "ojocaliente", "panuco", "pinos", "rio grande", "sain alto", "santa maria de la paz", "sombrerete", "susticacan", "tabasco", "tepechitlan", "tepetongo", "teul de gonzalez ortega", "tlaltenango de sanchez roman", "trancoso", "trinidad garcia de la cadena", "valparaiso", "vetagrande", "villa de cos", "villa garcia", "villa gonzalez ortega", "villa hidalgo", "villanueva", "zacatecas"]};
+const DATOS_DISPONIBLES = {"sonora||hermosillo": {"estado": "sonora", "municipio": "hermosillo", "datos": [{"Numero": "PL/10156/EXP/ES/2015", "Nombre": "FEDERICO LÓPEZ LÓPEZ", "Direccion": "Carretera Ures-Hermosillo Km 3.5", "Diesel": 28.99, "Magna": null, "Premium": 28.99, "Latitud": 29.0820931, "Longitud": -110.9421558}, {"Numero": "PL/10244/EXP/ES/2015", "Nombre": "GP GASOLINERA PERINORTE S.A. DE C.V.", "Direccion": "Avenida Camino del Seri 1242", "Diesel": null, "Magna": null, "Premium": 29.0, "Latitud": 29.0566676, "Longitud": -111.0158532}, {"Numero": "PL/10321/EXP/ES/2015", "Nombre": "SERVICIOS DEL REAL DEL ALAMITO S.A. DE C.V.", "Direccion": "Carretera Hermosillo Ures Entronq.Carretera del Real A.No. 1", "Diesel": 28.99, "Magna": 23.89, "Premium": 28.79, "Latitud": 29.1454227, "Longitud": -111.0239231}, {"Numero": "PL/10327/EXP/ES/2015", "Nombre": "SERVICIO EL KENO S.A. DE C.V.", "Direccion": "José Ma Mendoza 794", "Diesel": 28.99, "Magna": 22.93, "Premium": 27.99, "Latitud": 29.1018976, "Longitud": -110.9932532}, {"Numero": "PL/10366/EXP/ES/2015", "Nombre": "ESTACION PIRU, S.A. DE C.V.", "Direccion": "Xolotl No. 244", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.024009, "Longitud": -110.9462506}, {"Numero": "PL/10370/EXP/ES/2015", "Nombre": "MIGRAG GRUPO CONSTUCTOR S.A. DE C.V.", "Direccion": "Periférico Norte 4", "Diesel": null, "Magna": 22.99, "Premium": 27.9, "Latitud": 29.1090202, "Longitud": -110.9519908}, {"Numero": "PL/10696/EXP/ES/2015", "Nombre": "GASOLINERA RS S.A. DE C.V.", "Direccion": "Margarita Maza de Juárez Y José López Portillo Sn", "Diesel": null, "Magna": 23.49, "Premium": 28.99, "Latitud": 29.1231346, "Longitud": -110.9885709}, {"Numero": "PL/10740/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO QUIROGA S.A. DE C.V.", "Direccion": "Boulevard Luis Donaldo Colosio 862 Esquinaboulevard Quiroga", "Diesel": null, "Magna": 22.99, "Premium": 28.99, "Latitud": 29.081524, "Longitud": -111.0219864}, {"Numero": "PL/10761/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard López Portillo No. 189", "Diesel": 29.99, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1258695, "Longitud": -110.9639566}, {"Numero": "PL/10763/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Gomez Farias Y Boulevard Ignacio Soto No. 16", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1087649, "Longitud": -110.9497402}, {"Numero": "PL/10764/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard de Los Ganaderos S/N", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0362758, "Longitud": -110.9399518}, {"Numero": "PL/10768/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Quiroga No. 555", "Diesel": 29.99, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1211242, "Longitud": -111.0232697}, {"Numero": "PL/10769/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Juan Navarrete No. 480", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0882492, "Longitud": -110.9964393}, {"Numero": "PL/10772/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Paseo Las Palmas No. 1", "Diesel": 29.99, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0399766, "Longitud": -110.9395311}, {"Numero": "PL/10850/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO EL PILOTO S.A. DE C.V.", "Direccion": "Carretera a Nogales Km 5.5", "Diesel": 29.99, "Magna": 22.99, "Premium": 28.99, "Latitud": 29.0265015, "Longitud": -110.911048}, {"Numero": "PL/11254/EXP/ES/2015", "Nombre": "GASOLINERA TRANSVERSAL S.A. DE C.V.", "Direccion": "Boulevard Luis Encinas No. 99", "Diesel": null, "Magna": 22.99, "Premium": 28.99, "Latitud": 29.0847663, "Longitud": -110.9567501}, {"Numero": "PL/11257/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Carretera Internacional a Nogales Km 9.8", "Diesel": 28.49, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.1705174, "Longitud": -110.9152711}, {"Numero": "PL/11331/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Bulevar Enrique Mazon López No. 735", "Diesel": 28.49, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.098658, "Longitud": -110.9207296}, {"Numero": "PL/11345/EXP/ES/2015", "Nombre": "AUTO SERVICIO SACRAMENTO S.A. DE C.V.", "Direccion": "Boulevard Progreso No. 72 Poniente", "Diesel": null, "Magna": 23.69, "Premium": 29.99, "Latitud": 29.1436701, "Longitud": -111.0088733}, {"Numero": "PL/11425/EXP/ES/2015", "Nombre": "ROQUIS S.A. DE C.V.", "Direccion": "Carretera Internacional México (15) Tramo Cd. Obregón-Hermosillo", "Diesel": 28.7, "Magna": 23.8, "Premium": 28.5, "Latitud": 27.4731537, "Longitud": -109.9165794}, {"Numero": "PL/11454/EXP/ES/2015", "Nombre": "QAR SUPERGAS S.A. DE C.V.", "Direccion": "Francisco Monteverde No. 60", "Diesel": null, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.0929725, "Longitud": -110.9698453}, {"Numero": "PL/12706/EXP/ES/2015", "Nombre": "GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.", "Direccion": "Boulevard Lázaro Cárdenas S/N", "Diesel": 29.79, "Magna": 23.79, "Premium": 29.79, "Latitud": 29.131686, "Longitud": -111.0068532}, {"Numero": "PL/12736/EXP/ES/2015", "Nombre": "CM COMBUSTIBLES S.A. DE C.V.", "Direccion": "Boulevard Ignacio Salazar Esquina Calle de Las Misiones", "Diesel": null, "Magna": 22.98, "Premium": 28.55, "Latitud": 29.116614, "Longitud": -110.9975024}, {"Numero": "PL/12741/EXP/ES/2015", "Nombre": "AUTOSERVICIO TRANSVERSAL S.A. DE C.V.", "Direccion": "Reforma No. 224", "Diesel": null, "Magna": 24.59, "Premium": 28.99, "Latitud": 29.0735354, "Longitud": -110.9653765}, {"Numero": "PL/12755/EXP/ES/2015", "Nombre": "AGA COMBUSTIBLES S.A. DE C.V.", "Direccion": "Boulevard Paseo Rio Sonora Norte No. 567", "Diesel": 28.5, "Magna": 23.0, "Premium": 28.5, "Latitud": 29.0682396, "Longitud": -111.0022697}, {"Numero": "PL/12892/EXP/ES/2015", "Nombre": "POWER GAS SA DE CV", "Direccion": "Boulevard Camino del Seri No. 1120", "Diesel": null, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.0592042, "Longitud": -111.0058981}, {"Numero": "PL/13140/EXP/ES/2016", "Nombre": "ESTACIÓN DE SERVICIO DEL DESIERTO S.A. DE C.V.", "Direccion": "Carretera Hermosillo - Nogales 1309", "Diesel": 27.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0798605, "Longitud": -110.9570001}, {"Numero": "PL/13215/EXP/ES/2016", "Nombre": "MULTILIQUIDOS DE HERMOSILLO", "Direccion": "Carretera a Bahia de Kino Lado Oeste No. 84 San Franci", "Diesel": 28.89, "Magna": 23.99, "Premium": 28.49, "Latitud": 28.8227474, "Longitud": -111.9363016}, {"Numero": "PL/13547/EXP/ES/2016", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Navarrete No. 130", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0862086, "Longitud": -110.9738574}, {"Numero": "PL/13611/EXP/ES/2016", "Nombre": "POWER GAS S.A. DE C.V.", "Direccion": "Boulevard Libertad No. 118", "Diesel": null, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.0326402, "Longitud": -110.9677374}, {"Numero": "PL/18789/EXP/ES/2016", "Nombre": "GASERVICIO ORIENTE S.A. DE C.V.", "Direccion": "Boulevard Enrique Mazon López No. 1113", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1557764, "Longitud": -110.9090723}, {"Numero": "PL/19326/EXP/ES/2016", "Nombre": "GASERVICIO MORELOS S.A. DE C.V.", "Direccion": "Boulevard Alicia Arellano Pavlovich No. 476", "Diesel": 29.99, "Magna": 23.99, "Premium": 28.99, "Latitud": 28.8389878, "Longitud": -111.489224}, {"Numero": "PL/20952/EXP/ES/2018", "Nombre": "ESTACION DE SERVICIO ERSAL SA DE CV", "Direccion": "AVE MAR DE CORTES NÚMERO 8910", "Diesel": 29.9, "Magna": 23.99, "Premium": 29.1, "Latitud": 29.084843, "Longitud": -110.9880654}, {"Numero": "PL/24346/EXP/ES/2022", "Nombre": "CM COMBUSTIBLES S.A. DE C.V.", "Direccion": "BLVD LUIS DONALDO COLOSIO NO. 1099 ESQUINA CALLE JET", "Diesel": 28.49, "Magna": 23.99, "Premium": 28.1, "Latitud": 29.0809248, "Longitud": -111.0490011}, {"Numero": "PL/24366/EXP/ES/2022", "Nombre": "GASERVICIO PUERTA REAL, S.A. DE C.V.", "Direccion": "BOULEVARD GASPAR LUKEN ESCALANTE NO. 801", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.1213457, "Longitud": -111.0338619}, {"Numero": "PL/24464/EXP/ES/2022", "Nombre": "ESCOTAC S.A. DE C.V.", "Direccion": "BLVD. SOLIDARIDAD 808", "Diesel": null, "Magna": 22.99, "Premium": 28.99, "Latitud": 29.0616685, "Longitud": -110.9667494}, {"Numero": "PL/24968/EXP/ES/2023", "Nombre": "FONDO EMPRESARIAL S4M, S.A. DE C.V.", "Direccion": "Blvd. Solidaridad No. 1120", "Diesel": 28.99, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0615585, "Longitud": -110.966474}, {"Numero": "PL/25059/EXP/ES/2023", "Nombre": "GAZPRO, S.A. DE C.V.", "Direccion": "Blvd. Juan Bautista de Escalante #824", "Diesel": null, "Magna": 23.28, "Premium": 28.98, "Latitud": 29.1447194, "Longitud": -110.9977639}, {"Numero": "PL/25060/EXP/ES/2023", "Nombre": "GAZPRO, S.A. DE C.V.", "Direccion": "Bulevar Solidaridad #116", "Diesel": null, "Magna": 23.44, "Premium": 28.98, "Latitud": 29.0981158, "Longitud": -110.9935081}, {"Numero": "PL/25176/EXP/ES/2023", "Nombre": "GAZPRO, S.A. DE C.V.", "Direccion": "Periférico Poniente #02", "Diesel": null, "Magna": 23.88, "Premium": 28.78, "Latitud": 29.0356688, "Longitud": -110.9832776}, {"Numero": "PL/25184/EXP/ES/2023", "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.", "Direccion": "BULEVAR JESUS GARCIA MORALES NO. 496", "Diesel": 28.17, "Magna": 23.39, "Premium": 27.95, "Latitud": 29.0950819, "Longitud": -111.0228287}, {"Numero": "PL/25322/EXP/ES/2023", "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.", "Direccion": "BULEVAR SOLIDARIDAD NO. 646", "Diesel": 28.95, "Magna": 22.89, "Premium": 28.99, "Latitud": 29.1319608, "Longitud": -110.9931916}, {"Numero": "PL/25360/EXP/ES/2023", "Nombre": "GAZPRO, S.A. DE C.V.", "Direccion": "Blvd. Luis Donaldo Colosio #867", "Diesel": null, "Magna": 23.38, "Premium": 28.09, "Latitud": 29.0833443, "Longitud": -111.0212441}, {"Numero": "PL/25364/EXP/ES/2023", "Nombre": "FONDO EMPRESARIAL S4M, S.A. DE C.V.", "Direccion": "Carretera a la Colorada No. 189, esquina con Bulevar Capomo", "Diesel": 28.99, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0195767, "Longitud": -110.9306}, {"Numero": "PL/26006/EXP/ES/2024", "Nombre": "GAZPRO, S.A. DE C.V.", "Direccion": "Bulevar José María Morelos S/N", "Diesel": null, "Magna": 23.96, "Premium": 29.94, "Latitud": 29.1409566, "Longitud": -110.953466}, {"Numero": "PL/26186/EXP/ES/2025", "Nombre": "GASERVICIO PUERTA REAL, S.A. DE C.V.", "Direccion": "AVENIDA NAVOJOA No. 1418", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.1185439, "Longitud": -111.0172361}, {"Numero": "PL/2639/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO ERSAL S.A. DE C.V.", "Direccion": "Carretera Hermosillo a Kino Km 106 L-4", "Diesel": 29.9, "Magna": 23.99, "Premium": 29.1, "Latitud": 29.0798018, "Longitud": -110.9532482}, {"Numero": "PL/2691/EXP/ES/2015", "Nombre": "POWER GAS S.A. DE C.V.", "Direccion": "Boulevard Enrique Mazón López No. 724", "Diesel": 28.89, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.119724, "Longitud": -110.912889}, {"Numero": "PL/2692/EXP/ES/2015", "Nombre": "GASOLINERA VILLA DE SERIS S.A. DE C.V.", "Direccion": "Boulevard Vildosola No. 36", "Diesel": null, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.062827, "Longitud": -110.954255}, {"Numero": "PL/2693/EXP/ES/2015", "Nombre": "AUTOSERVICIO LA CANDELARIA S.A. DE C.V.", "Direccion": "Boulevard Antonio Quiroga No. 397", "Diesel": null, "Magna": 23.25, "Premium": 27.99, "Latitud": 29.1316042, "Longitud": -111.0231274}, {"Numero": "PL/2749/EXP/ES/2015", "Nombre": "GASOLINERA LA VERBENA S.A. DE C.V.", "Direccion": "Boulevard Camino del Seri No. 356", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0627145, "Longitud": -110.9909922}, {"Numero": "PL/2917/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard Luis Encinas No. 36", "Diesel": 28.49, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.0832264, "Longitud": -110.9495767}, {"Numero": "PL/2930/EXP/ES/2015", "Nombre": "AUTOSERVICIO ROSALES S.A. DE C.V.", "Direccion": "Boulevard Paseo Rio Sonora No. 128", "Diesel": null, "Magna": 23.99, "Premium": 29.49, "Latitud": 29.0689467, "Longitud": -110.980407}, {"Numero": "PL/2963/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Francisco Monteverde No. 900", "Diesel": 28.49, "Magna": 23.25, "Premium": 27.99, "Latitud": 29.1160513, "Longitud": -110.9731861}, {"Numero": "PL/3029/EXP/ES/2015", "Nombre": "GRUPO GASOLINERO LM S.A. DE C.V.", "Direccion": "Carretera a Nogales Km 1.7", "Diesel": 29.79, "Magna": 23.99, "Premium": 29.49, "Latitud": 29.0265015, "Longitud": -110.911048}, {"Numero": "PL/3121/EXP/ES/2015", "Nombre": "GASERVICIO HERMOSUR S.A. DE C.V.", "Direccion": "Boulevard Manuel J. Clouthier No. 275", "Diesel": 29.79, "Magna": 23.99, "Premium": 29.49, "Latitud": 29.0159111, "Longitud": -110.9623992}, {"Numero": "PL/3136/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Periférico Sur No. 28", "Diesel": 28.49, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.0359254, "Longitud": -110.9545754}, {"Numero": "PL/3252/EXP/ES/2015", "Nombre": "COMBUSTIBLES Y SERVICIOS JARDIN JUÁREZ S.A. DE C.V.", "Direccion": "Calle Matamoros S/N", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0515474, "Longitud": -110.9714221}, {"Numero": "PL/3255/EXP/ES/2015", "Nombre": "COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.", "Direccion": "Boulevard Dr. Antonio Quiroga No. 330", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0372294, "Longitud": -111.0020967}, {"Numero": "PL/3256/EXP/ES/2015", "Nombre": "COMBUSTIBLES Y SERVICIOS PERISUR S.A. DE C.V.", "Direccion": "Periférico Sur Y Carretera a Sahuaripa", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0332041, "Longitud": -110.9420655}, {"Numero": "PL/3275/EXP/ES/2015", "Nombre": "AUTOSERVICIO ROSALES, S.A. DE C.V.", "Direccion": "Boulevardpaseo Rio Sonora Esquina Dr. Domingo Olivares No. 422", "Diesel": null, "Magna": 23.99, "Premium": 29.49, "Latitud": 29.1097797, "Longitud": -110.9804657}, {"Numero": "PL/3302/EXP/ES/2015", "Nombre": "GASOLINERA LA MINA S.A. DE C.V.", "Direccion": "Avenida Lázaro Cárdenas No. 209", "Diesel": 28.89, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.0524692, "Longitud": -110.9768825}, {"Numero": "PL/3304/EXP/ES/2015", "Nombre": "POWER GAS S.A. DE C.V.", "Direccion": "Boulevard Libertad Esquina Salida a Guaymas", "Diesel": 28.89, "Magna": 23.3, "Premium": 28.19, "Latitud": 27.9110633, "Longitud": -110.9090678}, {"Numero": "PL/3308/EXP/ES/2015", "Nombre": "AUTOSERVICIO LA CANDELARIA S.A. DE C.V.", "Direccion": "Boulevard Progreso No. 258", "Diesel": 28.89, "Magna": 23.3, "Premium": 28.19, "Latitud": 29.1454187, "Longitud": -110.9741699}, {"Numero": "PL/3350/EXP/ES/2015", "Nombre": "SERVICIOS Z3 S.A. DE C.V.", "Direccion": "Boulevard Ignacio Salazar S/N", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1166092, "Longitud": -110.9930715}, {"Numero": "PL/3438/EXP/ES/2015", "Nombre": "SERVICIOS Z3 S.A. DE C.V.", "Direccion": "Ángel García Aburto Y Dr. Domingo Olivares", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1090564, "Longitud": -110.9801723}, {"Numero": "PL/3445/EXP/ES/2015", "Nombre": "SERVICIOS Z3 S.A. DE C.V.", "Direccion": "Boulevard Solidaridad S/N", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1021753, "Longitud": -110.992223}, {"Numero": "PL/3455/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION S A P I DE CV", "Direccion": "Boulevard José María Morelos No. 329", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1181932, "Longitud": -110.9507772}, {"Numero": "PL/3472/EXP/ES/2015", "Nombre": "SERVICIOS Z3 SA DE CV", "Direccion": "General Pina Esquina José S. Healy No. 175", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1015707, "Longitud": -110.9642551}, {"Numero": "PL/3482/EXP/ES/2015", "Nombre": "SERVICIOS Z3 SA DE CV", "Direccion": "Boulevard Ignacio Salazar No. 860", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1164317, "Longitud": -111.0051645}, {"Numero": "PL/3655/EXP/ES/2015", "Nombre": "AUTO SERVICIO LORI S.A. DE C.V.", "Direccion": "Carretera a La Colorada Km 3.5 Esquina Planetario", "Diesel": 29.99, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.013417, "Longitud": -110.9229322}, {"Numero": "PL/3707/EXP/ES/2015", "Nombre": "HERMOL GASOLINERA S.A. DE C.V.", "Direccion": "Boulevard José María Morelos No. 732", "Diesel": null, "Magna": 23.96, "Premium": 29.94, "Latitud": 29.1342529, "Longitud": -110.953707}, {"Numero": "PL/3721/EXP/ES/2015", "Nombre": "COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.", "Direccion": "Boulevard Luis Donaldo Colosio Esquina Con Boulevard Antonio Q.", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0817937, "Longitud": -111.0226598}, {"Numero": "PL/3732/EXP/ES/2015", "Nombre": "COMBUSTIBLES Y SERVICIOS LPSA S.A. DE C.V.", "Direccion": "Boulevard José López Portillo 437 Esquina Simon Bley", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1241839, "Longitud": -110.9805355}, {"Numero": "PL/3743/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO LAS PALMAS S.A. DE C.V.", "Direccion": "Perimetral Norte No. 1107", "Diesel": null, "Magna": 23.49, "Premium": 28.99, "Latitud": 29.1099995, "Longitud": -110.9986814}, {"Numero": "PL/3988/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Boulevard Solidaridad Y Avenida Pueblo Alamos No. 630", "Diesel": null, "Magna": 23.49, "Premium": 28.99, "Latitud": 29.1054156, "Longitud": -110.9922616}, {"Numero": "PL/3989/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Boulevard Camino del Seri S/N", "Diesel": null, "Magna": 23.49, "Premium": 28.99, "Latitud": 29.0628371, "Longitud": -110.9937297}, {"Numero": "PL/3991/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Boulevard García Morales No. 471", "Diesel": null, "Magna": 23.49, "Premium": 28.79, "Latitud": 29.0955504, "Longitud": -111.0161417}, {"Numero": "PL/3992/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Periférico Norte No. 1", "Diesel": null, "Magna": 23.99, "Premium": 28.79, "Latitud": 29.1117414, "Longitud": -110.9685796}, {"Numero": "PL/3995/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Boulevard Agustin Vildosola Y Avenida Comonfort S/N", "Diesel": null, "Magna": 23.49, "Premium": 28.99, "Latitud": 29.0619806, "Longitud": -110.9543955}, {"Numero": "PL/3996/EXP/ES/2015", "Nombre": "REFORMA GASOLINERA S.A. DE C.V.", "Direccion": "Avenida Reforma S/N", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1091644, "Longitud": -110.95741}, {"Numero": "PL/4068/EXP/ES/2015", "Nombre": "GASOLINERA SAN JAVIER S.A. DE C.V.", "Direccion": "Boulevard José Alberto Healy Noriega No. 1062", "Diesel": 28.49, "Magna": 23.85, "Premium": 28.99, "Latitud": 29.1503283, "Longitud": -110.9969332}, {"Numero": "PL/4089/EXP/ES/2015", "Nombre": "SERVICIO EL FARO S.A. DE C.V.", "Direccion": "Boulevard Francisco Eusebio Kino No. 1098", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0977526, "Longitud": -110.9314072}, {"Numero": "PL/4190/EXP/ES/2015", "Nombre": "CAMINO REAL GASOLINERA S.A. DE C.V.", "Direccion": "Carretera 4 Carriles Hillo-Nogales", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0729673, "Longitud": -110.9559192}, {"Numero": "PL/4197/EXP/ES/2015", "Nombre": "GASOLINERA CR SATELITE DE HERMOSILLO S.A. DE C.V.", "Direccion": "Boulevard Luis Encinas No. 454", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0929612, "Longitud": -110.9774596}, {"Numero": "PL/4272/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Boulevard Luis Encinas Y Manuel R. Bobadilla S/N.", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.1308551, "Longitud": -110.9964555}, {"Numero": "PL/4496/EXP/ES/2015", "Nombre": "GRUPO LESTEF S.A. DE C.V.", "Direccion": "Boulevard José María Morelos No. 694", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1328269, "Longitud": -110.9531865}, {"Numero": "PL/4608/EXP/ES/2015", "Nombre": "GASOLINERA Y SERVICIO PITIC S.A. DE C.V.", "Direccion": "Calle de La Reforma S/N", "Diesel": null, "Magna": 23.0, "Premium": 28.0, "Latitud": 29.1039943, "Longitud": -110.9691878}, {"Numero": "PL/4854/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "Nayarit Esquina Simon Bley", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.1129495, "Longitud": -110.9804884}, {"Numero": "PL/4931/EXP/ES/2015", "Nombre": "ESTACION PIRU, S.A. DE C.V.", "Direccion": "Avenida Nayarit Y Reyes No. 113", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0943898, "Longitud": -110.9606812}, {"Numero": "PL/5086/EXP/ES/2015", "Nombre": "GASOLINERA MAZA DE JUÁREZ S.A. DE C.V.", "Direccion": "Avenida Margarita Maza de Juárez No. 599", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.129353, "Longitud": -110.9895263}, {"Numero": "PL/5109/EXP/ES/2015", "Nombre": "AGROCOMBUSTIBLES EL CHAMIZAL S.A. DE C.V.", "Direccion": "Carretera Hermosillo-Bahia de Kino 1471", "Diesel": 28.99, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0950981, "Longitud": -111.0175091}, {"Numero": "PL/5154/EXP/ES/2015", "Nombre": "GASERVICIO SA DE CV", "Direccion": "Boulevard Francisco Eusebio Kino No. 506", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0980878, "Longitud": -110.9446192}, {"Numero": "PL/5157/EXP/ES/2015", "Nombre": "SERVICIOS NORORREY S.A. DE C.V.", "Direccion": "Boulevard Juan Bautista Escalante No. 405", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1448362, "Longitud": -110.9881613}, {"Numero": "PL/5441/EXP/ES/2015", "Nombre": "SERVICIOS Z3 SA DE CV", "Direccion": "Boulevard Antonio Quiroga No. 120", "Diesel": null, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1355321, "Longitud": -111.0242266}, {"Numero": "PL/5636/EXP/ES/2015", "Nombre": "ALMA DELIA MILLAN LÓPEZ", "Direccion": "Boulevard Antonio Quiroga No. 86", "Diesel": null, "Magna": 23.93, "Premium": 28.43, "Latitud": 29.1068196, "Longitud": -111.0235931}, {"Numero": "PL/5637/EXP/ES/2015", "Nombre": "GASERVICIO SANTA CLARA S.A. DE C.V.", "Direccion": "Carretera a Sahuaripa Esquina Boulevard de Los Seris 353", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0300378, "Longitud": -110.916211}, {"Numero": "PL/5638/EXP/ES/2015", "Nombre": "GASERVICIO EL LLANITO QUIROGA S.A. DE C.V.", "Direccion": "Calle Dr Antonio Quiroga No. 135", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0383234, "Longitud": -111.0033336}, {"Numero": "PL/5639/EXP/ES/2015", "Nombre": "GASERVICIO MORELOS S.A. DE C.V.", "Direccion": "Boulevard Morelos No. 853", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1447551, "Longitud": -110.9526195}, {"Numero": "PL/5640/EXP/ES/2015", "Nombre": "GASERVICIO ORIENTE S.A. DE C.V.", "Direccion": "Avenida 18 de Marzo No. 78", "Diesel": 29.99, "Magna": 22.99, "Premium": 29.99, "Latitud": 29.091274, "Longitud": -110.9307235}, {"Numero": "PL/5641/EXP/ES/2015", "Nombre": "GASERVICIO ENCINAS S.A. DE C.V.", "Direccion": "Boulevard Solidaridad No. 94", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0916169, "Longitud": -110.991547}, {"Numero": "PL/5642/EXP/ES/2015", "Nombre": "GASERVICIO SANTA CLARA S.A. DE C.V.", "Direccion": "Carretera Fed. No. 15 Tramo Hermosillo-Guaymas Km :248 No. 1194", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.0729673, "Longitud": -110.9559192}, {"Numero": "PL/5643/EXP/ES/2015", "Nombre": "GASERVICIO S.A. DE C.V.", "Direccion": "Boulevard José Alberto Healy Noriega No. 1080", "Diesel": 29.99, "Magna": 23.85, "Premium": 29.99, "Latitud": 29.1503283, "Longitud": -110.9969332}, {"Numero": "PL/5644/EXP/ES/2015", "Nombre": "GASERVICIO S.A. DE C.V.", "Direccion": "Luis Donaldo Colosio No. 490 Esquina Con Solidaridad", "Diesel": 29.99, "Magna": 22.99, "Premium": 29.99, "Latitud": 29.0848923, "Longitud": -110.9849895}, {"Numero": "PL/5677/EXP/ES/2015", "Nombre": "ARMANDO EMMANUEL VILLA DOMINGUEZ", "Direccion": "Boulevard Lázaro Cárdenas No. 306", "Diesel": null, "Magna": 23.43, "Premium": 28.43, "Latitud": 29.1180522, "Longitud": -110.9803014}, {"Numero": "PL/5687/EXP/ES/2015", "Nombre": "ARMANDO VILLA ENCINAS", "Direccion": "Boulevard Zamorano No. 94 Esquina Alfonso López Riesgo", "Diesel": null, "Magna": 23.93, "Premium": 28.43, "Latitud": 29.0083105, "Longitud": -110.9440472}, {"Numero": "PL/5696/EXP/ES/2015", "Nombre": "ARMANDO VILLA ENCINAS", "Direccion": "Boulevard Agustin Zamora No. 29 Esquina Boulevard Valencia", "Diesel": null, "Magna": 23.63, "Premium": 28.43, "Latitud": 29.156157, "Longitud": -111.010746}, {"Numero": "PL/5784/EXP/ES/2015", "Nombre": "AUTO SERVICIO BACHOCO S.A. DE C.V.", "Direccion": "Boulevard Morelos S/N Y Calle Siete", "Diesel": null, "Magna": 24.29, "Premium": 29.99, "Latitud": 29.1218472, "Longitud": -110.9513228}, {"Numero": "PL/6145/EXP/ES/2015", "Nombre": "ESTACION PIRU, S.A. DE C.V.", "Direccion": "Tayde López del Castillo Esquina Ignacio Salazar 498", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.1166221, "Longitud": -110.9832852}, {"Numero": "PL/6149/EXP/ES/2015", "Nombre": "SERVICIO EL GALLO S.A. DE C.V.", "Direccion": "Boulevard Vildosola Y Periférico Sur S/N", "Diesel": 29.18, "Magna": 23.99, "Premium": 26.99, "Latitud": 29.0374499, "Longitud": -110.9583478}, {"Numero": "PL/6150/EXP/ES/2015", "Nombre": "EL CHARRO GASOLINERA S. A.", "Direccion": "Veracruz No. 263 Esquina Francisco Monteverde", "Diesel": null, "Magna": 23.99, "Premium": 29.72, "Latitud": 29.092335, "Longitud": -110.9690073}, {"Numero": "PL/6151/EXP/ES/2015", "Nombre": "COMBUSTIBLES Y LUBRICANTES CF S.A. DE C.V.", "Direccion": "Avenida Lázaro Cárdenas No. 413", "Diesel": 28.49, "Magna": 23.47, "Premium": 28.55, "Latitud": 29.0420985, "Longitud": -110.9945406}, {"Numero": "PL/6154/EXP/ES/2015", "Nombre": "PETROMEX DE HERMOSILLO S.A. DE C.V.", "Direccion": "Avenida Periférico Poniente No. 328", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1111566, "Longitud": -110.982407}, {"Numero": "PL/6197/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Carretera a La Colorada No. 98", "Diesel": 28.49, "Magna": 23.89, "Premium": 27.99, "Latitud": 29.0183718, "Longitud": -110.9289068}, {"Numero": "PL/6198/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Matamoros No. 57", "Diesel": null, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.0878264, "Longitud": -110.9534656}, {"Numero": "PL/6199/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Calle Dr Noriega S/N", "Diesel": 28.49, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.0800989, "Longitud": -110.9534265}, {"Numero": "PL/6201/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard Paseo del Lago No. 4", "Diesel": 28.49, "Magna": 22.99, "Premium": 27.99, "Latitud": 29.0488745, "Longitud": -110.9344625}, {"Numero": "PL/6202/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard Solidaridad No. 766", "Diesel": null, "Magna": 22.99, "Premium": 27.99, "Latitud": 29.056516, "Longitud": -110.9651141}, {"Numero": "PL/6204/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard de Los Ganaderos No. 492", "Diesel": 28.49, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.0529665, "Longitud": -110.9307829}, {"Numero": "PL/6290/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Avenida José S Healy No. 161", "Diesel": null, "Magna": 23.59, "Premium": 27.99, "Latitud": 29.101644, "Longitud": -110.9632577}, {"Numero": "PL/6291/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard Lázaro Cárdenas No. 531", "Diesel": null, "Magna": 23.99, "Premium": 27.99, "Latitud": 29.1204884, "Longitud": -110.9852651}, {"Numero": "PL/6292/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard Solidaridad No. 392", "Diesel": 28.49, "Magna": 22.94, "Premium": 27.99, "Latitud": 29.1128478, "Longitud": -110.9930595}, {"Numero": "PL/6294/EXP/ES/2015", "Nombre": "GUADALUPANA GASOLINERA S.A. DE C.V.", "Direccion": "Carretera Internacional Km 247.3", "Diesel": 28.49, "Magna": 23.69, "Premium": 27.99, "Latitud": 29.0869466, "Longitud": -110.9303523}, {"Numero": "PL/6360/EXP/ES/2015", "Nombre": "GASOLINERA RENDIMAS DEL CENTRO S.A. DE C.V.", "Direccion": "Boulevard Abelardo Lt. Rodriguez No. 109", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1469773, "Longitud": -110.9989983}, {"Numero": "PL/6365/EXP/ES/2015", "Nombre": "GASOLINERA RENDIMAS S.A. DE C.V.", "Direccion": "Periférico Norte No. 89 Esquina Israel Gonzalez", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.1094518, "Longitud": -110.9589297}, {"Numero": "PL/6426/EXP/ES/2015", "Nombre": "GASERVICIO NUEVO HERMOSILLO S.A. DE C.V.", "Direccion": "Boulevard Capomo No. 17 Esquina Con Junta de Rios", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.018687, "Longitud": -110.9319427}, {"Numero": "PL/6525/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Rodriguez Y Revolución S/N", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0977766, "Longitud": -110.9509543}, {"Numero": "PL/6542/EXP/ES/2015", "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.", "Direccion": "Boulevard Lázaro Cárdenas No. 910", "Diesel": null, "Magna": 22.95, "Premium": 28.39, "Latitud": 29.1306113, "Longitud": -111.005645}, {"Numero": "PL/6639/EXP/ES/2015", "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.", "Direccion": "Boulevard Rodriguez Y Calle Everardo Monroy", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0869383, "Longitud": -110.9578189}, {"Numero": "PL/6714/EXP/ES/2015", "Nombre": "MANUEL DE LA FUENTE S.A. DE C.V.", "Direccion": "Km 63 Carretera Hermosillo-Bahia de Kino Sur", "Diesel": 29.99, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0900161, "Longitud": -111.0458873}, {"Numero": "PL/6849/EXP/ES/2015", "Nombre": "SERVI GAS LA ESPIGA S.A. DE C.V.", "Direccion": "Carretera Hermosillo-Bahia de Kino No. 290", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.49, "Latitud": 29.0944253, "Longitud": -111.0095909}, {"Numero": "PL/6961/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO GEMA LC S.A. DE C.V.", "Direccion": "Boulevard Lázaro Cárdenas No. 884", "Diesel": 28.99, "Magna": 23.29, "Premium": 28.99, "Latitud": 29.1266538, "Longitud": -110.9976995}, {"Numero": "PL/7105/EXP/ES/2015", "Nombre": "AUTOSERVICIO VERACRUZ S.A. DE C.V.", "Direccion": "Veracruz No. 288 Esquina 12 de Octubre", "Diesel": null, "Magna": 23.49, "Premium": 28.99, "Latitud": 29.0917035, "Longitud": -110.9710495}, {"Numero": "PL/7116/EXP/ES/2015", "Nombre": "GASOLINERA ZAMORA S.A. DE C.V.", "Direccion": "Carretera a Pesqueira Km 8.400 Zamora", "Diesel": 28.99, "Magna": 23.99, "Premium": 27.2, "Latitud": 29.0849201, "Longitud": -110.990191}, {"Numero": "PL/7117/EXP/ES/2015", "Nombre": "ESTACIÓN DEC VERACRUZ S.A. DE C.V.", "Direccion": "Veracruz Y Garmendia No. 71", "Diesel": null, "Magna": 23.99, "Premium": 27.2, "Latitud": 29.0804503, "Longitud": -110.9548637}, {"Numero": "PL/7222/EXP/ES/2015", "Nombre": "COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.", "Direccion": "Boulevard Antonio Quiroga No. 91", "Diesel": 28.19, "Magna": 23.77, "Premium": 28.1, "Latitud": 29.0870484, "Longitud": -111.0220097}, {"Numero": "PL/7223/EXP/ES/2015", "Nombre": "GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.", "Direccion": "Boulevard García Morales No. 961", "Diesel": 28.19, "Magna": 23.89, "Premium": 28.79, "Latitud": 29.089415, "Longitud": -111.0482052}, {"Numero": "PL/7452/EXP/ES/2015", "Nombre": "ESTACION PIRU, S.A. DE C.V.", "Direccion": "Boulevard G. Morales No 448 A", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0878118, "Longitud": -111.0546377}, {"Numero": "PL/7549/EXP/ES/2015", "Nombre": "SERVICIO VALLE DEL DESIERTO S.A. DE C.V.", "Direccion": "Carretera Hermosillo-Guaymas Esquina Boulevard Libertad S/N", "Diesel": 28.99, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0319755, "Longitud": -110.9594809}, {"Numero": "PL/7692/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO 5162 S.A. DE C.V.", "Direccion": "Boulevard García Morales No. 202", "Diesel": 29.99, "Magna": 22.99, "Premium": 28.99, "Latitud": 29.094106, "Longitud": -111.0016115}, {"Numero": "PL/7694/EXP/ES/2015", "Nombre": "PLAZA PROGRESO S.A. DE C.V.", "Direccion": "Boulevard Solidaridad No. 735", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1435735, "Longitud": -110.996023}, {"Numero": "PL/7701/EXP/ES/2015", "Nombre": "SERVICIO DELSI S.A. DE C.V.", "Direccion": "Boulevard López Portillo No. 302", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.124533, "Longitud": -110.9721699}, {"Numero": "PL/7722/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO 1642 S.A. DE C.V.", "Direccion": "Boulevard Luis Encinas Y Gustavo Muñoz", "Diesel": 28.99, "Magna": 23.45, "Premium": 28.39, "Latitud": 29.0932181, "Longitud": -110.9808654}, {"Numero": "PL/7725/EXP/ES/2015", "Nombre": "ESTACIÓN DE SERVICIO 3210 S.A. DE C.V.", "Direccion": "Boulevard Luis Donaldo Colosio Y Madrid", "Diesel": null, "Magna": 22.89, "Premium": 28.69, "Latitud": 29.0793089, "Longitud": -111.0044565}, {"Numero": "PL/7726/EXP/ES/2015", "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.", "Direccion": "Boulevard Luis Encinas Esquina Niños Heroes", "Diesel": null, "Magna": 23.45, "Premium": 27.95, "Latitud": 29.083854, "Longitud": -110.9530154}, {"Numero": "PL/7727/EXP/ES/2015", "Nombre": "OPERADORA RIO COLORADO S. DE R.L. DE C.V.", "Direccion": "Periférico Norte Esquina Esteban Vaca Calderon", "Diesel": 28.99, "Magna": 22.97, "Premium": 28.39, "Latitud": 29.1123153, "Longitud": -110.971555}, {"Numero": "PL/7728/EXP/ES/2015", "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.", "Direccion": "Reforma Y Manuel Z Cubillas", "Diesel": 28.99, "Magna": 22.95, "Premium": 28.69, "Latitud": 29.0722657, "Longitud": -110.9638389}, {"Numero": "PL/7834/EXP/ES/2015", "Nombre": "GASOLINERA RENDIMAS DEL NOROESTE S.A. DE C.V.", "Direccion": "Boulevard Periférico Oriente S/N Esquina Con Calle Canal Principal", "Diesel": 28.5, "Magna": 22.99, "Premium": 27.9, "Latitud": 29.0811076, "Longitud": -110.9252641}, {"Numero": "PL/8712/EXP/ES/2015", "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ", "Direccion": "Boulevard Antonio Quiroga No. 507", "Diesel": 28.49, "Magna": 22.99, "Premium": 27.99, "Latitud": 29.1421479, "Longitud": -111.0240728}, {"Numero": "PL/8715/EXP/ES/2015", "Nombre": "COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.", "Direccion": "Boulevard Luis Donaldo Colosio No. 987", "Diesel": null, "Magna": 23.77, "Premium": 28.1, "Latitud": 29.0813786, "Longitud": -111.0373824}, {"Numero": "PL/8768/EXP/ES/2015", "Nombre": "GASERVICIO ENCINAS SA DE CV", "Direccion": "Avenida Paseo Rio Sonora Norte S/N", "Diesel": 29.99, "Magna": 22.99, "Premium": 29.99, "Latitud": 29.0688764, "Longitud": -110.9674999}, {"Numero": "PL/8876/EXP/ES/2015", "Nombre": "SERVICIO EL KENO S.A. DE C.V.", "Direccion": "Avenida Periférico Poniente No. 239", "Diesel": null, "Magna": 22.91, "Premium": 27.97, "Latitud": 29.0943675, "Longitud": -110.9311248}, {"Numero": "PL/8914/EXP/ES/2015", "Nombre": "GASERVICIO EL LLANITO QUIROGA SA DE CV", "Direccion": "Periférico Poniente Esquina Avenida Escuinapa Y Rosario", "Diesel": 29.99, "Magna": 23.99, "Premium": 29.99, "Latitud": 29.1485315, "Longitud": -110.9808949}, {"Numero": "PL/9031/EXP/ES/2015", "Nombre": "EDUARDO PERALTA ENCINAS", "Direccion": "Avenida Periférico Norte No. 371", "Diesel": null, "Magna": 23.49, "Premium": 29.0, "Latitud": 29.1121667, "Longitud": -110.9743933}, {"Numero": "PL/9577/EXP/ES/2015", "Nombre": "ESTACIÓN PIRU S.A. DE C.V.", "Direccion": "De La Reforma Esquina Con Aguascalientes No. 79", "Diesel": null, "Magna": 23.99, "Premium": 28.99, "Latitud": 29.0956824, "Longitud": -110.9591224}, {"Numero": "PL/9672/EXP/ES/2015", "Nombre": "SERVICIOS DEL RÍO RG S.A. DE C.V.", "Direccion": "Boulevard Paseo del Canal Sur Al Este Fraccionamiento Montecarlo", "Diesel": null, "Magna": 24.39, "Premium": 29.99, "Latitud": 29.0647339, "Longitud": -110.9961161}, {"Numero": "PL/9958/EXP/ES/2015", "Nombre": "SERVIGAS BROCA SA DE CV", "Direccion": "Calle 4 S/N", "Diesel": 29.3, "Magna": 23.98, "Premium": null, "Latitud": 29.1015162, "Longitud": -110.9952597}]}};
+
+// ─────────────────────────────────────────────
+//  ESTADO GLOBAL
+// ─────────────────────────────────────────────
+var datos        = [];
+var combustible  = 'Magna';
+var estadoSel    = '';
+var munSel       = '';
+var map          = null;
+var mLayer       = null;
+var mapInit      = false;
+var markersRef   = [];
+var markerSelIdx = -1;
+var userMarker   = null;
+var userCircle   = null;
+var userLoc      = null;          // {lat, lng} — GPS o manual
+var modoFijar    = false;         // modo para clic manual en mapa
+var pinManual    = null;          // marker del punto fijado manualmente
+
+// ─────────────────────────────────────────────
+//  AUTOCOMPLETE ESTADO
+// ─────────────────────────────────────────────
+function filtrarEstados() {
+    var q  = document.getElementById('inp-estado').value.toLowerCase().trim();
+    var ks = Object.keys(CATALOGO).sort();
+    var f  = q ? ks.filter(function(k){ return k.toLowerCase().indexOf(q) !== -1; }) : ks;
+    renderDrop('drop-estado', f, false, seleccionarEstado);
+}
+
+function seleccionarEstado(val) {
+    estadoSel = val;
+    munSel    = '';
+    document.getElementById('inp-estado').value       = cap(val);
+    document.getElementById('inp-municipio').value    = '';
+    document.getElementById('inp-municipio').disabled = false;
+    document.getElementById('btn-ver').disabled       = true;
+    cerrarDrop('estado');
+}
+
+// ─────────────────────────────────────────────
+//  AUTOCOMPLETE MUNICIPIO
+// ─────────────────────────────────────────────
+function filtrarMunicipios() {
+    if (!estadoSel) return;
+    var q    = document.getElementById('inp-municipio').value.toLowerCase().trim();
+    var muns = CATALOGO[estadoSel] || [];
+    var f    = q ? muns.filter(function(m){ return m.toLowerCase().indexOf(q) !== -1; }) : muns;
+    renderDrop('drop-municipio', f, true, seleccionarMunicipio);
+}
+
+function seleccionarMunicipio(val) {
+    munSel = val;
+    document.getElementById('inp-municipio').value = cap(val);
+    document.getElementById('btn-ver').disabled    = false;
+    cerrarDrop('municipio');
+}
+
+// ─────────────────────────────────────────────
+//  DROPDOWN
+// ─────────────────────────────────────────────
+function renderDrop(id, items, badge, cb) {
+    var drop = document.getElementById(id);
+    drop.innerHTML = '';
+
+    if (items.length === 0) {
+        drop.innerHTML = '<div class="drop-empty">Sin resultados</div>';
+        drop.classList.add('open');
+        return;
+    }
+
+    items.forEach(function(item) {
+        var div  = document.createElement('div');
+        div.className = 'drop-item';
+
+        var span = document.createElement('span');
+        span.textContent = cap(item);
+        div.appendChild(span);
+
+        if (badge) {
+            var key  = estadoSel + '||' + item;
+            var hayD = DATOS_DISPONIBLES.hasOwnProperty(key);
+            var b    = document.createElement('span');
+            b.className   = 'd-badge ' + (hayD ? 'ok' : 'no');
+            b.textContent = hayD ? 'Disponible' : 'Próximamente';
+            div.appendChild(b);
+        }
+
+        div.addEventListener('mousedown', function(e){ e.preventDefault(); cb(item); });
+        drop.appendChild(div);
+    });
+
+    drop.classList.add('open');
+}
+
+function abrirDrop(t) {
+    if (t === 'estado')    filtrarEstados();
+    if (t === 'municipio') filtrarMunicipios();
+}
+
+function cerrarDrop(t) {
+    document.getElementById('drop-' + t).classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#wrap-estado'))    cerrarDrop('estado');
+    if (!e.target.closest('#wrap-municipio')) cerrarDrop('municipio');
+});
+
+// ─────────────────────────────────────────────
+//  CARGAR CIUDAD
+// ─────────────────────────────────────────────
+function cargarCiudad() {
+    if (!estadoSel || !munSel) return;
+
+    var key = estadoSel + '||' + munSel;
+
+    document.getElementById('sc-welcome').style.display = 'none';
+    document.getElementById('sc-prox').style.display    = 'none';
+    document.getElementById('dashboard').style.display  = 'none';
+
+    if (!DATOS_DISPONIBLES.hasOwnProperty(key)) {
+        document.getElementById('prox-txt').innerHTML =
+            'No hay datos para <strong>' + cap(munSel) + ', ' + cap(estadoSel) + '</strong>.';
+        document.getElementById('sc-prox').style.display = 'flex';
+        return;
+    }
+
+    var raw = DATOS_DISPONIBLES[key].datos;
+    datos   = [];
+
+    for (var i = 0; i < raw.length; i++) {
+        var r   = raw[i];
+        var lat = parseFloat(r.Latitud);
+        var lng = parseFloat(r.Longitud);
+        if (isNaN(lat) || isNaN(lng)) continue;
+
+        datos.push({
+            Nombre:    r.Nombre    || '',
+            Direccion: r.Direccion || '',
+            Numero:    r.Numero    || '',
+            Magna:     r.Magna   != null ? parseFloat(r.Magna)   : null,
+            Premium:   r.Premium != null ? parseFloat(r.Premium) : null,
+            Diesel:    r.Diesel  != null ? parseFloat(r.Diesel)  : null,
+            Latitud:   lat,
+            Longitud:  lng
+        });
+    }
+
+    combustible  = 'Magna';
+    markerSelIdx = -1;
+    syncPills();
+    detectarCombustibles();
+
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('nav-right').textContent   = cap(munSel) + ', ' + cap(estadoSel);
+
+    // Resetear panel detalle
+    resetDetalle();
+
+    // Resetear modo fijar
+    if (modoFijar) toggleModoFijar();
+
+    initMapa();
+    render();
+}
+
+// ─────────────────────────────────────────────
+//  RENDER COMPLETO
+// ─────────────────────────────────────────────
+function render() {
+    renderKPIs();
+    renderMapa();
+    renderRanking();
+}
+
+// ─────────────────────────────────────────────
+//  KPIs
+// ─────────────────────────────────────────────
+function renderKPIs() {
+    var ps = [];
+    for (var i = 0; i < datos.length; i++) {
+        var v = datos[i][combustible];
+        if (v !== null && !isNaN(v)) ps.push(v);
+    }
+
+    txt('sec-label',   'Precios de ' + combustible + ' · ' + cap(munSel));
+    txt('mapa-titulo', 'Gasolineras · ' + combustible);
+    txt('rank-titulo', '🏆 Top 10 más baratas · ' + combustible);
+
+    if (ps.length === 0) {
+        txt('kpi-prom','--'); txt('kpi-min','--'); txt('kpi-max','--'); txt('kpi-est','0');
+        return;
+    }
+
+    var s = 0, mn = ps[0], mx = ps[0];
+    for (var j = 0; j < ps.length; j++) {
+        s += ps[j];
+        if (ps[j] < mn) mn = ps[j];
+        if (ps[j] > mx) mx = ps[j];
+    }
+
+    txt('kpi-prom', '$' + (s/ps.length).toFixed(2));
+    txt('kpi-min',  '$' + mn.toFixed(2));
+    txt('kpi-max',  '$' + mx.toFixed(2));
+    txt('kpi-est',  '' + ps.length);
+}
+
+// ─────────────────────────────────────────────
+//  MAPA: inicializar
+// ─────────────────────────────────────────────
+function initMapa() {
+    if (mapInit) { mLayer.clearLayers(); return; }
+
+    map = L.map('map', { zoomControl: true });
+
+    // Tile OpenStreetMap estándar (el colorido de leaflet.com)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+    }).addTo(map);
+
+    mLayer = L.layerGroup().addTo(map);
+
+    // Clic en el mapa → fijar ubicación manual
+    map.on('click', function(e) {
+        if (!modoFijar) return;
+        fijarUbicacionManual(e.latlng.lat, e.latlng.lng);
+    });
+
+    mapInit = true;
+}
+
+// ─────────────────────────────────────────────
+//  MAPA: renderizar puntos
+// ─────────────────────────────────────────────
+function renderMapa() {
+    mLayer.clearLayers();
+    markersRef   = [];
+    markerSelIdx = -1;
+
+    var cp = [];
+    for (var i = 0; i < datos.length; i++) {
+        var d = datos[i];
+        if (d[combustible] !== null && !isNaN(d[combustible])) cp.push(d);
+    }
+
+    if (cp.length === 0) return;
+
+    var ps   = cp.map(function(d){ return d[combustible]; });
+    var lats = cp.map(function(d){ return d.Latitud; });
+    var lngs = cp.map(function(d){ return d.Longitud; });
+
+    map.fitBounds(
+        L.latLngBounds(
+            [Math.min.apply(null,lats), Math.min.apply(null,lngs)],
+            [Math.max.apply(null,lats), Math.max.apply(null,lngs)]
+        ),
+        { padding: [28,28] }
+    );
+
+    cp.forEach(function(d, idx) {
+        var precio = d[combustible];
+        var cat    = categorizar(precio, ps);
+        var color  = getColor(cat);
+
+        var m = L.marker([d.Latitud, d.Longitud], {
+            icon: mkPunto(color, false),
+            title: d.Nombre
+        });
+
+        m._myColor = color;
+        m._myIdx   = idx;
+
+        m.on('click', function(){
+            selMarker(idx);
+            mostrarDetalle(d, precio, ps);
+        });
+
+        m.bindTooltip(
+            '<strong>' + esc(d.Nombre) + '</strong><br>' +
+            combustible + ': <strong>$' + precio.toFixed(2) + '</strong><br>' +
+            '<span style="color:' + color + '">● ' + cat + '</span>',
+            { direction: 'top', offset: [0, -7] }
+        );
+
+        mLayer.addLayer(m);
+        markersRef.push({ m: m, d: d, color: color, precio: precio });
+    });
+}
+
+// ─────────────────────────────────────────────
+//  MARCADOR PUNTO
+// ─────────────────────────────────────────────
+function mkPunto(color, sel) {
+    var sz = sel ? 30 : 15;
+    var bw = sel ? 3  : 2;
+    var sh = sel
+        ? '0 0 0 5px ' + color + '35, 0 2px 8px rgba(0,0,0,0.28)'
+        : '0 1px 3px rgba(0,0,0,0.22)';
+    var a = sz / 2;
+
+    return L.divIcon({
+        html: '<div style="width:' + sz + 'px;height:' + sz + 'px;' +
+              'background:' + color + ';border-radius:50%;' +
+              'border:' + bw + 'px solid white;box-shadow:' + sh + ';' +
+              'transition:all 0.15s"></div>',
+        className: '', iconSize: [sz,sz], iconAnchor: [a,a], popupAnchor: [0,-a]
+    });
+}
+
+// ─────────────────────────────────────────────
+//  SELECCIONAR MARKER
+// ─────────────────────────────────────────────
+function selMarker(idx) {
+    if (markerSelIdx !== -1 && markersRef[markerSelIdx]) {
+        var p = markersRef[markerSelIdx];
+        p.m.setIcon(mkPunto(p.color, false));
+        p.m.setZIndexOffset(0);
+    }
+    markerSelIdx = idx;
+    if (idx !== -1 && markersRef[idx]) {
+        var s = markersRef[idx];
+        s.m.setIcon(mkPunto(s.color, true));
+        s.m.setZIndexOffset(999);
+        map.setView([s.d.Latitud, s.d.Longitud], 15, { animate: true, duration: 0.5 });
+        s.m.openTooltip();
+    }
+}
+
+// ─────────────────────────────────────────────
+//  MOSTRAR DETALLE (desktop + inline)
+// ─────────────────────────────────────────────
+function mostrarDetalle(d, precio, todosPrecios) {
+    var cat  = precio != null ? categorizar(precio, todosPrecios) : '—';
+    var dist = userLoc ? ' · ' + distKm(userLoc.lat, userLoc.lng, d.Latitud, d.Longitud).toFixed(1) + ' km' : '';
+    var meta = combustible + ' · ' + cat + dist;
+
+    // Desktop (columna 3)
+    document.getElementById('detail-ph').style.display      = 'none';
+    document.getElementById('detail-content').style.display = 'block';
+    document.getElementById('detail-card').classList.add('filled');
+    txt('d-nombre', d.Nombre || '—');
+    txt('d-dir',    d.Direccion || 'Sin dirección registrada');
+    txt('d-meta',   meta);
+    setDV('d-magna',   d.Magna);
+    setDV('d-premium', d.Premium);
+    setDV('d-diesel',  d.Diesel);
+
+    // Inline (tablet/móvil)
+    document.getElementById('detail-inline').classList.add('visible');
+    txt('di-nombre', d.Nombre || '—');
+    txt('di-dir',    d.Direccion || 'Sin dirección registrada');
+    txt('di-meta',   meta);
+    setDVId('di-magna',   d.Magna);
+    setDVId('di-premium', d.Premium);
+    setDVId('di-diesel',  d.Diesel);
+}
+
+function setDV(id, val) {
+    var el = document.getElementById(id);
+    if (val !== null && !isNaN(parseFloat(val))) {
+        el.textContent = '$' + parseFloat(val).toFixed(2);
+        el.className   = 'dp-val';
+    } else {
+        el.textContent = 'N/D';
+        el.className   = 'dp-val na';
+    }
+}
+
+function setDVId(id, val) { setDV(id, val); }
+
+function resetDetalle() {
+    document.getElementById('detail-ph').style.display      = 'flex';
+    document.getElementById('detail-content').style.display = 'none';
+    document.getElementById('detail-card').classList.remove('filled');
+    document.getElementById('detail-inline').classList.remove('visible');
+}
+
+// ─────────────────────────────────────────────
+//  RANKING
+// ─────────────────────────────────────────────
+function renderRanking() {
+    var lista = [];
+    for (var i = 0; i < datos.length; i++) {
+        var v = datos[i][combustible];
+        if (v !== null && !isNaN(v)) lista.push({ d: datos[i], precio: v });
+    }
+
+    lista.sort(function(a,b){ return a.precio - b.precio; });
+
+    var ps    = lista.map(function(x){ return x.precio; });
+    var top10 = lista.slice(0,10);
+    var tbody = document.getElementById('rank-body');
+
+    if (top10.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#ccc;padding:18px">Sin datos</td></tr>';
+        return;
+    }
+
+    var html = '';
+    for (var j = 0; j < top10.length; j++) {
+        var item = top10[j];
+        var cat  = categorizar(item.precio, ps);
+        var bCl  = cat === 'Barato' ? 'b-b' : (cat === 'Promedio' ? 'b-p' : 'b-c');
+        var pCl  = cat === 'Barato' ? 'p-b' : (cat === 'Promedio' ? 'p-p' : 'p-c');
+        var nom  = item.d.Nombre.length > 20 ? item.d.Nombre.slice(0,18) + '…' : item.d.Nombre;
+
+        html += '<tr data-j="' + j + '">' +
+            '<td style="color:#c7c7cc;font-weight:600">' + (j+1) + '</td>' +
+            '<td style="font-weight:500">' + esc(nom) + '</td>' +
+            '<td class="' + pCl + '">$' + item.precio.toFixed(2) + '</td>' +
+            '<td><span class="badge ' + bCl + '">' + cat + '</span></td>' +
+            '</tr>';
+    }
+
+    tbody.innerHTML = html;
+
+    var rows = tbody.querySelectorAll('tr');
+    for (var k = 0; k < rows.length; k++) {
+        (function(idx) {
+            rows[idx].addEventListener('click', function() {
+                var item = top10[idx];
+
+                // Highlight fila
+                var all = tbody.querySelectorAll('tr');
+                for (var r = 0; r < all.length; r++) all[r].classList.remove('sel');
+                rows[idx].classList.add('sel');
+
+                // Detalle
+                mostrarDetalle(item.d, item.precio, ps);
+
+                // Marker en mapa
+                for (var m = 0; m < markersRef.length; m++) {
+                    var ref = markersRef[m];
+                    if (ref.d.Numero === item.d.Numero ||
+                        (ref.d.Latitud === item.d.Latitud && ref.d.Longitud === item.d.Longitud)) {
+                        selMarker(m);
+                        break;
+                    }
+                }
+            });
+        })(k);
+    }
+}
+
+// ─────────────────────────────────────────────
+//  MI UBICACIÓN (GPS automático)
+// ─────────────────────────────────────────────
+function ubicarme() {
+    if (!navigator.geolocation) {
+        alert('Tu navegador no soporta geolocalización.');
+        return;
+    }
+
+    var btn = document.getElementById('mbtn-ubicame');
+    btn.textContent = '⌛ Buscando...';
+    btn.disabled    = true;
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            btn.textContent = '📍 Mi ubicación';
+            btn.disabled    = false;
+            aplicarUbicacion(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy || 80, false);
+        },
+        function() {
+            btn.textContent = '📍 Mi ubicación';
+            btn.disabled    = false;
+            alert('No se pudo obtener tu ubicación. Usa "Fijar punto" para colocarla manualmente.');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+}
+
+// ─────────────────────────────────────────────
+//  MODO FIJAR PUNTO MANUAL
+// ─────────────────────────────────────────────
+function toggleModoFijar() {
+    modoFijar = !modoFijar;
+
+    var btnFijar  = document.getElementById('mbtn-fijar');
+    var hint      = document.getElementById('map-hint');
+    var mapEl     = document.getElementById('map');
+
+    if (modoFijar) {
+        btnFijar.classList.add('active');
+        btnFijar.textContent = '✓ Haz clic en el mapa';
+        hint.classList.add('visible');
+        mapEl.classList.add('map-pin-mode');
+    } else {
+        btnFijar.classList.remove('active');
+        btnFijar.textContent = '📌 Fijar punto';
+        hint.classList.remove('visible');
+        mapEl.classList.remove('map-pin-mode');
+    }
+}
+
+function fijarUbicacionManual(lat, lng) {
+    // Desactivar modo
+    modoFijar = false;
+    var btnFijar = document.getElementById('mbtn-fijar');
+    btnFijar.classList.remove('active');
+    btnFijar.textContent = '📌 Fijar punto';
+    document.getElementById('map-hint').classList.remove('visible');
+    document.getElementById('map').classList.remove('map-pin-mode');
+
+    aplicarUbicacion(lat, lng, 0, true);
+}
+
+function aplicarUbicacion(lat, lng, accuracy, esManual) {
+    userLoc = { lat: lat, lng: lng };
+
+    if (userMarker) map.removeLayer(userMarker);
+    if (userCircle) map.removeLayer(userCircle);
+    if (pinManual)  map.removeLayer(pinManual);
+
+    if (!esManual && accuracy > 0) {
+        userCircle = L.circle([lat, lng], {
+            radius: accuracy,
+            color: '#0071e3',
+            fillColor: '#0071e3',
+            fillOpacity: 0.07,
+            weight: 1
+        }).addTo(map);
+    }
+
+    if (esManual) {
+        pinManual = L.circleMarker([lat, lng], {
+            radius:      10,
+            color:       'white',
+            weight:      3,
+            fillColor:   '#1d1d1f',
+            fillOpacity: 1
+        }).addTo(map);
+
+        pinManual.bindTooltip('Tu punto de referencia').openTooltip();
+
+        if (window.radioManual) map.removeLayer(window.radioManual);
+        window.radioManual = L.circle([lat, lng], {
+            radius:      2000,
+            color:       '#1d1d1f',
+            weight:      1.5,
+            dashArray:   '6 4',
+            fillColor:   '#1d1d1f',
+            fillOpacity: 0.04
+        }).addTo(map);
+    } else {
+        // Punto azul GPS
+        userMarker = L.circleMarker([lat, lng], {
+            radius: 8, color: 'white', weight: 3,
+            fillColor: '#0071e3', fillOpacity: 1
+        }).addTo(map);
+        userMarker.bindTooltip('Tu ubicación').openTooltip();
+    }
+
+    // Mostrar botón "Quitar punto"
+    document.getElementById('mbtn-quitar').style.display = 'inline-block';
+
+    map.setView([lat, lng], 14, { animate: true, duration: 0.6 });
+
+    renderCercanas();
+}
+
+function quitarUbicacion() {
+    userLoc = null;
+    if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+    if (userCircle) { map.removeLayer(userCircle); userCircle = null; }
+    if (pinManual)  { map.removeLayer(pinManual);  pinManual  = null; }
+    if (window.radioManual) { map.removeLayer(window.radioManual); window.radioManual = null; }
+
+    document.getElementById('mbtn-quitar').style.display = 'none';
+    document.getElementById('cerca-body').innerHTML =
+        '<div class="cerca-placeholder">Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas</div>';
+}
+
+// ─────────────────────────────────────────────
+//  CERCA DE TI
+// ─────────────────────────────────────────────
+function renderCercanas() {
+    if (!userLoc || !datos.length) return;
+
+    var lista = [];
+    for (var i = 0; i < datos.length; i++) {
+        var d = datos[i];
+        var v = d[combustible];
+        if (v !== null && !isNaN(v)) {
+            lista.push({
+                d:    d,
+                precio: v,
+                dist: distKm(userLoc.lat, userLoc.lng, d.Latitud, d.Longitud)
+            });
+        }
+    }
+
+    lista.sort(function(a,b){ return a.dist - b.dist; });
+
+    var dentro = lista.filter(function(x){ return x.dist <= 2; });
+    var top5 = dentro.length >= 2 ? dentro.slice(0,8) : lista.slice(0,5);
+    var ps   = lista.map(function(x){ return x.precio; });
+
+    var tituloCard = dentro.length >= 2
+        ? '📍 ' + dentro.length + ' gasolineras en 2 km'
+        : '📍 Más cercanas a ti';
+    var cardHead = document.querySelector('#cerca-card .card-title');
+    if (cardHead) cardHead.textContent = tituloCard;
+
+    var html = '<div>';
+    for (var j = 0; j < top5.length; j++) {
+        var item = top5[j];
+        var cat  = categorizar(item.precio, ps);
+        var pCl  = cat === 'Barato' ? 'p-b' : (cat === 'Promedio' ? 'p-p' : 'p-c');
+        var nom  = item.d.Nombre.length > 24 ? item.d.Nombre.slice(0,22) + '…' : item.d.Nombre;
+
+        html +=
+            '<div class="cerca-item" data-cj="' + j + '">' +
+                '<div class="cerca-info">' +
+                    '<div class="cerca-nombre">' + esc(nom) + '</div>' +
+                    '<div class="cerca-dist">' + item.dist.toFixed(1) + ' km · ' + cat + '</div>' +
+                '</div>' +
+                '<div class="cerca-precio ' + pCl + '">$' + item.precio.toFixed(2) + '</div>' +
+            '</div>';
+    }
+    html += '</div>';
+
+    document.getElementById('cerca-body').innerHTML = html;
+
+    var items = document.querySelectorAll('.cerca-item');
+    for (var k = 0; k < items.length; k++) {
+        (function(idx) {
+            items[idx].addEventListener('click', function() {
+                var item = top5[idx];
+                mostrarDetalle(item.d, item.precio, ps);
+                for (var m = 0; m < markersRef.length; m++) {
+                    var ref = markersRef[m];
+                    if (ref.d.Latitud === item.d.Latitud && ref.d.Longitud === item.d.Longitud) {
+                        selMarker(m);
+                        break;
+                    }
+                }
+            });
+        })(k);
+    }
+}
+
+// ─────────────────────────────────────────────
+//  COMBUSTIBLE
+// ─────────────────────────────────────────────
+function setCombustible(tipo) {
+    combustible  = tipo;
+    markerSelIdx = -1;
+    syncPills();
+    resetDetalle();
+    render();
+    if (userLoc) renderCercanas();
+}
+
+function syncPills() {
+    var ts = ['Magna','Premium','Diesel'];
+    for (var i = 0; i < ts.length; i++) {
+        document.getElementById('pill-' + ts[i].toLowerCase())
+            .classList.toggle('active', ts[i] === combustible);
+    }
+}
+
+function detectarCombustibles() {
+    var ts = ['Magna','Premium','Diesel'];
+    for (var i = 0; i < ts.length; i++) {
+        var t   = ts[i];
+        var hay = false;
+        for (var j = 0; j < datos.length; j++) {
+            if (datos[j][t] !== null && !isNaN(datos[j][t])) { hay = true; break; }
+        }
+        document.getElementById('pill-' + t.toLowerCase()).disabled = !hay;
+    }
+}
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function categorizar(precio, todos) {
+    var v = todos.filter(function(p){ return p !== null && !isNaN(p); });
+    if (!v.length) return 'Promedio';
+    var mn = Math.min.apply(null,v), mx = Math.max.apply(null,v);
+    var r  = mx - mn;
+    if (r === 0) return 'Promedio';
+    if (precio <= mn + r/3)   return 'Barato';
+    if (precio <= mn + 2*r/3) return 'Promedio';
+    return 'Caro';
+}
+
+function getColor(cat) {
+    if (cat === 'Barato')   return '#34c759';
+    if (cat === 'Promedio') return '#ff9500';
+    return '#ff3b30';
+}
+
+function distKm(la1, lo1, la2, lo2) {
+    var R   = 6371;
+    var dLa = (la2-la1) * Math.PI/180;
+    var dLo = (lo2-lo1) * Math.PI/180;
+    var a   = Math.sin(dLa/2)*Math.sin(dLa/2) +
+              Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*
+              Math.sin(dLo/2)*Math.sin(dLo/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function cap(s) {
+    return (s||'').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+}
+
+function esc(s) {
+    return (s||'')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+}
+
+function txt(id, v) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = v;
+}
+</script>
+</body>
+</html>

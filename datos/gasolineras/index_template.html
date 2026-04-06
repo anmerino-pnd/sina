@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gasolina México</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:     #f5f5f7;
+            --white:  #ffffff;
+            --text:   #1d1d1f;
+            --sec:    #6e6e73;
+            --ter:    #aeaeb2;
+            --border: #d2d2d7;
+            --accent: #0071e3;
+            --green:  #34c759;
+            --orange: #ff9500;
+            --red:    #ff3b30;
+            --r:      14px;
+            --rs:     8px;
+            --sh:     0 2px 12px rgba(0,0,0,0.06);
+            --shm:    0 8px 24px rgba(0,0,0,0.10);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 32px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 600; }
+        .navbar-right { font-size: 0.78rem; color: var(--sec); }
+
+        /* ── Hero ── */
+        .hero {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 36px 32px 28px;
+            text-align: center;
+        }
+
+        .hero h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+        .hero p  { font-size: 0.95rem; color: var(--sec); margin-bottom: 24px; }
+
+        .search-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .ac-wrap { position: relative; flex: 1; min-width: 190px; }
+
+        .ac-wrap label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--sec);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .ac-input {
+            width: 100%;
+            padding: 11px 15px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text);
+            background: var(--white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .ac-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,0.12); }
+        .ac-input:disabled { background: var(--bg); color: var(--ter); cursor: not-allowed; }
+        .ac-input::placeholder { color: var(--ter); }
+
+        .drop {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0; right: 0;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r);
+            box-shadow: var(--shm);
+            max-height: 210px;
+            overflow-y: auto;
+            z-index: 999;
+            display: none;
+        }
+
+        .drop.open { display: block; }
+
+        .drop-item {
+            padding: 9px 15px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.12s;
+        }
+
+        .drop-item:hover { background: var(--bg); }
+
+        .d-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+        .d-badge.ok { background: #d4f5e2; color: #1a7a45; }
+        .d-badge.no { background: #f0f0f0; color: var(--ter); }
+        .drop-empty { padding: 11px 15px; font-size: 0.83rem; color: var(--ter); text-align: center; }
+
+        .btn-ver {
+            padding: 11px 26px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--r);
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn-ver:hover { background: #0077ed; box-shadow: 0 4px 14px rgba(0,113,227,0.32); }
+        .btn-ver:active { transform: scale(0.97); }
+        .btn-ver:disabled { background: var(--border); color: var(--ter); cursor: not-allowed; box-shadow: none; }
+
+        /* ── Contenedor ── */
+        .wrap { max-width: 1500px; margin: 0 auto; padding: 28px 20px; }
+
+        /* ── Pantallas ── */
+        .screen-welcome {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 52vh; text-align: center; color: var(--sec);
+        }
+
+        .screen-welcome .ico { font-size: 3.2rem; margin-bottom: 14px; }
+        .screen-welcome h2  { font-size: 1.2rem; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+        .screen-welcome p   { font-size: 0.88rem; max-width: 360px; line-height: 1.6; }
+
+        .screen-prox {
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 52vh; text-align: center;
+        }
+
+        .screen-prox .ico { font-size: 3.2rem; margin-bottom: 14px; }
+        .screen-prox h2   { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
+        .screen-prox p    { font-size: 0.92rem; color: var(--sec); max-width: 380px; line-height: 1.6; margin-bottom: 14px; }
+
+        .chip-prox {
+            display: inline-block; background: #fff3cd; color: #856404;
+            padding: 5px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+        }
+
+        /* ── Dashboard ── */
+        .dashboard { display: none; }
+
+        /* ── Pills ── */
+        .pills-row { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; flex-wrap: wrap; }
+
+        .pills-label { font-size: 0.72rem; font-weight: 600; color: var(--sec); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .pill {
+            padding: 6px 18px;
+            border: 1.5px solid var(--border);
+            background: var(--white);
+            border-radius: 999px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.86rem;
+            font-weight: 500;
+            color: var(--sec);
+            transition: all 0.18s;
+        }
+
+        .pill:hover  { border-color: var(--accent); color: var(--accent); }
+        .pill.active { background: var(--text); border-color: var(--text); color: white; }
+        .pill:disabled { opacity: 0.28; cursor: not-allowed; }
+
+        .sec-label { font-size: 0.8rem; color: var(--sec); margin-bottom: 11px; }
+
+        /* ── KPIs ── */
+        .kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+
+        .kpi {
+            background: var(--white); border-radius: var(--r); padding: 18px 18px 14px;
+            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+
+        .kpi:hover { transform: translateY(-2px); box-shadow: var(--shm); }
+
+        .kpi-v { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; color: var(--text); }
+        .kpi-l { font-size: 0.7rem; font-weight: 500; color: var(--ter); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi.min .kpi-v { color: var(--green); }
+        .kpi.max .kpi-v { color: var(--red); }
+
+        /* ── Layout 3 columnas ── */
+        .grid3 {
+            display: grid;
+            grid-template-columns: minmax(0,1.6fr) minmax(220px,0.8fr) minmax(220px,0.65fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--white); border-radius: var(--r);
+            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); overflow: hidden;
+        }
+
+        .card-head {
+            padding: 13px 16px; border-bottom: 1px solid var(--bg);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px;
+        }
+
+        .card-title { font-size: 0.86rem; font-weight: 600; }
+
+        /* ── Controles del mapa ── */
+        .map-head-row {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px; padding: 13px 16px;
+            border-bottom: 1px solid var(--bg);
+        }
+
+        .map-head-left  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .map-head-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .leyenda { display: flex; gap: 12px; font-size: 0.73rem; color: var(--sec); align-items: center; }
+        .leyenda-item { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+        .map-btn {
+            padding: 5px 11px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            border-radius: 999px;
+            font-family: inherit;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--sec);
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+
+        .map-btn:hover  { border-color: var(--accent); color: var(--accent); }
+        .map-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        /* ── Hint ubicación manual ── */
+        .map-hint {
+            background: rgba(255,255,255,0.93);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 10px 14px;
+            font-size: 0.78rem;
+            color: var(--sec);
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: var(--sh);
+            display: none;
+        }
+
+        .map-hint.visible { display: block; }
+
+        /* ── Mapa ── */
+        .map-wrapper { position: relative; }
+        #map { height: 560px; width: 100%; }
+
+        /* ── Tabla ranking ── */
+        .t-scroll { max-height: 560px; overflow-y: auto; }
+
+        .tabla { width: 100%; border-collapse: collapse; }
+
+        .tabla th {
+            padding: 8px 13px; text-align: left; font-size: 0.66rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px; color: var(--ter);
+            background: var(--bg); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 1;
+        }
+
+        .tabla td { padding: 9px 13px; font-size: 0.8rem; border-bottom: 1px solid var(--bg); }
+        .tabla tr:last-child td { border-bottom: none; }
+        .tabla tr:hover td { background: var(--bg); cursor: pointer; }
+
+        .tabla tr.sel td { background: #eef5ff; border-left: 3px solid var(--accent); }
+        .tabla tr.sel td:first-child { padding-left: 10px; }
+
+        /* ── Badges ── */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.66rem; font-weight: 600; }
+        .b-b { background: #d4f5e2; color: #1a7a45; }
+        .b-p { background: #fff3cd; color: #856404; }
+        .b-c { background: #fde8e8; color: #9b2335; }
+        .p-b { color: var(--green); font-weight: 700; }
+        .p-p { color: var(--orange); font-weight: 700; }
+        .p-c { color: var(--red); font-weight: 700; }
+
+        /* ── Panel detalle (columna 3, desktop) ── */
+        .detail-panel { display: flex; flex-direction: column; gap: 14px; }
+
+        .detail-card {
+            background: var(--white); border-radius: var(--r);
+            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); padding: 18px;
+        }
+
+        .detail-card.filled { box-shadow: var(--shm); }
+
+        .detail-placeholder {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 140px; text-align: center; color: var(--ter); gap: 8px;
+        }
+
+        .detail-placeholder-ico { font-size: 1.8rem; }
+        .detail-placeholder-txt { font-size: 0.78rem; line-height: 1.5; }
+
+        .detail-nombre { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
+        .detail-dir    { font-size: 0.74rem; color: var(--sec); margin-bottom: 3px; }
+        .detail-meta   { font-size: 0.7rem; color: var(--ter); margin-bottom: 14px; }
+
+        .detail-precios { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+
+        .dp-item { background: var(--bg); border-radius: var(--rs); padding: 9px 6px; text-align: center; }
+        .dp-tipo { font-size: 0.62rem; font-weight: 600; color: var(--ter); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+        .dp-val  { font-size: 1rem; font-weight: 700; color: var(--text); }
+        .dp-val.na { font-size: 0.76rem; color: var(--ter); font-weight: 400; }
+
+        /* ── Cerca de ti ── */
+        .cerca-card { background: var(--white); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
+
+        .cerca-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 14px; border-bottom: 1px solid var(--bg);
+            cursor: pointer; transition: background 0.12s; gap: 8px;
+        }
+
+        .cerca-item:last-child { border-bottom: none; }
+        .cerca-item:hover { background: var(--bg); }
+
+        .cerca-info { flex: 1; min-width: 0; }
+        .cerca-nombre { font-size: 0.78rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cerca-dist   { font-size: 0.68rem; color: var(--ter); }
+        .cerca-precio { font-size: 0.82rem; font-weight: 700; flex-shrink: 0; }
+        .cerca-placeholder { padding: 16px; text-align: center; font-size: 0.8rem; color: var(--ter); line-height: 1.5; }
+
+        /* ── Detalle inline (tablet/mobile) ── */
+        /* Aparece debajo del ranking cuando la columna 3 desaparece */
+        .detail-inline {
+            display: none;
+            background: var(--white);
+            border-radius: var(--r);
+            box-shadow: var(--sh);
+            border: 1px solid rgba(0,0,0,0.03);
+            padding: 18px;
+            margin-top: 14px;
+        }
+
+        .detail-inline.visible { display: block; animation: fadeUp 0.2s ease; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Footer ── */
+        .footer { text-align: center; padding: 24px; font-size: 0.73rem; color: var(--ter); margin-top: 8px; }
+
+        /* ── Tooltip ── */
+        .leaflet-tooltip {
+            border-radius: 8px !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.14) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.8rem !important;
+            padding: 8px 12px !important;
+        }
+
+        /* ── Cursor al fijar ubicación ── */
+        .map-pin-mode { cursor: crosshair !important; }
+
+        /* ── Responsive ── */
+        @media (max-width: 1100px) {
+            .grid3 { grid-template-columns: minmax(0,1.4fr) minmax(200px,0.75fr); }
+            .detail-panel { display: none; }   /* oculta columna 3 */
+        }
+
+        @media (max-width: 800px) {
+            .grid3 { grid-template-columns: 1fr; }
+            .kpis  { grid-template-columns: repeat(2,1fr); }
+        }
+
+        @media (max-width: 520px) {
+            .navbar { padding: 0 14px; }
+            .hero   { padding: 24px 14px 20px; }
+            .wrap   { padding: 18px 12px; }
+            .hero h1 { font-size: 1.6rem; }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">⛽ Gasolina México</div>
+    <div class="navbar-right" id="nav-right">Datos CRE</div>
+</nav>
+
+<!-- Hero / Buscador -->
+<div class="hero">
+    <h1>Encuentra la gasolina más barata</h1>
+    <p>Precios actualizados por municipio · México</p>
+
+    <div class="search-row">
+        <div class="ac-wrap" id="wrap-estado">
+            <label>Estado</label>
+            <input id="inp-estado" class="ac-input"
+                   placeholder="Busca un estado..."
+                   autocomplete="off"
+                   oninput="filtrarEstados()"
+                   onfocus="abrirDrop('estado')" />
+            <div class="drop" id="drop-estado"></div>
+        </div>
+
+        <div class="ac-wrap" id="wrap-municipio">
+            <label>Municipio</label>
+            <input id="inp-municipio" class="ac-input"
+                   placeholder="Busca un municipio..."
+                   autocomplete="off"
+                   disabled
+                   oninput="filtrarMunicipios()"
+                   onfocus="abrirDrop('municipio')" />
+            <div class="drop" id="drop-municipio"></div>
+        </div>
+
+        <div style="align-self:flex-end">
+            <button class="btn-ver" id="btn-ver" onclick="cargarCiudad()" disabled>
+                Ver precios →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido -->
+<div class="wrap">
+
+    <!-- Bienvenida -->
+    <div class="screen-welcome" id="sc-welcome">
+        <div class="ico">🗺️</div>
+        <h2>Selecciona tu municipio</h2>
+        <p>Elige estado y municipio para ver precios y encontrar la gasolina más barata cerca de ti.</p>
+    </div>
+
+    <!-- Próximamente -->
+    <div class="screen-prox" id="sc-prox">
+        <div class="ico">🚧</div>
+        <h2>Próximamente</h2>
+        <p id="prox-txt">Aún no tenemos datos para este municipio.</p>
+        <span class="chip-prox">⏳ En desarrollo</span>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+
+        <!-- Pills combustible -->
+        <div class="pills-row">
+            <span class="pills-label">Combustible</span>
+            <button class="pill active" id="pill-magna"   onclick="setCombustible('Magna')">Magna</button>
+            <button class="pill"        id="pill-premium" onclick="setCombustible('Premium')">Premium</button>
+            <button class="pill"        id="pill-diesel"  onclick="setCombustible('Diesel')">Diesel</button>
+        </div>
+
+        <div class="sec-label" id="sec-label">—</div>
+
+        <!-- KPIs -->
+        <div class="kpis">
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-prom">--</div>
+                <div class="kpi-l">Promedio</div>
+            </div>
+            <div class="kpi min">
+                <div class="kpi-v" id="kpi-min">--</div>
+                <div class="kpi-l">Mínimo</div>
+            </div>
+            <div class="kpi max">
+                <div class="kpi-v" id="kpi-max">--</div>
+                <div class="kpi-l">Máximo</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-est">--</div>
+                <div class="kpi-l">Estaciones</div>
+            </div>
+        </div>
+
+        <!-- Grid 3 columnas -->
+        <div class="grid3">
+
+            <!-- COLUMNA 1: MAPA -->
+            <div>
+                <div class="card">
+                    <!-- Header del mapa -->
+                    <div class="map-head-row">
+                        <div class="map-head-left">
+                            <span class="card-title" id="mapa-titulo">Gasolineras</span>
+                            <div class="leyenda">
+                                <div class="leyenda-item"><div class="dot" style="background:#34c759"></div>Barato</div>
+                                <div class="leyenda-item"><div class="dot" style="background:#ff9500"></div>Promedio</div>
+                                <div class="leyenda-item"><div class="dot" style="background:#ff3b30"></div>Caro</div>
+                            </div>
+                        </div>
+                        <div class="map-head-right">
+                            <button class="map-btn" id="mbtn-ubicame"  onclick="ubicarme()">📍 Mi ubicación</button>
+                            <button class="map-btn" id="mbtn-fijar"    onclick="toggleModoFijar()">📌 Fijar punto</button>
+                            <button class="map-btn" id="mbtn-quitar"   onclick="quitarUbicacion()" style="display:none">✕ Quitar punto</button>
+                        </div>
+                    </div>
+
+                    <!-- Mapa -->
+                    <div class="map-wrapper">
+                        <div id="map"></div>
+                        <div class="map-hint" id="map-hint">
+                            Haz clic en el mapa para fijar tu ubicación
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 2: RANKING -->
+            <div>
+                <div class="card" style="overflow:hidden;">
+                    <div class="card-head">
+                        <span class="card-title" id="rank-titulo">🏆 Top 10 más baratas</span>
+                    </div>
+                    <div class="t-scroll">
+                        <table class="tabla">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Estación</th>
+                                    <th>Precio</th>
+                                    <th>Cat.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rank-body">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;color:#ccc;padding:18px">
+                                        Cargando...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detalle INLINE: visible en tablet/móvil, debajo del ranking -->
+                <div class="detail-inline" id="detail-inline">
+                    <div class="detail-nombre" id="di-nombre">—</div>
+                    <div class="detail-dir"    id="di-dir">—</div>
+                    <div class="detail-meta"   id="di-meta">—</div>
+                    <div class="detail-precios">
+                        <div class="dp-item">
+                            <div class="dp-tipo">Magna</div>
+                            <div class="dp-val" id="di-magna">--</div>
+                        </div>
+                        <div class="dp-item">
+                            <div class="dp-tipo">Premium</div>
+                            <div class="dp-val" id="di-premium">--</div>
+                        </div>
+                        <div class="dp-item">
+                            <div class="dp-tipo">Diesel</div>
+                            <div class="dp-val" id="di-diesel">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 3: DETALLE + CERCA (solo desktop) -->
+            <div class="detail-panel">
+
+                <div class="detail-card" id="detail-card">
+                    <div class="detail-placeholder" id="detail-ph">
+                        <div class="detail-placeholder-ico">⛽</div>
+                        <div class="detail-placeholder-txt">
+                            Haz clic en un punto del mapa<br>o en una fila del ranking
+                        </div>
+                    </div>
+                    <div id="detail-content" style="display:none">
+                        <div class="detail-nombre" id="d-nombre">—</div>
+                        <div class="detail-dir"    id="d-dir">—</div>
+                        <div class="detail-meta"   id="d-meta">—</div>
+                        <div class="detail-precios">
+                            <div class="dp-item">
+                                <div class="dp-tipo">Magna</div>
+                                <div class="dp-val" id="d-magna">--</div>
+                            </div>
+                            <div class="dp-item">
+                                <div class="dp-tipo">Premium</div>
+                                <div class="dp-val" id="d-premium">--</div>
+                            </div>
+                            <div class="dp-item">
+                                <div class="dp-tipo">Diesel</div>
+                                <div class="dp-val" id="d-diesel">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cerca-card" id="cerca-card">
+                    <div class="card-head">
+                        <span class="card-title">📍 Cerca de ti</span>
+                    </div>
+                    <div id="cerca-body">
+                        <div class="cerca-placeholder">
+                            Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- /grid3 -->
+
+        <div class="footer">
+            Fuente: Comisión Reguladora de Energía (CRE) · México
+        </div>
+
+    </div><!-- /dashboard -->
+
+</div><!-- /wrap -->
+
+<script>
+// ─────────────────────────────────────────────
+//  DATOS INYECTADOS POR PYTHON
+// ─────────────────────────────────────────────
+// __CATALOGO_PLACEHOLDER__
+// __DATOS_PLACEHOLDER__
+
+// ─────────────────────────────────────────────
+//  ESTADO GLOBAL
+// ─────────────────────────────────────────────
+var datos        = [];
+var combustible  = 'Magna';
+var estadoSel    = '';
+var munSel       = '';
+var map          = null;
+var mLayer       = null;
+var mapInit      = false;
+var markersRef   = [];
+var markerSelIdx = -1;
+var userMarker   = null;
+var userCircle   = null;
+var userLoc      = null;          // {lat, lng} — GPS o manual
+var modoFijar    = false;         // modo para clic manual en mapa
+var pinManual    = null;          // marker del punto fijado manualmente
+
+// ─────────────────────────────────────────────
+//  AUTOCOMPLETE ESTADO
+// ─────────────────────────────────────────────
+function filtrarEstados() {
+    var q  = document.getElementById('inp-estado').value.toLowerCase().trim();
+    var ks = Object.keys(CATALOGO).sort();
+    var f  = q ? ks.filter(function(k){ return k.toLowerCase().indexOf(q) !== -1; }) : ks;
+    renderDrop('drop-estado', f, false, seleccionarEstado);
+}
+
+function seleccionarEstado(val) {
+    estadoSel = val;
+    munSel    = '';
+    document.getElementById('inp-estado').value       = cap(val);
+    document.getElementById('inp-municipio').value    = '';
+    document.getElementById('inp-municipio').disabled = false;
+    document.getElementById('btn-ver').disabled       = true;
+    cerrarDrop('estado');
+}
+
+// ─────────────────────────────────────────────
+//  AUTOCOMPLETE MUNICIPIO
+// ─────────────────────────────────────────────
+function filtrarMunicipios() {
+    if (!estadoSel) return;
+    var q    = document.getElementById('inp-municipio').value.toLowerCase().trim();
+    var muns = CATALOGO[estadoSel] || [];
+    var f    = q ? muns.filter(function(m){ return m.toLowerCase().indexOf(q) !== -1; }) : muns;
+    renderDrop('drop-municipio', f, true, seleccionarMunicipio);
+}
+
+function seleccionarMunicipio(val) {
+    munSel = val;
+    document.getElementById('inp-municipio').value = cap(val);
+    document.getElementById('btn-ver').disabled    = false;
+    cerrarDrop('municipio');
+}
+
+// ─────────────────────────────────────────────
+//  DROPDOWN
+// ─────────────────────────────────────────────
+function renderDrop(id, items, badge, cb) {
+    var drop = document.getElementById(id);
+    drop.innerHTML = '';
+
+    if (items.length === 0) {
+        drop.innerHTML = '<div class="drop-empty">Sin resultados</div>';
+        drop.classList.add('open');
+        return;
+    }
+
+    items.forEach(function(item) {
+        var div  = document.createElement('div');
+        div.className = 'drop-item';
+
+        var span = document.createElement('span');
+        span.textContent = cap(item);
+        div.appendChild(span);
+
+        if (badge) {
+            var key  = estadoSel + '||' + item;
+            var hayD = DATOS_DISPONIBLES.hasOwnProperty(key);
+            var b    = document.createElement('span');
+            b.className   = 'd-badge ' + (hayD ? 'ok' : 'no');
+            b.textContent = hayD ? 'Disponible' : 'Próximamente';
+            div.appendChild(b);
+        }
+
+        div.addEventListener('mousedown', function(e){ e.preventDefault(); cb(item); });
+        drop.appendChild(div);
+    });
+
+    drop.classList.add('open');
+}
+
+function abrirDrop(t) {
+    if (t === 'estado')    filtrarEstados();
+    if (t === 'municipio') filtrarMunicipios();
+}
+
+function cerrarDrop(t) {
+    document.getElementById('drop-' + t).classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#wrap-estado'))    cerrarDrop('estado');
+    if (!e.target.closest('#wrap-municipio')) cerrarDrop('municipio');
+});
+
+// ─────────────────────────────────────────────
+//  CARGAR CIUDAD
+// ─────────────────────────────────────────────
+function cargarCiudad() {
+    if (!estadoSel || !munSel) return;
+
+    var key = estadoSel + '||' + munSel;
+
+    document.getElementById('sc-welcome').style.display = 'none';
+    document.getElementById('sc-prox').style.display    = 'none';
+    document.getElementById('dashboard').style.display  = 'none';
+
+    if (!DATOS_DISPONIBLES.hasOwnProperty(key)) {
+        document.getElementById('prox-txt').innerHTML =
+            'No hay datos para <strong>' + cap(munSel) + ', ' + cap(estadoSel) + '</strong>.';
+        document.getElementById('sc-prox').style.display = 'flex';
+        return;
+    }
+
+    var raw = DATOS_DISPONIBLES[key].datos;
+    datos   = [];
+
+    for (var i = 0; i < raw.length; i++) {
+        var r   = raw[i];
+        var lat = parseFloat(r.Latitud);
+        var lng = parseFloat(r.Longitud);
+        if (isNaN(lat) || isNaN(lng)) continue;
+
+        datos.push({
+            Nombre:    r.Nombre    || '',
+            Direccion: r.Direccion || '',
+            Numero:    r.Numero    || '',
+            Magna:     r.Magna   != null ? parseFloat(r.Magna)   : null,
+            Premium:   r.Premium != null ? parseFloat(r.Premium) : null,
+            Diesel:    r.Diesel  != null ? parseFloat(r.Diesel)  : null,
+            Latitud:   lat,
+            Longitud:  lng
+        });
+    }
+
+    combustible  = 'Magna';
+    markerSelIdx = -1;
+    syncPills();
+    detectarCombustibles();
+
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('nav-right').textContent   = cap(munSel) + ', ' + cap(estadoSel);
+
+    // Resetear panel detalle
+    resetDetalle();
+
+    // Resetear modo fijar
+    if (modoFijar) toggleModoFijar();
+
+    initMapa();
+    render();
+}
+
+// ─────────────────────────────────────────────
+//  RENDER COMPLETO
+// ─────────────────────────────────────────────
+function render() {
+    renderKPIs();
+    renderMapa();
+    renderRanking();
+}
+
+// ─────────────────────────────────────────────
+//  KPIs
+// ─────────────────────────────────────────────
+function renderKPIs() {
+    var ps = [];
+    for (var i = 0; i < datos.length; i++) {
+        var v = datos[i][combustible];
+        if (v !== null && !isNaN(v)) ps.push(v);
+    }
+
+    txt('sec-label',   'Precios de ' + combustible + ' · ' + cap(munSel));
+    txt('mapa-titulo', 'Gasolineras · ' + combustible);
+    txt('rank-titulo', '🏆 Top 10 más baratas · ' + combustible);
+
+    if (ps.length === 0) {
+        txt('kpi-prom','--'); txt('kpi-min','--'); txt('kpi-max','--'); txt('kpi-est','0');
+        return;
+    }
+
+    var s = 0, mn = ps[0], mx = ps[0];
+    for (var j = 0; j < ps.length; j++) {
+        s += ps[j];
+        if (ps[j] < mn) mn = ps[j];
+        if (ps[j] > mx) mx = ps[j];
+    }
+
+    txt('kpi-prom', '$' + (s/ps.length).toFixed(2));
+    txt('kpi-min',  '$' + mn.toFixed(2));
+    txt('kpi-max',  '$' + mx.toFixed(2));
+    txt('kpi-est',  '' + ps.length);
+}
+
+// ─────────────────────────────────────────────
+//  MAPA: inicializar
+// ─────────────────────────────────────────────
+function initMapa() {
+    if (mapInit) { mLayer.clearLayers(); return; }
+
+    map = L.map('map', { zoomControl: true });
+
+    // Tile OpenStreetMap estándar (el colorido de leaflet.com)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+    }).addTo(map);
+
+    mLayer = L.layerGroup().addTo(map);
+
+    // Clic en el mapa → fijar ubicación manual
+    map.on('click', function(e) {
+        if (!modoFijar) return;
+        fijarUbicacionManual(e.latlng.lat, e.latlng.lng);
+    });
+
+    mapInit = true;
+}
+
+// ─────────────────────────────────────────────
+//  MAPA: renderizar puntos
+// ─────────────────────────────────────────────
+function renderMapa() {
+    mLayer.clearLayers();
+    markersRef   = [];
+    markerSelIdx = -1;
+
+    var cp = [];
+    for (var i = 0; i < datos.length; i++) {
+        var d = datos[i];
+        if (d[combustible] !== null && !isNaN(d[combustible])) cp.push(d);
+    }
+
+    if (cp.length === 0) return;
+
+    var ps   = cp.map(function(d){ return d[combustible]; });
+    var lats = cp.map(function(d){ return d.Latitud; });
+    var lngs = cp.map(function(d){ return d.Longitud; });
+
+    map.fitBounds(
+        L.latLngBounds(
+            [Math.min.apply(null,lats), Math.min.apply(null,lngs)],
+            [Math.max.apply(null,lats), Math.max.apply(null,lngs)]
+        ),
+        { padding: [28,28] }
+    );
+
+    cp.forEach(function(d, idx) {
+        var precio = d[combustible];
+        var cat    = categorizar(precio, ps);
+        var color  = getColor(cat);
+
+        var m = L.marker([d.Latitud, d.Longitud], {
+            icon: mkPunto(color, false),
+            title: d.Nombre
+        });
+
+        m._myColor = color;
+        m._myIdx   = idx;
+
+        m.on('click', function(){
+            selMarker(idx);
+            mostrarDetalle(d, precio, ps);
+        });
+
+        m.bindTooltip(
+            '<strong>' + esc(d.Nombre) + '</strong><br>' +
+            combustible + ': <strong>$' + precio.toFixed(2) + '</strong><br>' +
+            '<span style="color:' + color + '">● ' + cat + '</span>',
+            { direction: 'top', offset: [0, -7] }
+        );
+
+        mLayer.addLayer(m);
+        markersRef.push({ m: m, d: d, color: color, precio: precio });
+    });
+}
+
+// ─────────────────────────────────────────────
+//  MARCADOR PUNTO
+// ─────────────────────────────────────────────
+function mkPunto(color, sel) {
+    var sz = sel ? 30 : 15;
+    var bw = sel ? 3  : 2;
+    var sh = sel
+        ? '0 0 0 5px ' + color + '35, 0 2px 8px rgba(0,0,0,0.28)'
+        : '0 1px 3px rgba(0,0,0,0.22)';
+    var a = sz / 2;
+
+    return L.divIcon({
+        html: '<div style="width:' + sz + 'px;height:' + sz + 'px;' +
+              'background:' + color + ';border-radius:50%;' +
+              'border:' + bw + 'px solid white;box-shadow:' + sh + ';' +
+              'transition:all 0.15s"></div>',
+        className: '', iconSize: [sz,sz], iconAnchor: [a,a], popupAnchor: [0,-a]
+    });
+}
+
+// ─────────────────────────────────────────────
+//  SELECCIONAR MARKER
+// ─────────────────────────────────────────────
+function selMarker(idx) {
+    if (markerSelIdx !== -1 && markersRef[markerSelIdx]) {
+        var p = markersRef[markerSelIdx];
+        p.m.setIcon(mkPunto(p.color, false));
+        p.m.setZIndexOffset(0);
+    }
+    markerSelIdx = idx;
+    if (idx !== -1 && markersRef[idx]) {
+        var s = markersRef[idx];
+        s.m.setIcon(mkPunto(s.color, true));
+        s.m.setZIndexOffset(999);
+        map.setView([s.d.Latitud, s.d.Longitud], 15, { animate: true, duration: 0.5 });
+        s.m.openTooltip();
+    }
+}
+
+// ─────────────────────────────────────────────
+//  MOSTRAR DETALLE (desktop + inline)
+// ─────────────────────────────────────────────
+function mostrarDetalle(d, precio, todosPrecios) {
+    var cat  = precio != null ? categorizar(precio, todosPrecios) : '—';
+    var dist = userLoc ? ' · ' + distKm(userLoc.lat, userLoc.lng, d.Latitud, d.Longitud).toFixed(1) + ' km' : '';
+    var meta = combustible + ' · ' + cat + dist;
+
+    // Desktop (columna 3)
+    document.getElementById('detail-ph').style.display      = 'none';
+    document.getElementById('detail-content').style.display = 'block';
+    document.getElementById('detail-card').classList.add('filled');
+    txt('d-nombre', d.Nombre || '—');
+    txt('d-dir',    d.Direccion || 'Sin dirección registrada');
+    txt('d-meta',   meta);
+    setDV('d-magna',   d.Magna);
+    setDV('d-premium', d.Premium);
+    setDV('d-diesel',  d.Diesel);
+
+    // Inline (tablet/móvil)
+    document.getElementById('detail-inline').classList.add('visible');
+    txt('di-nombre', d.Nombre || '—');
+    txt('di-dir',    d.Direccion || 'Sin dirección registrada');
+    txt('di-meta',   meta);
+    setDVId('di-magna',   d.Magna);
+    setDVId('di-premium', d.Premium);
+    setDVId('di-diesel',  d.Diesel);
+}
+
+function setDV(id, val) {
+    var el = document.getElementById(id);
+    if (val !== null && !isNaN(parseFloat(val))) {
+        el.textContent = '$' + parseFloat(val).toFixed(2);
+        el.className   = 'dp-val';
+    } else {
+        el.textContent = 'N/D';
+        el.className   = 'dp-val na';
+    }
+}
+
+function setDVId(id, val) { setDV(id, val); }
+
+function resetDetalle() {
+    document.getElementById('detail-ph').style.display      = 'flex';
+    document.getElementById('detail-content').style.display = 'none';
+    document.getElementById('detail-card').classList.remove('filled');
+    document.getElementById('detail-inline').classList.remove('visible');
+}
+
+// ─────────────────────────────────────────────
+//  RANKING
+// ─────────────────────────────────────────────
+function renderRanking() {
+    var lista = [];
+    for (var i = 0; i < datos.length; i++) {
+        var v = datos[i][combustible];
+        if (v !== null && !isNaN(v)) lista.push({ d: datos[i], precio: v });
+    }
+
+    lista.sort(function(a,b){ return a.precio - b.precio; });
+
+    var ps    = lista.map(function(x){ return x.precio; });
+    var top10 = lista.slice(0,10);
+    var tbody = document.getElementById('rank-body');
+
+    if (top10.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#ccc;padding:18px">Sin datos</td></tr>';
+        return;
+    }
+
+    var html = '';
+    for (var j = 0; j < top10.length; j++) {
+        var item = top10[j];
+        var cat  = categorizar(item.precio, ps);
+        var bCl  = cat === 'Barato' ? 'b-b' : (cat === 'Promedio' ? 'b-p' : 'b-c');
+        var pCl  = cat === 'Barato' ? 'p-b' : (cat === 'Promedio' ? 'p-p' : 'p-c');
+        var nom  = item.d.Nombre.length > 20 ? item.d.Nombre.slice(0,18) + '…' : item.d.Nombre;
+
+        html += '<tr data-j="' + j + '">' +
+            '<td style="color:#c7c7cc;font-weight:600">' + (j+1) + '</td>' +
+            '<td style="font-weight:500">' + esc(nom) + '</td>' +
+            '<td class="' + pCl + '">$' + item.precio.toFixed(2) + '</td>' +
+            '<td><span class="badge ' + bCl + '">' + cat + '</span></td>' +
+            '</tr>';
+    }
+
+    tbody.innerHTML = html;
+
+    var rows = tbody.querySelectorAll('tr');
+    for (var k = 0; k < rows.length; k++) {
+        (function(idx) {
+            rows[idx].addEventListener('click', function() {
+                var item = top10[idx];
+
+                // Highlight fila
+                var all = tbody.querySelectorAll('tr');
+                for (var r = 0; r < all.length; r++) all[r].classList.remove('sel');
+                rows[idx].classList.add('sel');
+
+                // Detalle
+                mostrarDetalle(item.d, item.precio, ps);
+
+                // Marker en mapa
+                for (var m = 0; m < markersRef.length; m++) {
+                    var ref = markersRef[m];
+                    if (ref.d.Numero === item.d.Numero ||
+                        (ref.d.Latitud === item.d.Latitud && ref.d.Longitud === item.d.Longitud)) {
+                        selMarker(m);
+                        break;
+                    }
+                }
+            });
+        })(k);
+    }
+}
+
+// ─────────────────────────────────────────────
+//  MI UBICACIÓN (GPS automático)
+// ─────────────────────────────────────────────
+function ubicarme() {
+    if (!navigator.geolocation) {
+        alert('Tu navegador no soporta geolocalización.');
+        return;
+    }
+
+    var btn = document.getElementById('mbtn-ubicame');
+    btn.textContent = '⌛ Buscando...';
+    btn.disabled    = true;
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            btn.textContent = '📍 Mi ubicación';
+            btn.disabled    = false;
+            aplicarUbicacion(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy || 80, false);
+        },
+        function() {
+            btn.textContent = '📍 Mi ubicación';
+            btn.disabled    = false;
+            alert('No se pudo obtener tu ubicación. Usa "Fijar punto" para colocarla manualmente.');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+}
+
+// ─────────────────────────────────────────────
+//  MODO FIJAR PUNTO MANUAL
+// ─────────────────────────────────────────────
+function toggleModoFijar() {
+    modoFijar = !modoFijar;
+
+    var btnFijar  = document.getElementById('mbtn-fijar');
+    var hint      = document.getElementById('map-hint');
+    var mapEl     = document.getElementById('map');
+
+    if (modoFijar) {
+        btnFijar.classList.add('active');
+        btnFijar.textContent = '✓ Haz clic en el mapa';
+        hint.classList.add('visible');
+        mapEl.classList.add('map-pin-mode');
+    } else {
+        btnFijar.classList.remove('active');
+        btnFijar.textContent = '📌 Fijar punto';
+        hint.classList.remove('visible');
+        mapEl.classList.remove('map-pin-mode');
+    }
+}
+
+function fijarUbicacionManual(lat, lng) {
+    // Desactivar modo
+    modoFijar = false;
+    var btnFijar = document.getElementById('mbtn-fijar');
+    btnFijar.classList.remove('active');
+    btnFijar.textContent = '📌 Fijar punto';
+    document.getElementById('map-hint').classList.remove('visible');
+    document.getElementById('map').classList.remove('map-pin-mode');
+
+    aplicarUbicacion(lat, lng, 0, true);
+}
+
+function aplicarUbicacion(lat, lng, accuracy, esManual) {
+    userLoc = { lat: lat, lng: lng };
+
+    if (userMarker) map.removeLayer(userMarker);
+    if (userCircle) map.removeLayer(userCircle);
+    if (pinManual)  map.removeLayer(pinManual);
+
+    if (!esManual && accuracy > 0) {
+        userCircle = L.circle([lat, lng], {
+            radius: accuracy,
+            color: '#0071e3',
+            fillColor: '#0071e3',
+            fillOpacity: 0.07,
+            weight: 1
+        }).addTo(map);
+    }
+
+    if (esManual) {
+        pinManual = L.circleMarker([lat, lng], {
+            radius:      10,
+            color:       'white',
+            weight:      3,
+            fillColor:   '#1d1d1f',
+            fillOpacity: 1
+        }).addTo(map);
+
+        pinManual.bindTooltip('Tu punto de referencia').openTooltip();
+
+        if (window.radioManual) map.removeLayer(window.radioManual);
+        window.radioManual = L.circle([lat, lng], {
+            radius:      2000,
+            color:       '#1d1d1f',
+            weight:      1.5,
+            dashArray:   '6 4',
+            fillColor:   '#1d1d1f',
+            fillOpacity: 0.04
+        }).addTo(map);
+    } else {
+        // Punto azul GPS
+        userMarker = L.circleMarker([lat, lng], {
+            radius: 8, color: 'white', weight: 3,
+            fillColor: '#0071e3', fillOpacity: 1
+        }).addTo(map);
+        userMarker.bindTooltip('Tu ubicación').openTooltip();
+    }
+
+    // Mostrar botón "Quitar punto"
+    document.getElementById('mbtn-quitar').style.display = 'inline-block';
+
+    map.setView([lat, lng], 14, { animate: true, duration: 0.6 });
+
+    renderCercanas();
+}
+
+function quitarUbicacion() {
+    userLoc = null;
+    if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+    if (userCircle) { map.removeLayer(userCircle); userCircle = null; }
+    if (pinManual)  { map.removeLayer(pinManual);  pinManual  = null; }
+    if (window.radioManual) { map.removeLayer(window.radioManual); window.radioManual = null; }
+
+    document.getElementById('mbtn-quitar').style.display = 'none';
+    document.getElementById('cerca-body').innerHTML =
+        '<div class="cerca-placeholder">Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas</div>';
+}
+
+// ─────────────────────────────────────────────
+//  CERCA DE TI
+// ─────────────────────────────────────────────
+function renderCercanas() {
+    if (!userLoc || !datos.length) return;
+
+    var lista = [];
+    for (var i = 0; i < datos.length; i++) {
+        var d = datos[i];
+        var v = d[combustible];
+        if (v !== null && !isNaN(v)) {
+            lista.push({
+                d:    d,
+                precio: v,
+                dist: distKm(userLoc.lat, userLoc.lng, d.Latitud, d.Longitud)
+            });
+        }
+    }
+
+    lista.sort(function(a,b){ return a.dist - b.dist; });
+
+    var dentro = lista.filter(function(x){ return x.dist <= 2; });
+    var top5 = dentro.length >= 2 ? dentro.slice(0,8) : lista.slice(0,5);
+    var ps   = lista.map(function(x){ return x.precio; });
+
+    var tituloCard = dentro.length >= 2
+        ? '📍 ' + dentro.length + ' gasolineras en 2 km'
+        : '📍 Más cercanas a ti';
+    var cardHead = document.querySelector('#cerca-card .card-title');
+    if (cardHead) cardHead.textContent = tituloCard;
+
+    var html = '<div>';
+    for (var j = 0; j < top5.length; j++) {
+        var item = top5[j];
+        var cat  = categorizar(item.precio, ps);
+        var pCl  = cat === 'Barato' ? 'p-b' : (cat === 'Promedio' ? 'p-p' : 'p-c');
+        var nom  = item.d.Nombre.length > 24 ? item.d.Nombre.slice(0,22) + '…' : item.d.Nombre;
+
+        html +=
+            '<div class="cerca-item" data-cj="' + j + '">' +
+                '<div class="cerca-info">' +
+                    '<div class="cerca-nombre">' + esc(nom) + '</div>' +
+                    '<div class="cerca-dist">' + item.dist.toFixed(1) + ' km · ' + cat + '</div>' +
+                '</div>' +
+                '<div class="cerca-precio ' + pCl + '">$' + item.precio.toFixed(2) + '</div>' +
+            '</div>';
+    }
+    html += '</div>';
+
+    document.getElementById('cerca-body').innerHTML = html;
+
+    var items = document.querySelectorAll('.cerca-item');
+    for (var k = 0; k < items.length; k++) {
+        (function(idx) {
+            items[idx].addEventListener('click', function() {
+                var item = top5[idx];
+                mostrarDetalle(item.d, item.precio, ps);
+                for (var m = 0; m < markersRef.length; m++) {
+                    var ref = markersRef[m];
+                    if (ref.d.Latitud === item.d.Latitud && ref.d.Longitud === item.d.Longitud) {
+                        selMarker(m);
+                        break;
+                    }
+                }
+            });
+        })(k);
+    }
+}
+
+// ─────────────────────────────────────────────
+//  COMBUSTIBLE
+// ─────────────────────────────────────────────
+function setCombustible(tipo) {
+    combustible  = tipo;
+    markerSelIdx = -1;
+    syncPills();
+    resetDetalle();
+    render();
+    if (userLoc) renderCercanas();
+}
+
+function syncPills() {
+    var ts = ['Magna','Premium','Diesel'];
+    for (var i = 0; i < ts.length; i++) {
+        document.getElementById('pill-' + ts[i].toLowerCase())
+            .classList.toggle('active', ts[i] === combustible);
+    }
+}
+
+function detectarCombustibles() {
+    var ts = ['Magna','Premium','Diesel'];
+    for (var i = 0; i < ts.length; i++) {
+        var t   = ts[i];
+        var hay = false;
+        for (var j = 0; j < datos.length; j++) {
+            if (datos[j][t] !== null && !isNaN(datos[j][t])) { hay = true; break; }
+        }
+        document.getElementById('pill-' + t.toLowerCase()).disabled = !hay;
+    }
+}
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function categorizar(precio, todos) {
+    var v = todos.filter(function(p){ return p !== null && !isNaN(p); });
+    if (!v.length) return 'Promedio';
+    var mn = Math.min.apply(null,v), mx = Math.max.apply(null,v);
+    var r  = mx - mn;
+    if (r === 0) return 'Promedio';
+    if (precio <= mn + r/3)   return 'Barato';
+    if (precio <= mn + 2*r/3) return 'Promedio';
+    return 'Caro';
+}
+
+function getColor(cat) {
+    if (cat === 'Barato')   return '#34c759';
+    if (cat === 'Promedio') return '#ff9500';
+    return '#ff3b30';
+}
+
+function distKm(la1, lo1, la2, lo2) {
+    var R   = 6371;
+    var dLa = (la2-la1) * Math.PI/180;
+    var dLo = (lo2-lo1) * Math.PI/180;
+    var a   = Math.sin(dLa/2)*Math.sin(dLa/2) +
+              Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*
+              Math.sin(dLo/2)*Math.sin(dLo/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function cap(s) {
+    return (s||'').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+}
+
+function esc(s) {
+    return (s||'')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+}
+
+function txt(id, v) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = v;
+}
+</script>
+</body>
+</html>
