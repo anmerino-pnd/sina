@@ -52,7 +52,7 @@ def fix_df_encoding(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = df[col].apply(fix_text)
     return df
 
-def extract_qqp(municipio: str) -> pd.DataFrame:
+def extract_qqp() -> pd.DataFrame:
     df_qqp = pd.DataFrame()
     page = requests.get(qqp_url)
     soup = BeautifulSoup(page.content, 'lxml')
@@ -104,7 +104,6 @@ def extract_qqp(municipio: str) -> pd.DataFrame:
 
     os.remove('temp.rar')
     df_qqp.columns = nombres_columnas
-    df_qqp_mun = df_qqp[df_qqp['MUNICIPIO'] == municipio].copy()
-    df_qqp_mun = fix_df_encoding(df_qqp_mun)
+    df_qqp = fix_df_encoding(df_qqp)
 
     return df_qqp
