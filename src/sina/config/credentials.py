@@ -14,6 +14,8 @@ gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
 ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
 google_api_key: str = os.getenv('GOOGLE_API_KEY', "")
 
+cne_refere : str = os.getenv('CNE_REFER', "")
+
 class BoundingBox(BaseModel):
     label: str
     x: int
