@@ -12,6 +12,7 @@ from sina.config.paths import (
     STATIC_DIR, 
     CLASSES,
     DATA, 
+    GAS_DATA
 )
 from sina.processing.image_segmentation import (
     process_annotations,
@@ -21,6 +22,7 @@ from sina.processing.image_segmentation import (
 )
 
 from sina.scraping.casa_ley import download_flyer
+from sina.scraping.gas import df_gas_prices
 from sina.config.settings import (
     get_classes_config,
     build_filesystem_tree
@@ -50,6 +52,26 @@ def get_classes_config() -> dict:
         return json.load(f)
 
 # ============================================================
+#  HELPERS GASOLINA
+# ============================================================
+MUNICIPIOS_JSON = GAS_DATA / "catalogo_municipios.json"
+
+def _load_catalogo() -> dict:
+    with open(MUNICIPIOS_JSON, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def _build_catalogo_js(mun_dict: dict) -> dict:
+    """
+    Construye dos objetos para el frontend:
+      - CATALOGO:         { estado: [municipio, ...] }
+      - DATOS_DISPONIBLES ya se llena dinámicamente en la ruta
+    """
+    return {
+        estado: sorted(info["municipios"].keys())
+        for estado, info in mun_dict.items()
+    }
+
+# ============================================================
 #  FRONTEND ROUTES
 # ============================================================
 
@@ -67,6 +89,20 @@ async def get_annotator(request: Request):
         "file_tree": file_tree,  
         "classes": annotation_classes,
         "colors": class_config
+    })
+
+@app.get("/gasolina", response_class=HTMLResponse)
+async def get_gasolina(request: Request):
+    """
+    Renderiza el mapa de gasolina inyectando el catálogo
+    de estados/municipios en el template.
+    """
+    mun_dict = _load_catalogo()
+    catalogo = _build_catalogo_js(mun_dict)
+
+    return templates.TemplateResponse("gasolina.html", {
+        "request":  request,
+        "catalogo": json.dumps(catalogo,  ensure_ascii=False),
     })
 
 # ============================================================
@@ -160,3 +196,37 @@ def check_status(supermarket: str, city: str, date: str):
         "has_json": has_json,
         "has_recortes": has_recortes
     }
+
+@app.get("/sina/gasolina")
+async def get_precios_gasolina(estado: str, municipio: str):
+    """
+    Llama a la API de la CRE y devuelve los precios del municipio.
+    El frontend llama a este endpoint al hacer clic en 'Ver precios'.
+    """
+    try:
+        df = df_gas_prices(estado, municipio)
+
+        # Latitud y Longitud pueden no estar en el pivot; las agregamos si existen
+        cols_base = ["Numero", "Nombre", "Direccion", "Latitud", "Longitud",
+                     "Magna", "Premium", "Diesel"]
+        cols_out  = [c for c in cols_base if c in df.columns]
+
+        registros = df[cols_out].where(df[cols_out].notna(), other=None).to_dict(orient="records")
+
+        return {
+            "status":    "ok",
+            "estado":    estado,
+            "municipio": municipio,
+            "total":     len(registros),
+            "datos":     registros,
+        }
+
+    except KeyError:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No se encontró '{municipio}' en '{estado}' en el catálogo."
+        )
+    except Exception as e:
+        print("\n❌ ERROR EN /sina/gasolina:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

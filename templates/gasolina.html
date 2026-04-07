@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gasolina México</title>
+
+    <!-- Leaflet -->
+    <link  rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="../static/css/gasolina.css"/>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">⛽ Gasolina México</div>
+    <div class="navbar-right" id="nav-right">Datos CRE</div>
+</nav>
+
+<!-- Hero / Buscador -->
+<div class="hero">
+    <h1>Encuentra la gasolina más barata</h1>
+    <p>Precios actualizados por municipio · México</p>
+
+    <div class="search-row">
+        <div class="ac-wrap" id="wrap-estado">
+            <label>Estado</label>
+            <input id="inp-estado" class="ac-input"
+                   placeholder="Busca un estado..."
+                   autocomplete="off"
+                   oninput="filtrarEstados()"
+                   onfocus="abrirDrop('estado')" />
+            <div class="drop" id="drop-estado"></div>
+        </div>
+
+        <div class="ac-wrap" id="wrap-municipio">
+            <label>Municipio</label>
+            <input id="inp-municipio" class="ac-input"
+                   placeholder="Busca un municipio..."
+                   autocomplete="off"
+                   disabled
+                   oninput="filtrarMunicipios()"
+                   onfocus="abrirDrop('municipio')" />
+            <div class="drop" id="drop-municipio"></div>
+        </div>
+
+        <div style="align-self:flex-end">
+            <button class="btn-ver" id="btn-ver" onclick="cargarCiudad()" disabled>
+                Ver precios →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido -->
+<div class="wrap">
+
+    <!-- Bienvenida -->
+    <div class="screen-welcome" id="sc-welcome">
+        <div class="ico">🗺️</div>
+        <h2>Selecciona tu municipio</h2>
+        <p>Elige estado y municipio para ver precios y encontrar la gasolina más barata cerca de ti.</p>
+    </div>
+
+    <!-- Próximamente -->
+    <div class="screen-prox" id="sc-prox">
+        <div class="ico">🚧</div>
+        <h2>Próximamente</h2>
+        <p id="prox-txt">Aún no tenemos datos para este municipio.</p>
+        <span class="chip-prox">⏳ En desarrollo</span>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+
+        <div class="pills-row">
+            <span class="pills-label">Combustible</span>
+            <button class="pill active" id="pill-magna"   onclick="setCombustible('Magna')">Magna</button>
+            <button class="pill"        id="pill-premium" onclick="setCombustible('Premium')">Premium</button>
+            <button class="pill"        id="pill-diesel"  onclick="setCombustible('Diesel')">Diesel</button>
+        </div>
+
+        <div class="sec-label" id="sec-label">—</div>
+
+        <!-- KPIs -->
+        <div class="kpis">
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-prom">--</div>
+                <div class="kpi-l">Promedio</div>
+            </div>
+            <div class="kpi min">
+                <div class="kpi-v" id="kpi-min">--</div>
+                <div class="kpi-l">Mínimo</div>
+            </div>
+            <div class="kpi max">
+                <div class="kpi-v" id="kpi-max">--</div>
+                <div class="kpi-l">Máximo</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-est">--</div>
+                <div class="kpi-l">Estaciones</div>
+            </div>
+        </div>
+
+        <!-- Grid 3 columnas -->
+        <div class="grid3">
+
+            <!-- COLUMNA 1: MAPA -->
+            <div>
+                <div class="card">
+                    <div class="map-head-row">
+                        <div class="map-head-left">
+                            <span class="card-title" id="mapa-titulo">Gasolineras</span>
+                            <div class="leyenda">
+                                <div class="leyenda-item"><div class="dot" style="background:#34c759"></div>Barato</div>
+                                <div class="leyenda-item"><div class="dot" style="background:#ff9500"></div>Promedio</div>
+                                <div class="leyenda-item"><div class="dot" style="background:#ff3b30"></div>Caro</div>
+                            </div>
+                        </div>
+                        <div class="map-head-right">
+                            <button class="map-btn" id="mbtn-ubicame"  onclick="ubicarme()">📍 Mi ubicación</button>
+                            <button class="map-btn" id="mbtn-fijar"    onclick="toggleModoFijar()">📌 Fijar punto</button>
+                            <button class="map-btn" id="mbtn-quitar"   onclick="quitarUbicacion()" style="display:none">✕ Quitar punto</button>
+                        </div>
+                    </div>
+                    <div class="map-wrapper">
+                        <div id="map"></div>
+                        <div class="map-hint" id="map-hint">
+                            Haz clic en el mapa para fijar tu ubicación
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 2: RANKING -->
+            <div>
+                <div class="card" style="overflow:hidden;">
+                    <div class="card-head">
+                        <span class="card-title" id="rank-titulo">10 más baratas</span>
+                    </div>
+                    <div class="t-scroll">
+                        <table class="tabla">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Estación</th>
+                                    <th>Precio</th>
+                                    <th>Cat.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rank-body">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;color:#ccc;padding:18px">
+                                        Cargando...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detalle inline móvil -->
+                <div class="detail-inline" id="detail-inline">
+                    <div class="detail-nombre" id="di-nombre">—</div>
+                    <div class="detail-dir"    id="di-dir">—</div>
+                    <div class="detail-meta"   id="di-meta">—</div>
+                    <div class="detail-precios">
+                        <div class="dp-item">
+                            <div class="dp-tipo">Magna</div>
+                            <div class="dp-val" id="di-magna">--</div>
+                        </div>
+                        <div class="dp-item">
+                            <div class="dp-tipo">Premium</div>
+                            <div class="dp-val" id="di-premium">--</div>
+                        </div>
+                        <div class="dp-item">
+                            <div class="dp-tipo">Diesel</div>
+                            <div class="dp-val" id="di-diesel">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 3: DETALLE + CERCA (solo desktop) -->
+            <div class="detail-panel">
+                <div class="detail-card" id="detail-card">
+                    <div class="detail-placeholder" id="detail-ph">
+                        <div class="detail-placeholder-ico">⛽</div>
+                        <div class="detail-placeholder-txt">
+                            Haz clic en un punto del mapa<br>o en una fila del ranking
+                        </div>
+                    </div>
+                    <div id="detail-content" style="display:none">
+                        <div class="detail-nombre" id="d-nombre">—</div>
+                        <div class="detail-dir"    id="d-dir">—</div>
+                        <div class="detail-meta"   id="d-meta">—</div>
+                        <div class="detail-precios">
+                            <div class="dp-item">
+                                <div class="dp-tipo">Magna</div>
+                                <div class="dp-val" id="d-magna">--</div>
+                            </div>
+                            <div class="dp-item">
+                                <div class="dp-tipo">Premium</div>
+                                <div class="dp-val" id="d-premium">--</div>
+                            </div>
+                            <div class="dp-item">
+                                <div class="dp-tipo">Diesel</div>
+                                <div class="dp-val" id="d-diesel">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cerca-card" id="cerca-card">
+                    <div class="card-head">
+                        <span class="card-title">📍 Cerca de ti</span>
+                    </div>
+                    <div id="cerca-body">
+                        <div class="cerca-placeholder">
+                            Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /grid3 -->
+
+        <div class="footer">
+            Fuente: Comisión Reguladora de Energía (CRE) · México
+        </div>
+
+    </div><!-- /dashboard -->
+
+</div><!-- /wrap -->
+
+<script>
+    var CATALOGO = {{ catalogo | safe }};
+</script>
+
+<script src="/static/js/gasolina.js"></script>
+
+</body>
+</html>
