@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import date
 
 from bs4 import BeautifulSoup, Tag
+from src.sina.db.repository import QQPRepository
 from sina.config.credentials import (
     qqp_url,
     datos_abiertos_url, 
