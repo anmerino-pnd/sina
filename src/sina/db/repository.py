@@ -1,7 +1,7 @@
 # src/sina/db/repository.py
 from typing import Generic, TypeVar
-from sqlalchemy import create_engine, insert, delete
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy import create_engine, insert, delete, select
 from src.sina.db.models import Base, PrecioQQP, PrecioGasolina
 
 T = TypeVar("T", bound=DeclarativeBase)
@@ -47,3 +47,25 @@ class QQPRepository(BaseRepository[PrecioQQP]):
 
 class GasolinaRepository(BaseRepository[PrecioGasolina]):
     model = PrecioGasolina
+
+    def obtener_por_municipio(self, estado: str, municipio: str) -> list[dict]:
+        """Consulta gasolineras por estado y municipio."""
+        with self.Session() as session:
+            stmt = select(self.model).where(
+                self.model.estado    == estado.lower(),
+                self.model.municipio == municipio.lower()
+            )
+            rows = session.execute(stmt).scalars().all()
+            return [
+                {
+                    "numero"   : r.numero,
+                    "nombre"   : r.nombre,
+                    "direccion": r.direccion,
+                    "magna"    : r.magna,
+                    "premium"  : r.premium,
+                    "diesel"   : r.diesel,
+                    "latitud"  : r.latitud,
+                    "longitud" : r.longitud,
+                }
+                for r in rows
+            ]

@@ -72,15 +72,6 @@ function renderDrop(id, items, badge, cb) {
         span.textContent = cap(item);
         div.appendChild(span);
 
-        if (badge) {
-            var key  = estadoSel + '||' + item;
-            var hayD = DATOS_DISPONIBLES.hasOwnProperty(key);
-            var b    = document.createElement('span');
-            b.className   = 'd-badge ' + (hayD ? 'ok' : 'no');
-            b.textContent = hayD ? 'Disponible' : 'Próximamente';
-            div.appendChild(b);
-        }
-
         div.addEventListener('mousedown', function(e){ e.preventDefault(); cb(item); });
         drop.appendChild(div);
     });
@@ -114,7 +105,8 @@ async function cargarCiudad() {
 
     try {
         const res = await fetch(
-            `/sina/gasolina?estado=${encodeURIComponent(estadoSel)}&municipio=${encodeURIComponent(munSel)}`
+            `/sina/gasolina/db?estado=${encodeURIComponent(estadoSel)}&municipio=${encodeURIComponent(munSel)}`
+
         );
 
         if (!res.ok) {
@@ -126,18 +118,18 @@ async function cargarCiudad() {
 
         const json = await res.json();
         datos = json.datos.filter(r => {
-            const lat = parseFloat(r.Latitud);
-            const lng = parseFloat(r.Longitud);
+            const lat = parseFloat(r.latitud);
+            const lng = parseFloat(r.longitud);
             return !isNaN(lat) && !isNaN(lng);
         }).map(r => ({
-            Nombre:    r.Nombre    || '',
-            Direccion: r.Direccion || '',
-            Numero:    r.Numero    || '',
-            Magna:     r.Magna   != null ? parseFloat(r.Magna)   : null,
-            Premium:   r.Premium != null ? parseFloat(r.Premium) : null,
-            Diesel:    r.Diesel  != null ? parseFloat(r.Diesel)  : null,
-            Latitud:   parseFloat(r.Latitud),
-            Longitud:  parseFloat(r.Longitud),
+            Nombre:    r.nombre    || '',
+            Direccion: r.direccion || '',
+            Numero:    r.numero    || '',
+            Magna:     r.magna   != null ? parseFloat(r.magna)   : null,
+            Premium:   r.premium != null ? parseFloat(r.premium) : null,
+            Diesel:    r.diesel  != null ? parseFloat(r.diesel)  : null,
+            Latitud:   parseFloat(r.latitud),
+            Longitud:  parseFloat(r.longitud),
         }));
 
         combustible  = 'Magna';
@@ -247,6 +239,11 @@ function renderMapa() {
     var lats = cp.map(function(d){ return d.Latitud; });
     var lngs = cp.map(function(d){ return d.Longitud; });
 
+    if (lats.length === 0 || lngs.length === 0) {
+        console.warn('Sin coordenadas válidas para centrar el mapa.');
+        return;
+    }
+
     map.fitBounds(
         L.latLngBounds(
             [Math.min.apply(null,lats), Math.min.apply(null,lngs)],
@@ -281,7 +278,13 @@ function renderMapa() {
         );
 
         mLayer.addLayer(m);
-        markersRef.push({ m: m, d: d, color: color, precio: precio });
+        markersRef.push({ 
+            m     : m, 
+            d     : d, 
+            color : color, 
+            precio: precio,
+            numero: d.Numero
+        });
     });
 }
 
@@ -429,8 +432,7 @@ function renderRanking() {
                 // Marker en mapa
                 for (var m = 0; m < markersRef.length; m++) {
                     var ref = markersRef[m];
-                    if (ref.d.Numero === item.d.Numero ||
-                        (ref.d.Latitud === item.d.Latitud && ref.d.Longitud === item.d.Longitud)) {
+                    if (ref.numero === item.d.Numero) {
                         selMarker(m);
                         break;
                     }
@@ -628,7 +630,7 @@ function renderCercanas() {
                 mostrarDetalle(item.d, item.precio, ps);
                 for (var m = 0; m < markersRef.length; m++) {
                     var ref = markersRef[m];
-                    if (ref.d.Latitud === item.d.Latitud && ref.d.Longitud === item.d.Longitud) {
+                    if (ref.numero === item.d.Numero) {
                         selMarker(m);
                         break;
                     }

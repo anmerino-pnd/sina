@@ -17,7 +17,13 @@ from sina.processing.records import df_to_dict
 
 from sina.scraping.casa_ley import download_flyer
 from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS
-from sina.scraping.gas import df_gas_prices, GAS_COLUMN_MAP, GAS_FLOAT_COLS
+from sina.scraping.gas import (
+    _load_catalogo,
+    _build_catalogo_js,
+    _build_municipios_validos,
+    df_gas_prices, 
+    GAS_COLUMN_MAP, 
+    GAS_FLOAT_COLS)
 
 from sina.config.credentials import (
     DB_URL,
@@ -44,6 +50,9 @@ except ImportError:
 
 from sina.db.repository import QQPRepository, GasolinaRepository
 
+_mun_dict      = _load_catalogo()
+_municipios_ok = _build_municipios_validos(_mun_dict)
+
 app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
 
 # ============================================================
@@ -58,26 +67,6 @@ def get_classes_config() -> dict:
        
     with open(CLASSES, "r", encoding="utf-8") as f:
         return json.load(f)
-
-# ============================================================
-#  HELPERS GASOLINA
-# ============================================================
-MUNICIPIOS_JSON = GAS_DATA / "catalogo_municipios.json"
-
-def _load_catalogo() -> dict:
-    with open(MUNICIPIOS_JSON, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def _build_catalogo_js(mun_dict: dict) -> dict:
-    """
-    Construye dos objetos para el frontend:
-      - CATALOGO:         { estado: [municipio, ...] }
-      - DATOS_DISPONIBLES ya se llena dinámicamente en la ruta
-    """
-    return {
-        estado: sorted(info["municipios"].keys())
-        for estado, info in mun_dict.items()
-    }
 
 # ============================================================
 #  FRONTEND ROUTES
@@ -101,17 +90,54 @@ async def get_annotator(request: Request):
 
 @app.get("/gasolina", response_class=HTMLResponse)
 async def get_gasolina(request: Request):
-    """
-    Renderiza el mapa de gasolina inyectando el catálogo
-    de estados/municipios en el template.
-    """
-    mun_dict = _load_catalogo()
-    catalogo = _build_catalogo_js(mun_dict)
+    """Renderiza el HTML inyectando solo el catálogo de estados/municipios."""
+    catalogo = _build_catalogo_js(_mun_dict)  
 
     return templates.TemplateResponse("gasolina.html", {
-        "request":  request,
-        "catalogo": json.dumps(catalogo,  ensure_ascii=False),
+        "request" : request,
+        "catalogo": json.dumps(catalogo, ensure_ascii=False),
+        # 👆 ya no inyectas DATOS_DISPONIBLES
     })
+
+@app.get("/sina/gasolina/db")
+async def get_precios_gasolina_db(estado: str, municipio: str):
+    """
+    Consulta precios desde la DB local.
+    Valida estado y municipio contra el catálogo para evitar injection.
+    """
+    estado_clean    = estado.strip().lower()
+    municipio_clean = municipio.strip().lower()
+
+    if estado_clean not in _municipios_ok or municipio_clean not in _municipios_ok:
+        raise HTTPException(
+            status_code=400,
+            detail="Estado o municipio no válido."
+        )
+
+    try:
+        repo      = GasolinaRepository(db_url=DB_URL)
+        registros = repo.obtener_por_municipio(estado_clean, municipio_clean)
+
+        if not registros:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No hay datos para '{municipio}', '{estado}'."
+            )
+
+        return {
+            "status"   : "ok",
+            "estado"   : estado_clean,
+            "municipio": municipio_clean,
+            "total"    : len(registros),
+            "datos"    : registros,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("\n❌ ERROR EN /sina/gasolina/db:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================
 #  API ENDPOINTS

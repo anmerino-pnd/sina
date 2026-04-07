@@ -24,6 +24,29 @@ MUNICIPIOS_JSON = GAS_DATA / Path("catalogo_municipios.json")
 with open(MUNICIPIOS_JSON, "r", encoding="utf-8") as f:
     mun_dict = json.load(f)
 
+def _load_catalogo() -> dict:
+    with open(MUNICIPIOS_JSON, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def _build_catalogo_js(mun_dict: dict) -> dict:
+    """
+    Construye dos objetos para el frontend:
+      - CATALOGO:         { estado: [municipio, ...] }
+      - DATOS_DISPONIBLES ya se llena dinámicamente en la ruta
+    """
+    return {
+        estado: sorted(info["municipios"].keys())
+        for estado, info in mun_dict.items()
+    }
+
+def _build_municipios_validos(mun_dict: dict) -> set[str]:
+    validos = set()
+    for estado, info in mun_dict.items():
+        validos.add(estado.lower())
+        for municipio in info["municipios"].keys():
+            validos.add(municipio.lower())
+    return validos
+
 def extract_gas_prices(estado: str, municipio: str) -> dict:
     params = {
         "entidadId"  : mun_dict[estado]['id'],

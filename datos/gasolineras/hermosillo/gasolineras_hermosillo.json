@@ -1,1101 +1,1415 @@
 {
   "PL/10156/EXP/ES/2015": {
-    "Nombre": "FEDERICO LÓPEZ LÓPEZ",
+    "Nombre_original": "FEDERICO LÓPEZ LÓPEZ",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Carretera Ures-Hermosillo Km 3.5",
-    "Direccion_completa": "Carretera Ures-Hermosillo Km 3.5, hermosillo, sonora, mexico",
-    "Latitud": 29.0820931,
-    "Longitud": -110.9421558
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/10244/EXP/ES/2015": {
-    "Nombre": "GP GASOLINERA PERINORTE S.A. DE C.V.",
+    "Nombre_original": "GP GASOLINERA PERINORTE S.A. DE C.V.",
+    "Nombre_Google": "GP Gasolinera Perinorte. Camino del seri.",
     "Direccion": "Avenida Camino del Seri 1242",
-    "Direccion_completa": "Avenida Camino del Seri 1242, hermosillo, sonora, mexico",
-    "Latitud": 29.0566676,
-    "Longitud": -111.0158532
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.056305,
+    "Longitud": -111.0181424
   },
   "PL/10321/EXP/ES/2015": {
-    "Nombre": "SERVICIOS DEL REAL DEL ALAMITO S.A. DE C.V.",
+    "Nombre_original": "SERVICIOS DEL REAL DEL ALAMITO S.A. DE C.V.",
+    "Nombre_Google": "RedCo Camino Real",
     "Direccion": "Carretera Hermosillo Ures Entronq.Carretera del Real A.No. 1",
-    "Direccion_completa": "Carretera Hermosillo Ures Entronq.Carretera del Real A.No. 1, hermosillo, sonora, mexico",
-    "Latitud": 29.1454227,
-    "Longitud": -111.0239231
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.221954,
+    "Longitud": -110.9297456
   },
   "PL/10327/EXP/ES/2015": {
-    "Nombre": "SERVICIO EL KENO S.A. DE C.V.",
+    "Nombre_original": "SERVICIO EL KENO S.A. DE C.V.",
+    "Nombre_Google": null,
     "Direccion": "José Ma Mendoza 794",
-    "Direccion_completa": "José Ma Mendoza 794, hermosillo, sonora, mexico",
-    "Latitud": 29.1018976,
-    "Longitud": -110.9932532
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": null,
+    "Longitud": null
   },
   "PL/10366/EXP/ES/2015": {
-    "Nombre": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_original": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera Pemex",
     "Direccion": "Xolotl No. 244",
-    "Direccion_completa": "Xolotl No. 244, hermosillo, sonora, mexico",
-    "Latitud": 29.024009,
-    "Longitud": -110.9462506
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.02304049999999,
+    "Longitud": -110.9447176
   },
   "PL/10370/EXP/ES/2015": {
-    "Nombre": "MIGRAG GRUPO CONSTUCTOR S.A. DE C.V.",
+    "Nombre_original": "MIGRAG GRUPO CONSTUCTOR S.A. DE C.V.",
+    "Nombre_Google": "GPPerinorte",
     "Direccion": "Periférico Norte 4",
-    "Direccion_completa": "Periférico Norte 4, hermosillo, sonora, mexico",
-    "Latitud": 29.1090202,
-    "Longitud": -110.9519908
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1121803,
+    "Longitud": -110.9743909
   },
   "PL/10696/EXP/ES/2015": {
-    "Nombre": "GASOLINERA RS S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA RS S.A. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Margarita Maza de Juárez Y José López Portillo Sn",
-    "Direccion_completa": "Margarita Maza de Juárez Y José López Portillo Sn, hermosillo, sonora, mexico",
-    "Latitud": 29.1231346,
-    "Longitud": -110.9885709
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/10740/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO QUIROGA S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO QUIROGA S.A. DE C.V.",
+    "Nombre_Google": "Quiroga Plaza",
     "Direccion": "Boulevard Luis Donaldo Colosio 862 Esquinaboulevard Quiroga",
-    "Direccion_completa": "Boulevard Luis Donaldo Colosio 862 Esquinaboulevard Quiroga, hermosillo, sonora, mexico",
-    "Latitud": 29.081524,
-    "Longitud": -111.0219864
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0815644,
+    "Longitud": -111.0213976
   },
   "PL/10761/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Gasolinera Arco",
     "Direccion": "Boulevard López Portillo No. 189",
-    "Direccion_completa": "Boulevard López Portillo No. 189, hermosillo, sonora, mexico",
-    "Latitud": 29.1258695,
-    "Longitud": -110.9639566
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.117903,
+    "Longitud": -110.950777
   },
   "PL/10763/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Oficinas Corporativas Grupo Gasolinero",
     "Direccion": "Boulevard Gomez Farias Y Boulevard Ignacio Soto No. 16",
-    "Direccion_completa": "Boulevard Gomez Farias Y Boulevard Ignacio Soto No. 16, hermosillo, sonora, mexico",
-    "Latitud": 29.1087649,
-    "Longitud": -110.9497402
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0894629,
+    "Longitud": -110.9695985
   },
   "PL/10764/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Boulevard de Los Ganaderos S/N",
-    "Direccion_completa": "Boulevard de Los Ganaderos S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0362758,
-    "Longitud": -110.9399518
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/10768/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Oficinas Corporativas Grupo Gasolinero",
     "Direccion": "Boulevard Quiroga No. 555",
-    "Direccion_completa": "Boulevard Quiroga No. 555, hermosillo, sonora, mexico",
-    "Latitud": 29.12112419999999,
-    "Longitud": -111.0232697
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0894629,
+    "Longitud": -110.9695985
   },
   "PL/10769/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "ARCO",
     "Direccion": "Boulevard Juan Navarrete No. 480",
-    "Direccion_completa": "Boulevard Juan Navarrete No. 480, hermosillo, sonora, mexico",
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
     "Latitud": 29.0882492,
     "Longitud": -110.9964393
   },
   "PL/10772/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Combustibles Y Servicios Perisur",
     "Direccion": "Boulevard Paseo Las Palmas No. 1",
-    "Direccion_completa": "Boulevard Paseo Las Palmas No. 1, hermosillo, sonora, mexico",
-    "Latitud": 29.0399766,
-    "Longitud": -110.9395311
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.032942,
+    "Longitud": -110.94544
   },
   "PL/10850/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO EL PILOTO S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO EL PILOTO S.A. DE C.V.",
+    "Nombre_Google": "AUTOSERVICIO PALMIRA EL PILOTO",
     "Direccion": "Carretera a Nogales Km 5.5",
-    "Direccion_completa": "Carretera a Nogales Km 5.5, hermosillo, sonora, mexico",
-    "Latitud": 29.0265015,
-    "Longitud": -110.911048
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1374532,
+    "Longitud": -110.9106142
   },
   "PL/11254/EXP/ES/2015": {
-    "Nombre": "GASOLINERA TRANSVERSAL S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA TRANSVERSAL S.A. DE C.V.",
+    "Nombre_Google": "Autoservicio Transversal",
     "Direccion": "Boulevard Luis Encinas No. 99",
-    "Direccion_completa": "Boulevard Luis Encinas No. 99, hermosillo, sonora, mexico",
-    "Latitud": 29.0847663,
-    "Longitud": -110.9567501
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0855189,
+    "Longitud": -110.9617387
   },
   "PL/11257/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "GPPerinorte",
     "Direccion": "Carretera Internacional a Nogales Km 9.8",
-    "Direccion_completa": "Carretera Internacional a Nogales Km 9.8, hermosillo, sonora, mexico",
-    "Latitud": 29.1705174,
-    "Longitud": -110.9152711
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1121803,
+    "Longitud": -110.9743909
   },
   "PL/11331/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "WINDSTAR",
     "Direccion": "Bulevar Enrique Mazon López No. 735",
-    "Direccion_completa": "Bulevar Enrique Mazon López No. 735, hermosillo, sonora, mexico",
-    "Latitud": 29.098658,
-    "Longitud": -110.9207296
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0796587,
+    "Longitud": -110.9560026
   },
   "PL/11345/EXP/ES/2015": {
-    "Nombre": "AUTO SERVICIO SACRAMENTO S.A. DE C.V.",
+    "Nombre_original": "AUTO SERVICIO SACRAMENTO S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Sacramento",
     "Direccion": "Boulevard Progreso No. 72 Poniente",
-    "Direccion_completa": "Boulevard Progreso No. 72 Poniente, hermosillo, sonora, mexico",
-    "Latitud": 29.1436701,
-    "Longitud": -111.0088733
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.14364,
+    "Longitud": -111.008812
   },
   "PL/11425/EXP/ES/2015": {
-    "Nombre": "ROQUIS S.A. DE C.V.",
+    "Nombre_original": "ROQUIS S.A. DE C.V.",
+    "Nombre_Google": "Federal Highway 15",
     "Direccion": "Carretera Internacional México (15) Tramo Cd. Obregón-Hermosillo",
-    "Direccion_completa": "Carretera Internacional México (15) Tramo Cd. Obregón-Hermosillo, hermosillo, sonora, mexico",
-    "Latitud": 27.4731537,
-    "Longitud": -109.9165794
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0869466,
+    "Longitud": -110.9303523
   },
   "PL/11454/EXP/ES/2015": {
-    "Nombre": "QAR SUPERGAS S.A. DE C.V.",
+    "Nombre_original": "QAR SUPERGAS S.A. DE C.V.",
+    "Nombre_Google": "Supergas Contigo",
     "Direccion": "Francisco Monteverde No. 60",
-    "Direccion_completa": "Francisco Monteverde No. 60, hermosillo, sonora, mexico",
-    "Latitud": 29.0929725,
-    "Longitud": -110.9698453
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0937455,
+    "Longitud": -110.9281854
   },
   "PL/12706/EXP/ES/2015": {
-    "Nombre": "GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.",
+    "Nombre_original": "GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.",
+    "Nombre_Google": "El Rey Gasolineras",
     "Direccion": "Boulevard Lázaro Cárdenas S/N",
-    "Direccion_completa": "Boulevard Lázaro Cárdenas S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.131686,
-    "Longitud": -111.0068532
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.087145,
+    "Longitud": -111.021907
   },
   "PL/12736/EXP/ES/2015": {
-    "Nombre": "CM COMBUSTIBLES S.A. DE C.V.",
+    "Nombre_original": "CM COMBUSTIBLES S.A. DE C.V.",
+    "Nombre_Google": "INE Pabellón Misiones Módulo Tramitación de Identificación Electoral",
     "Direccion": "Boulevard Ignacio Salazar Esquina Calle de Las Misiones",
-    "Direccion_completa": "Boulevard Ignacio Salazar Esquina Calle de Las Misiones, hermosillo, sonora, mexico",
-    "Latitud": 29.116614,
-    "Longitud": -110.9975024
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1175223,
+    "Longitud": -110.9986224
   },
   "PL/12741/EXP/ES/2015": {
-    "Nombre": "AUTOSERVICIO TRANSVERSAL S.A. DE C.V.",
+    "Nombre_original": "AUTOSERVICIO TRANSVERSAL S.A. DE C.V.",
+    "Nombre_Google": "Autoservicio Transversal",
     "Direccion": "Reforma No. 224",
-    "Direccion_completa": "Reforma No. 224, hermosillo, sonora, mexico",
-    "Latitud": 29.0735354,
-    "Longitud": -110.9653765
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0855189,
+    "Longitud": -110.9617387
   },
   "PL/12755/EXP/ES/2015": {
-    "Nombre": "AGA COMBUSTIBLES S.A. DE C.V.",
+    "Nombre_original": "AGA COMBUSTIBLES S.A. DE C.V.",
+    "Nombre_Google": "AGA Combustibles",
     "Direccion": "Boulevard Paseo Rio Sonora Norte No. 567",
-    "Direccion_completa": "Boulevard Paseo Rio Sonora Norte No. 567, hermosillo, sonora, mexico",
-    "Latitud": 29.0682396,
-    "Longitud": -111.0022697
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.068537,
+    "Longitud": -111.001197
   },
   "PL/12892/EXP/ES/2015": {
-    "Nombre": "POWER GAS SA DE CV",
+    "Nombre_original": "POWER GAS SA DE CV",
+    "Nombre_Google": null,
     "Direccion": "Boulevard Camino del Seri No. 1120",
-    "Direccion_completa": "Boulevard Camino del Seri No. 1120, hermosillo, sonora, mexico",
-    "Latitud": 29.0592042,
-    "Longitud": -111.0058981
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": null,
+    "Longitud": null
   },
   "PL/13140/EXP/ES/2016": {
-    "Nombre": "ESTACIÓN DE SERVICIO DEL DESIERTO S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO DEL DESIERTO S.A. DE C.V.",
+    "Nombre_Google": "Chevron Del Desierto",
     "Direccion": "Carretera Hermosillo - Nogales 1309",
-    "Direccion_completa": "Carretera Hermosillo - Nogales 1309, hermosillo, sonora, mexico",
-    "Latitud": 29.0798605,
-    "Longitud": -110.9570001
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.210176,
+    "Longitud": -110.9265466
   },
   "PL/13215/EXP/ES/2016": {
-    "Nombre": "MULTILIQUIDOS DE HERMOSILLO",
+    "Nombre_original": "MULTILIQUIDOS DE HERMOSILLO",
+    "Nombre_Google": "KinoGas Luis Encinas Gas LP",
     "Direccion": "Carretera a Bahia de Kino Lado Oeste No. 84 San Franci",
-    "Direccion_completa": "Carretera a Bahia de Kino Lado Oeste No. 84 San Franci, hermosillo, sonora, mexico",
-    "Latitud": 28.8227474,
-    "Longitud": -111.9363016
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0820414,
+    "Longitud": -110.9454234
   },
   "PL/13547/EXP/ES/2016": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Gasolinera arco navarrete",
     "Direccion": "Boulevard Navarrete No. 130",
-    "Direccion_completa": "Boulevard Navarrete No. 130, hermosillo, sonora, mexico",
-    "Latitud": 29.0862086,
-    "Longitud": -110.9738574
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0860154,
+    "Longitud": -110.9699668
   },
   "PL/13611/EXP/ES/2016": {
-    "Nombre": "POWER GAS S.A. DE C.V.",
+    "Nombre_original": "POWER GAS S.A. DE C.V.",
+    "Nombre_Google": "Power Gas",
     "Direccion": "Boulevard Libertad No. 118",
-    "Direccion_completa": "Boulevard Libertad No. 118, hermosillo, sonora, mexico",
-    "Latitud": 29.0326402,
-    "Longitud": -110.9677374
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0317684,
+    "Longitud": -110.9592705
   },
   "PL/18789/EXP/ES/2016": {
-    "Nombre": "GASERVICIO ORIENTE S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO ORIENTE S.A. DE C.V.",
+    "Nombre_Google": "8004 - Gaservicio Morelos",
     "Direccion": "Boulevard Enrique Mazon López No. 1113",
-    "Direccion_completa": "Boulevard Enrique Mazon López No. 1113, hermosillo, sonora, mexico",
-    "Latitud": 29.1557764,
-    "Longitud": -110.9090723
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1448342,
+    "Longitud": -110.9527507
   },
   "PL/19326/EXP/ES/2016": {
-    "Nombre": "GASERVICIO MORELOS S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO MORELOS S.A. DE C.V.",
+    "Nombre_Google": "8004 - Gaservicio Morelos",
     "Direccion": "Boulevard Alicia Arellano Pavlovich No. 476",
-    "Direccion_completa": "Boulevard Alicia Arellano Pavlovich No. 476, hermosillo, sonora, mexico",
-    "Latitud": 28.8389878,
-    "Longitud": -111.489224
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1448342,
+    "Longitud": -110.9527507
   },
   "PL/20952/EXP/ES/2018": {
-    "Nombre": "ESTACION DE SERVICIO ERSAL SA DE CV",
+    "Nombre_original": "ESTACION DE SERVICIO ERSAL SA DE CV",
+    "Nombre_Google": "Estación de Servicio ERSAL: Real Fuel",
     "Direccion": "AVE MAR DE CORTES NÚMERO 8910",
-    "Direccion_completa": "AVE MAR DE CORTES NÚMERO 8910, hermosillo, sonora, mexico",
-    "Latitud": 29.084843,
-    "Longitud": -110.9880654
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 28.8285882,
+    "Longitud": -111.9498643
   },
   "PL/24346/EXP/ES/2022": {
-    "Nombre": "CM COMBUSTIBLES S.A. DE C.V.",
+    "Nombre_original": "CM COMBUSTIBLES S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Colosio",
     "Direccion": "BLVD LUIS DONALDO COLOSIO NO. 1099 ESQUINA CALLE JET",
-    "Direccion_completa": "BLVD LUIS DONALDO COLOSIO NO. 1099 ESQUINA CALLE JET, hermosillo, sonora, mexico",
-    "Latitud": 29.0809248,
-    "Longitud": -111.0490011
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0849039,
+    "Longitud": -110.9850948
   },
   "PL/24366/EXP/ES/2022": {
-    "Nombre": "GASERVICIO PUERTA REAL, S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO PUERTA REAL, S.A. DE C.V.",
+    "Nombre_Google": "Gaservicio Puerta Real",
     "Direccion": "BOULEVARD GASPAR LUKEN ESCALANTE NO. 801",
-    "Direccion_completa": "BOULEVARD GASPAR LUKEN ESCALANTE NO. 801, hermosillo, sonora, mexico",
-    "Latitud": 29.1213457,
-    "Longitud": -111.0338619
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1213786,
+    "Longitud": -111.0338764
   },
   "PL/24464/EXP/ES/2022": {
-    "Nombre": "ESCOTAC S.A. DE C.V.",
+    "Nombre_original": "ESCOTAC S.A. DE C.V.",
+    "Nombre_Google": "Mr Fill Gasolinera",
     "Direccion": "BLVD. SOLIDARIDAD 808",
-    "Direccion_completa": "BLVD. SOLIDARIDAD 808, hermosillo, sonora, mexico",
-    "Latitud": 29.0616685,
-    "Longitud": -110.9667494
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.055531,
+    "Longitud": -110.9649619
   },
   "PL/24968/EXP/ES/2023": {
-    "Nombre": "FONDO EMPRESARIAL S4M, S.A. DE C.V.",
+    "Nombre_original": "FONDO EMPRESARIAL S4M, S.A. DE C.V.",
+    "Nombre_Google": "Combustibles Y Servicios Perisur",
     "Direccion": "Blvd. Solidaridad No. 1120",
-    "Direccion_completa": "Blvd. Solidaridad No. 1120, hermosillo, sonora, mexico",
-    "Latitud": 29.0615585,
-    "Longitud": -110.966474
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.032942,
+    "Longitud": -110.94544
   },
   "PL/25059/EXP/ES/2023": {
-    "Nombre": "GAZPRO, S.A. DE C.V.",
+    "Nombre_original": "GAZPRO, S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera GAZPRO",
     "Direccion": "Blvd. Juan Bautista de Escalante #824",
-    "Direccion_completa": "Blvd. Juan Bautista de Escalante #824, hermosillo, sonora, mexico",
-    "Latitud": 29.1447194,
-    "Longitud": -110.9977639
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1446485,
+    "Longitud": -110.9986426
   },
   "PL/25060/EXP/ES/2023": {
-    "Nombre": "GAZPRO, S.A. DE C.V.",
+    "Nombre_original": "GAZPRO, S.A. DE C.V.",
+    "Nombre_Google": "Gazpro WG Solidaridad",
     "Direccion": "Bulevar Solidaridad #116",
-    "Direccion_completa": "Bulevar Solidaridad #116, hermosillo, sonora, mexico",
-    "Latitud": 29.0981158,
-    "Longitud": -110.9935081
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0982549,
+    "Longitud": -110.9931587
   },
   "PL/25176/EXP/ES/2023": {
-    "Nombre": "GAZPRO, S.A. DE C.V.",
+    "Nombre_original": "GAZPRO, S.A. DE C.V.",
+    "Nombre_Google": "Gazpro Periférico Sur",
     "Direccion": "Periférico Poniente #02",
-    "Direccion_completa": "Periférico Poniente #02, hermosillo, sonora, mexico",
-    "Latitud": 29.0356688,
-    "Longitud": -110.9832776
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0340408,
+    "Longitud": -110.9426499
   },
   "PL/25184/EXP/ES/2023": {
-    "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_original": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "BULEVAR JESUS GARCIA MORALES NO. 496",
-    "Direccion_completa": "BULEVAR JESUS GARCIA MORALES NO. 496, hermosillo, sonora, mexico",
-    "Latitud": 29.0950819,
-    "Longitud": -111.0228287
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/25322/EXP/ES/2023": {
-    "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_original": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_Google": "El Guardián Gasolineras ARCOS",
     "Direccion": "BULEVAR SOLIDARIDAD NO. 646",
-    "Direccion_completa": "BULEVAR SOLIDARIDAD NO. 646, hermosillo, sonora, mexico",
-    "Latitud": 29.1319608,
-    "Longitud": -110.9931916
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0807019,
+    "Longitud": -110.9706385
   },
   "PL/25360/EXP/ES/2023": {
-    "Nombre": "GAZPRO, S.A. DE C.V.",
+    "Nombre_original": "GAZPRO, S.A. DE C.V.",
+    "Nombre_Google": "Gazpro WG Colosio",
     "Direccion": "Blvd. Luis Donaldo Colosio #867",
-    "Direccion_completa": "Blvd. Luis Donaldo Colosio #867, hermosillo, sonora, mexico",
-    "Latitud": 29.0833443,
-    "Longitud": -111.0212441
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0825011,
+    "Longitud": -111.0215457
   },
   "PL/25364/EXP/ES/2023": {
-    "Nombre": "FONDO EMPRESARIAL S4M, S.A. DE C.V.",
+    "Nombre_original": "FONDO EMPRESARIAL S4M, S.A. DE C.V.",
+    "Nombre_Google": "MasterFuel - Vado del Río",
     "Direccion": "Carretera a la Colorada No. 189, esquina con Bulevar Capomo",
-    "Direccion_completa": "Carretera a la Colorada No. 189, esquina con Bulevar Capomo, hermosillo, sonora, mexico",
-    "Latitud": 29.01957669999999,
-    "Longitud": -110.9306
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0692689,
+    "Longitud": -110.9704215
   },
   "PL/26006/EXP/ES/2024": {
-    "Nombre": "GAZPRO, S.A. DE C.V.",
+    "Nombre_original": "GAZPRO, S.A. DE C.V.",
+    "Nombre_Google": "Sams Club Gas Gazpro",
     "Direccion": "Bulevar José María Morelos S/N",
-    "Direccion_completa": "Bulevar José María Morelos S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.1409566,
-    "Longitud": -110.953466
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1336589,
+    "Longitud": -110.9541809
   },
   "PL/26186/EXP/ES/2025": {
-    "Nombre": "GASERVICIO PUERTA REAL, S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO PUERTA REAL, S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Colosio",
     "Direccion": "AVENIDA NAVOJOA No. 1418",
-    "Direccion_completa": "AVENIDA NAVOJOA No. 1418, hermosillo, sonora, mexico",
-    "Latitud": 29.1185439,
-    "Longitud": -111.0172361
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0849039,
+    "Longitud": -110.9850948
   },
   "PL/2639/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO ERSAL S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO ERSAL S.A. DE C.V.",
+    "Nombre_Google": "Estación de Servicio ERSAL: Real Fuel",
     "Direccion": "Carretera Hermosillo a Kino Km 106 L-4",
-    "Direccion_completa": "Carretera Hermosillo a Kino Km 106 L-4, hermosillo, sonora, mexico",
-    "Latitud": 29.0798018,
-    "Longitud": -110.9532482
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 28.8285882,
+    "Longitud": -111.9498643
   },
   "PL/2691/EXP/ES/2015": {
-    "Nombre": "POWER GAS S.A. DE C.V.",
+    "Nombre_original": "POWER GAS S.A. DE C.V.",
+    "Nombre_Google": "Power Gas",
     "Direccion": "Boulevard Enrique Mazón López No. 724",
-    "Direccion_completa": "Boulevard Enrique Mazón López No. 724, hermosillo, sonora, mexico",
-    "Latitud": 29.119724,
-    "Longitud": -110.912889
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0930919,
+    "Longitud": -110.9695903
   },
   "PL/2692/EXP/ES/2015": {
-    "Nombre": "GASOLINERA VILLA DE SERIS S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA VILLA DE SERIS S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Villa De Seris",
     "Direccion": "Boulevard Vildosola No. 36",
-    "Direccion_completa": "Boulevard Vildosola No. 36, hermosillo, sonora, mexico",
-    "Latitud": 29.062827,
-    "Longitud": -110.954255
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.061809,
+    "Longitud": -110.954637
   },
   "PL/2693/EXP/ES/2015": {
-    "Nombre": "AUTOSERVICIO LA CANDELARIA S.A. DE C.V.",
+    "Nombre_original": "AUTOSERVICIO LA CANDELARIA S.A. DE C.V.",
+    "Nombre_Google": "Auto Servicio La Candelaria",
     "Direccion": "Boulevard Antonio Quiroga No. 397",
-    "Direccion_completa": "Boulevard Antonio Quiroga No. 397, hermosillo, sonora, mexico",
-    "Latitud": 29.1316042,
-    "Longitud": -111.0231274
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.14542849999999,
+    "Longitud": -110.9741581
   },
   "PL/2749/EXP/ES/2015": {
-    "Nombre": "GASOLINERA LA VERBENA S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA LA VERBENA S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera La Verbena",
     "Direccion": "Boulevard Camino del Seri No. 356",
-    "Direccion_completa": "Boulevard Camino del Seri No. 356, hermosillo, sonora, mexico",
-    "Latitud": 29.0627145,
-    "Longitud": -110.9909922
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0627317,
+    "Longitud": -110.99097
   },
   "PL/2917/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "76",
     "Direccion": "Boulevard Luis Encinas No. 36",
-    "Direccion_completa": "Boulevard Luis Encinas No. 36, hermosillo, sonora, mexico",
-    "Latitud": 29.0832264,
-    "Longitud": -110.9495767
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.083251,
+    "Longitud": -110.9495976
   },
   "PL/2930/EXP/ES/2015": {
-    "Nombre": "AUTOSERVICIO ROSALES S.A. DE C.V.",
+    "Nombre_original": "AUTOSERVICIO ROSALES S.A. DE C.V.",
+    "Nombre_Google": "Gastop Gasolineras, Vado del Río",
     "Direccion": "Boulevard Paseo Rio Sonora No. 128",
-    "Direccion_completa": "Boulevard Paseo Rio Sonora No. 128, hermosillo, sonora, mexico",
-    "Latitud": 29.0689467,
-    "Longitud": -110.980407
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.06889809999999,
+    "Longitud": -110.9777323
   },
   "PL/2963/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "Windstar \"Monteverde\"",
     "Direccion": "Francisco Monteverde No. 900",
-    "Direccion_completa": "Francisco Monteverde No. 900, hermosillo, sonora, mexico",
-    "Latitud": 29.1160513,
-    "Longitud": -110.9731861
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1005039,
+    "Longitud": -110.9705068
   },
   "PL/3029/EXP/ES/2015": {
-    "Nombre": "GRUPO GASOLINERO LM S.A. DE C.V.",
+    "Nombre_original": "GRUPO GASOLINERO LM S.A. DE C.V.",
+    "Nombre_Google": "Gastop Gasolineras, salida a Nogales",
     "Direccion": "Carretera a Nogales Km 1.7",
-    "Direccion_completa": "Carretera a Nogales Km 1.7, hermosillo, sonora, mexico",
-    "Latitud": 29.0265015,
-    "Longitud": -110.911048
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1034223,
+    "Longitud": -110.9132512
   },
   "PL/3121/EXP/ES/2015": {
-    "Nombre": "GASERVICIO HERMOSUR S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO HERMOSUR S.A. DE C.V.",
+    "Nombre_Google": "Gastop Gasolineras, Salida a Guaymas",
     "Direccion": "Boulevard Manuel J. Clouthier No. 275",
-    "Direccion_completa": "Boulevard Manuel J. Clouthier No. 275, hermosillo, sonora, mexico",
-    "Latitud": 29.0159111,
-    "Longitud": -110.9623992
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0161992,
+    "Longitud": -110.9620496
   },
   "PL/3136/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "GPPerinorte",
     "Direccion": "Periférico Sur No. 28",
-    "Direccion_completa": "Periférico Sur No. 28, hermosillo, sonora, mexico",
-    "Latitud": 29.0359254,
-    "Longitud": -110.9545754
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1121803,
+    "Longitud": -110.9743909
   },
   "PL/3252/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES Y SERVICIOS JARDIN JUÁREZ S.A. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES Y SERVICIOS JARDIN JUÁREZ S.A. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Calle Matamoros S/N",
-    "Direccion_completa": "Calle Matamoros S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.05154739999999,
-    "Longitud": -110.9714221
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/3255/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.",
+    "Nombre_Google": "AGA Combustibles",
     "Direccion": "Boulevard Dr. Antonio Quiroga No. 330",
-    "Direccion_completa": "Boulevard Dr. Antonio Quiroga No. 330, hermosillo, sonora, mexico",
-    "Latitud": 29.03722939999999,
-    "Longitud": -111.0020967
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.068537,
+    "Longitud": -111.001197
   },
   "PL/3256/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES Y SERVICIOS PERISUR S.A. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES Y SERVICIOS PERISUR S.A. DE C.V.",
+    "Nombre_Google": "Combustibles Y Servicios Perisur",
     "Direccion": "Periférico Sur Y Carretera a Sahuaripa",
-    "Direccion_completa": "Periférico Sur Y Carretera a Sahuaripa, hermosillo, sonora, mexico",
-    "Latitud": 29.0332041,
-    "Longitud": -110.9420655
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.032942,
+    "Longitud": -110.94544
   },
   "PL/3275/EXP/ES/2015": {
-    "Nombre": "AUTOSERVICIO ROSALES, S.A. DE C.V.",
+    "Nombre_original": "AUTOSERVICIO ROSALES, S.A. DE C.V.",
+    "Nombre_Google": "Gastop Gasolineras, Vado del Río",
     "Direccion": "Boulevardpaseo Rio Sonora Esquina Dr. Domingo Olivares No. 422",
-    "Direccion_completa": "Boulevardpaseo Rio Sonora Esquina Dr. Domingo Olivares No. 422, hermosillo, sonora, mexico",
-    "Latitud": 29.1097797,
-    "Longitud": -110.9804657
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.06889809999999,
+    "Longitud": -110.9777323
   },
   "PL/3302/EXP/ES/2015": {
-    "Nombre": "GASOLINERA LA MINA S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA LA MINA S.A. DE C.V.",
+    "Nombre_Google": "Mr Fill Gasolinera",
     "Direccion": "Avenida Lázaro Cárdenas No. 209",
-    "Direccion_completa": "Avenida Lázaro Cárdenas No. 209, hermosillo, sonora, mexico",
-    "Latitud": 29.0524692,
-    "Longitud": -110.9768825
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.055531,
+    "Longitud": -110.9649619
   },
   "PL/3304/EXP/ES/2015": {
-    "Nombre": "POWER GAS S.A. DE C.V.",
+    "Nombre_original": "POWER GAS S.A. DE C.V.",
+    "Nombre_Google": "Power Gas",
     "Direccion": "Boulevard Libertad Esquina Salida a Guaymas",
-    "Direccion_completa": "Boulevard Libertad Esquina Salida a Guaymas, hermosillo, sonora, mexico",
-    "Latitud": 27.9110633,
-    "Longitud": -110.9090678
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0317684,
+    "Longitud": -110.9592705
   },
   "PL/3308/EXP/ES/2015": {
-    "Nombre": "AUTOSERVICIO LA CANDELARIA S.A. DE C.V.",
+    "Nombre_original": "AUTOSERVICIO LA CANDELARIA S.A. DE C.V.",
+    "Nombre_Google": "Auto Servicio La Candelaria",
     "Direccion": "Boulevard Progreso No. 258",
-    "Direccion_completa": "Boulevard Progreso No. 258, hermosillo, sonora, mexico",
-    "Latitud": 29.1454187,
-    "Longitud": -110.9741699
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.14542849999999,
+    "Longitud": -110.9741581
   },
   "PL/3350/EXP/ES/2015": {
-    "Nombre": "SERVICIOS Z3 S.A. DE C.V.",
+    "Nombre_original": "SERVICIOS Z3 S.A. DE C.V.",
+    "Nombre_Google": "Pemex",
     "Direccion": "Boulevard Ignacio Salazar S/N",
-    "Direccion_completa": "Boulevard Ignacio Salazar S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.1166092,
-    "Longitud": -110.9930715
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.116369,
+    "Longitud": -110.997381
   },
   "PL/3438/EXP/ES/2015": {
-    "Nombre": "SERVICIOS Z3 S.A. DE C.V.",
+    "Nombre_original": "SERVICIOS Z3 S.A. DE C.V.",
+    "Nombre_Google": "Pemex",
     "Direccion": "Ángel García Aburto Y Dr. Domingo Olivares",
-    "Direccion_completa": "Ángel García Aburto Y Dr. Domingo Olivares, hermosillo, sonora, mexico",
-    "Latitud": 29.1090564,
-    "Longitud": -110.9801723
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.116369,
+    "Longitud": -110.997381
   },
   "PL/3445/EXP/ES/2015": {
-    "Nombre": "SERVICIOS Z3 S.A. DE C.V.",
+    "Nombre_original": "SERVICIOS Z3 S.A. DE C.V.",
+    "Nombre_Google": "Pemex",
     "Direccion": "Boulevard Solidaridad S/N",
-    "Direccion_completa": "Boulevard Solidaridad S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.1021753,
-    "Longitud": -110.992223
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.116369,
+    "Longitud": -110.997381
   },
   "PL/3455/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION S A P I DE CV",
+    "Nombre_original": "CORPORATIVO ENERVISION S A P I DE CV",
+    "Nombre_Google": "Gasolinera Arco",
     "Direccion": "Boulevard José María Morelos No. 329",
-    "Direccion_completa": "Boulevard José María Morelos No. 329, hermosillo, sonora, mexico",
-    "Latitud": 29.1181932,
-    "Longitud": -110.9507772
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.117903,
+    "Longitud": -110.950777
   },
   "PL/3472/EXP/ES/2015": {
-    "Nombre": "SERVICIOS Z3 SA DE CV",
+    "Nombre_original": "SERVICIOS Z3 SA DE CV",
+    "Nombre_Google": "Pemex",
     "Direccion": "General Pina Esquina José S. Healy No. 175",
-    "Direccion_completa": "General Pina Esquina José S. Healy No. 175, hermosillo, sonora, mexico",
-    "Latitud": 29.1015707,
-    "Longitud": -110.9642551
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.116369,
+    "Longitud": -110.997381
   },
   "PL/3482/EXP/ES/2015": {
-    "Nombre": "SERVICIOS Z3 SA DE CV",
+    "Nombre_original": "SERVICIOS Z3 SA DE CV",
+    "Nombre_Google": "Pemex",
     "Direccion": "Boulevard Ignacio Salazar No. 860",
-    "Direccion_completa": "Boulevard Ignacio Salazar No. 860, hermosillo, sonora, mexico",
-    "Latitud": 29.1164317,
-    "Longitud": -111.0051645
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.116369,
+    "Longitud": -110.997381
   },
   "PL/3655/EXP/ES/2015": {
-    "Nombre": "AUTO SERVICIO LORI S.A. DE C.V.",
+    "Nombre_original": "AUTO SERVICIO LORI S.A. DE C.V.",
+    "Nombre_Google": "Auto Servicio Lori S.A. de C.V.",
     "Direccion": "Carretera a La Colorada Km 3.5 Esquina Planetario",
-    "Direccion_completa": "Carretera a La Colorada Km 3.5 Esquina Planetario, hermosillo, sonora, mexico",
-    "Latitud": 29.013417,
-    "Longitud": -110.9229322
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.01619639999999,
+    "Longitud": -110.9262843
   },
   "PL/3707/EXP/ES/2015": {
-    "Nombre": "HERMOL GASOLINERA S.A. DE C.V.",
+    "Nombre_original": "HERMOL GASOLINERA S.A. DE C.V.",
+    "Nombre_Google": "HERMOL Gasolinera",
     "Direccion": "Boulevard José María Morelos No. 732",
-    "Direccion_completa": "Boulevard José María Morelos No. 732, hermosillo, sonora, mexico",
-    "Latitud": 29.1342529,
-    "Longitud": -110.953707
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1344792,
+    "Longitud": -110.953478
   },
   "PL/3721/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES Y SERVICIOS HAV S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Colosio",
     "Direccion": "Boulevard Luis Donaldo Colosio Esquina Con Boulevard Antonio Q.",
-    "Direccion_completa": "Boulevard Luis Donaldo Colosio Esquina Con Boulevard Antonio Q., hermosillo, sonora, mexico",
-    "Latitud": 29.0817937,
-    "Longitud": -111.0226598
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0849039,
+    "Longitud": -110.9850948
   },
   "PL/3732/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES Y SERVICIOS LPSA S.A. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES Y SERVICIOS LPSA S.A. DE C.V.",
+    "Nombre_Google": "Combustibles Y Servicios Perisur",
     "Direccion": "Boulevard José López Portillo 437 Esquina Simon Bley",
-    "Direccion_completa": "Boulevard José López Portillo 437 Esquina Simon Bley, hermosillo, sonora, mexico",
-    "Latitud": 29.1241839,
-    "Longitud": -110.9805355
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.032942,
+    "Longitud": -110.94544
   },
   "PL/3743/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO LAS PALMAS S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO LAS PALMAS S.A. DE C.V.",
+    "Nombre_Google": "RedCo Las Palmas",
     "Direccion": "Perimetral Norte No. 1107",
-    "Direccion_completa": "Perimetral Norte No. 1107, hermosillo, sonora, mexico",
-    "Latitud": 29.1099995,
-    "Longitud": -110.9986814
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1100278,
+    "Longitud": -110.9986724
   },
   "PL/3988/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Pemex",
     "Direccion": "Boulevard Solidaridad Y Avenida Pueblo Alamos No. 630",
-    "Direccion_completa": "Boulevard Solidaridad Y Avenida Pueblo Alamos No. 630, hermosillo, sonora, mexico",
-    "Latitud": 29.1054156,
-    "Longitud": -110.9922616
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.13349629999999,
+    "Longitud": -110.9932803
   },
   "PL/3989/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Camino del Seri",
     "Direccion": "Boulevard Camino del Seri S/N",
-    "Direccion_completa": "Boulevard Camino del Seri S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0628371,
-    "Longitud": -110.9937297
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.062234,
+    "Longitud": -110.985564
   },
   "PL/3991/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Aeropuerto 1",
     "Direccion": "Boulevard García Morales No. 471",
-    "Direccion_completa": "Boulevard García Morales No. 471, hermosillo, sonora, mexico",
-    "Latitud": 29.0955504,
-    "Longitud": -111.0161417
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0954706,
+    "Longitud": -111.0160666
   },
   "PL/3992/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Estación de Servicio Perinorte",
     "Direccion": "Periférico Norte No. 1",
-    "Direccion_completa": "Periférico Norte No. 1, hermosillo, sonora, mexico",
-    "Latitud": 29.1117414,
-    "Longitud": -110.9685796
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1105462,
+    "Longitud": -110.9659526
   },
   "PL/3995/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Villa De Seris",
     "Direccion": "Boulevard Agustin Vildosola Y Avenida Comonfort S/N",
-    "Direccion_completa": "Boulevard Agustin Vildosola Y Avenida Comonfort S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0619806,
-    "Longitud": -110.9543955
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.061809,
+    "Longitud": -110.954637
   },
   "PL/3996/EXP/ES/2015": {
-    "Nombre": "REFORMA GASOLINERA S.A. DE C.V.",
+    "Nombre_original": "REFORMA GASOLINERA S.A. DE C.V.",
+    "Nombre_Google": "Chevron",
     "Direccion": "Avenida Reforma S/N",
-    "Direccion_completa": "Avenida Reforma S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.1091644,
-    "Longitud": -110.95741
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1118968,
+    "Longitud": -110.9702251
   },
   "PL/4068/EXP/ES/2015": {
-    "Nombre": "GASOLINERA SAN JAVIER S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA SAN JAVIER S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera San Javier",
     "Direccion": "Boulevard José Alberto Healy Noriega No. 1062",
-    "Direccion_completa": "Boulevard José Alberto Healy Noriega No. 1062, hermosillo, sonora, mexico",
-    "Latitud": 29.1503283,
-    "Longitud": -110.9969332
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.15377029999999,
+    "Longitud": -110.9970675
   },
   "PL/4089/EXP/ES/2015": {
-    "Nombre": "SERVICIO EL FARO S.A. DE C.V.",
+    "Nombre_original": "SERVICIO EL FARO S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera El Faro",
     "Direccion": "Boulevard Francisco Eusebio Kino No. 1098",
-    "Direccion_completa": "Boulevard Francisco Eusebio Kino No. 1098, hermosillo, sonora, mexico",
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
     "Latitud": 29.0977526,
     "Longitud": -110.9314072
   },
   "PL/4190/EXP/ES/2015": {
-    "Nombre": "CAMINO REAL GASOLINERA S.A. DE C.V.",
+    "Nombre_original": "CAMINO REAL GASOLINERA S.A. DE C.V.",
+    "Nombre_Google": "RedCo Camino Real",
     "Direccion": "Carretera 4 Carriles Hillo-Nogales",
-    "Direccion_completa": "Carretera 4 Carriles Hillo-Nogales, hermosillo, sonora, mexico",
-    "Latitud": 29.0729673,
-    "Longitud": -110.9559192
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.221954,
+    "Longitud": -110.9297456
   },
   "PL/4197/EXP/ES/2015": {
-    "Nombre": "GASOLINERA CR SATELITE DE HERMOSILLO S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA CR SATELITE DE HERMOSILLO S.A. DE C.V.",
+    "Nombre_Google": "Chevron Luis Encinas",
     "Direccion": "Boulevard Luis Encinas No. 454",
-    "Direccion_completa": "Boulevard Luis Encinas No. 454, hermosillo, sonora, mexico",
-    "Latitud": 29.0929612,
-    "Longitud": -110.9774596
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.092549,
+    "Longitud": -110.9777042
   },
   "PL/4272/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Nayarit 2",
     "Direccion": "Boulevard Luis Encinas Y Manuel R. Bobadilla S/N.",
-    "Direccion_completa": "Boulevard Luis Encinas Y Manuel R. Bobadilla S/N., hermosillo, sonora, mexico",
-    "Latitud": 29.1308551,
-    "Longitud": -110.9964555
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.094228,
+    "Longitud": -110.9612127
   },
   "PL/4496/EXP/ES/2015": {
-    "Nombre": "GRUPO LESTEF S.A. DE C.V.",
+    "Nombre_original": "GRUPO LESTEF S.A. DE C.V.",
+    "Nombre_Google": "Chevron Morelos",
     "Direccion": "Boulevard José María Morelos No. 694",
-    "Direccion_completa": "Boulevard José María Morelos No. 694, hermosillo, sonora, mexico",
-    "Latitud": 29.1328269,
-    "Longitud": -110.9531865
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1328085,
+    "Longitud": -110.9531969
   },
   "PL/4608/EXP/ES/2015": {
-    "Nombre": "GASOLINERA Y SERVICIO PITIC S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA Y SERVICIO PITIC S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera Pitic Pemex",
     "Direccion": "Calle de La Reforma S/N",
-    "Direccion_completa": "Calle de La Reforma S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.1039943,
-    "Longitud": -110.9691878
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.107931,
+    "Longitud": -110.970026
   },
   "PL/4854/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Nayarit",
     "Direccion": "Nayarit Esquina Simon Bley",
-    "Direccion_completa": "Nayarit Esquina Simon Bley, hermosillo, sonora, mexico",
-    "Latitud": 29.1129495,
-    "Longitud": -110.9804884
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0925397,
+    "Longitud": -110.9751016
   },
   "PL/4931/EXP/ES/2015": {
-    "Nombre": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_original": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Nayarit 2",
     "Direccion": "Avenida Nayarit Y Reyes No. 113",
-    "Direccion_completa": "Avenida Nayarit Y Reyes No. 113, hermosillo, sonora, mexico",
-    "Latitud": 29.0943898,
-    "Longitud": -110.9606812
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.094228,
+    "Longitud": -110.9612127
   },
   "PL/5086/EXP/ES/2015": {
-    "Nombre": "GASOLINERA MAZA DE JUÁREZ S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA MAZA DE JUÁREZ S.A. DE C.V.",
+    "Nombre_Google": "Chevron Maza de Juárez",
     "Direccion": "Avenida Margarita Maza de Juárez No. 599",
-    "Direccion_completa": "Avenida Margarita Maza de Juárez No. 599, hermosillo, sonora, mexico",
-    "Latitud": 29.129353,
-    "Longitud": -110.9895263
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1104931,
+    "Longitud": -110.9883533
   },
   "PL/5109/EXP/ES/2015": {
-    "Nombre": "AGROCOMBUSTIBLES EL CHAMIZAL S.A. DE C.V.",
+    "Nombre_original": "AGROCOMBUSTIBLES EL CHAMIZAL S.A. DE C.V.",
+    "Nombre_Google": "Agrocombustibles El Chamizal S. A. de C. V.",
     "Direccion": "Carretera Hermosillo-Bahia de Kino 1471",
-    "Direccion_completa": "Carretera Hermosillo-Bahia de Kino 1471, hermosillo, sonora, mexico",
-    "Latitud": 29.0950981,
-    "Longitud": -111.0175091
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0674049,
+    "Longitud": -111.0909488
   },
   "PL/5154/EXP/ES/2015": {
-    "Nombre": "GASERVICIO SA DE CV",
+    "Nombre_original": "GASERVICIO SA DE CV",
+    "Nombre_Google": "8004 - Gaservicio Morelos",
     "Direccion": "Boulevard Francisco Eusebio Kino No. 506",
-    "Direccion_completa": "Boulevard Francisco Eusebio Kino No. 506, hermosillo, sonora, mexico",
-    "Latitud": 29.0980878,
-    "Longitud": -110.9446192
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1448342,
+    "Longitud": -110.9527507
   },
   "PL/5157/EXP/ES/2015": {
-    "Nombre": "SERVICIOS NORORREY S.A. DE C.V.",
+    "Nombre_original": "SERVICIOS NORORREY S.A. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Boulevard Juan Bautista Escalante No. 405",
-    "Direccion_completa": "Boulevard Juan Bautista Escalante No. 405, hermosillo, sonora, mexico",
-    "Latitud": 29.1448362,
-    "Longitud": -110.9881613
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/5441/EXP/ES/2015": {
-    "Nombre": "SERVICIOS Z3 SA DE CV",
+    "Nombre_original": "SERVICIOS Z3 SA DE CV",
+    "Nombre_Google": "Pemex",
     "Direccion": "Boulevard Antonio Quiroga No. 120",
-    "Direccion_completa": "Boulevard Antonio Quiroga No. 120, hermosillo, sonora, mexico",
-    "Latitud": 29.1355321,
-    "Longitud": -111.0242266
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.116369,
+    "Longitud": -110.997381
   },
   "PL/5636/EXP/ES/2015": {
-    "Nombre": "ALMA DELIA MILLAN LÓPEZ",
+    "Nombre_original": "ALMA DELIA MILLAN LÓPEZ",
+    "Nombre_Google": "Pemex",
     "Direccion": "Boulevard Antonio Quiroga No. 86",
-    "Direccion_completa": "Boulevard Antonio Quiroga No. 86, hermosillo, sonora, mexico",
-    "Latitud": 29.1068196,
-    "Longitud": -111.0235931
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.10693,
+    "Longitud": -111.023321
   },
   "PL/5637/EXP/ES/2015": {
-    "Nombre": "GASERVICIO SANTA CLARA S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO SANTA CLARA S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Santa Clara",
     "Direccion": "Carretera a Sahuaripa Esquina Boulevard de Los Seris 353",
-    "Direccion_completa": "Carretera a Sahuaripa Esquina Boulevard de Los Seris 353, hermosillo, sonora, mexico",
-    "Latitud": 29.0300378,
-    "Longitud": -110.916211
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0003984,
+    "Longitud": -110.9692709
   },
   "PL/5638/EXP/ES/2015": {
-    "Nombre": "GASERVICIO EL LLANITO QUIROGA S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO EL LLANITO QUIROGA S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel El Llanito",
     "Direccion": "Calle Dr Antonio Quiroga No. 135",
-    "Direccion_completa": "Calle Dr Antonio Quiroga No. 135, hermosillo, sonora, mexico",
-    "Latitud": 29.0383234,
-    "Longitud": -111.0033336
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1008173,
+    "Longitud": -111.0224398
   },
   "PL/5639/EXP/ES/2015": {
-    "Nombre": "GASERVICIO MORELOS S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO MORELOS S.A. DE C.V.",
+    "Nombre_Google": "8004 - Gaservicio Morelos",
     "Direccion": "Boulevard Morelos No. 853",
-    "Direccion_completa": "Boulevard Morelos No. 853, hermosillo, sonora, mexico",
-    "Latitud": 29.1447551,
-    "Longitud": -110.9526195
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1448342,
+    "Longitud": -110.9527507
   },
   "PL/5640/EXP/ES/2015": {
-    "Nombre": "GASERVICIO ORIENTE S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO ORIENTE S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Sucursal Oriente",
     "Direccion": "Avenida 18 de Marzo No. 78",
-    "Direccion_completa": "Avenida 18 de Marzo No. 78, hermosillo, sonora, mexico",
-    "Latitud": 29.09127399999999,
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0912658,
     "Longitud": -110.9307235
   },
   "PL/5641/EXP/ES/2015": {
-    "Nombre": "GASERVICIO ENCINAS S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO ENCINAS S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Encinas",
     "Direccion": "Boulevard Solidaridad No. 94",
-    "Direccion_completa": "Boulevard Solidaridad No. 94, hermosillo, sonora, mexico",
-    "Latitud": 29.0916169,
-    "Longitud": -110.991547
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0913435,
+    "Longitud": -110.9921581
   },
   "PL/5642/EXP/ES/2015": {
-    "Nombre": "GASERVICIO SANTA CLARA S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO SANTA CLARA S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Santa Clara",
     "Direccion": "Carretera Fed. No. 15 Tramo Hermosillo-Guaymas Km :248 No. 1194",
-    "Direccion_completa": "Carretera Fed. No. 15 Tramo Hermosillo-Guaymas Km :248 No. 1194, hermosillo, sonora, mexico",
-    "Latitud": 29.0729673,
-    "Longitud": -110.9559192
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0003984,
+    "Longitud": -110.9692709
   },
   "PL/5643/EXP/ES/2015": {
-    "Nombre": "GASERVICIO S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO S.A. DE C.V.",
+    "Nombre_Google": "8004 - Gaservicio Morelos",
     "Direccion": "Boulevard José Alberto Healy Noriega No. 1080",
-    "Direccion_completa": "Boulevard José Alberto Healy Noriega No. 1080, hermosillo, sonora, mexico",
-    "Latitud": 29.1503283,
-    "Longitud": -110.9969332
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1448342,
+    "Longitud": -110.9527507
   },
   "PL/5644/EXP/ES/2015": {
-    "Nombre": "GASERVICIO S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Colosio",
     "Direccion": "Luis Donaldo Colosio No. 490 Esquina Con Solidaridad",
-    "Direccion_completa": "Luis Donaldo Colosio No. 490 Esquina Con Solidaridad, hermosillo, sonora, mexico",
-    "Latitud": 29.0848923,
-    "Longitud": -110.9849895
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0849039,
+    "Longitud": -110.9850948
   },
   "PL/5677/EXP/ES/2015": {
-    "Nombre": "ARMANDO EMMANUEL VILLA DOMINGUEZ",
+    "Nombre_original": "ARMANDO EMMANUEL VILLA DOMINGUEZ",
+    "Nombre_Google": "Chevron",
     "Direccion": "Boulevard Lázaro Cárdenas No. 306",
-    "Direccion_completa": "Boulevard Lázaro Cárdenas No. 306, hermosillo, sonora, mexico",
-    "Latitud": 29.1180522,
-    "Longitud": -110.9803014
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1118968,
+    "Longitud": -110.9702251
   },
   "PL/5687/EXP/ES/2015": {
-    "Nombre": "ARMANDO VILLA ENCINAS",
+    "Nombre_original": "ARMANDO VILLA ENCINAS",
+    "Nombre_Google": "El Guardian Gasolineras Padre Kino",
     "Direccion": "Boulevard Zamorano No. 94 Esquina Alfonso López Riesgo",
-    "Direccion_completa": "Boulevard Zamorano No. 94 Esquina Alfonso López Riesgo, hermosillo, sonora, mexico",
-    "Latitud": 29.0083105,
-    "Longitud": -110.9440472
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0936696,
+    "Longitud": -110.9805021
   },
   "PL/5696/EXP/ES/2015": {
-    "Nombre": "ARMANDO VILLA ENCINAS",
+    "Nombre_original": "ARMANDO VILLA ENCINAS",
+    "Nombre_Google": "El Guardian Gasolineras Padre Kino",
     "Direccion": "Boulevard Agustin Zamora No. 29 Esquina Boulevard Valencia",
-    "Direccion_completa": "Boulevard Agustin Zamora No. 29 Esquina Boulevard Valencia, hermosillo, sonora, mexico",
-    "Latitud": 29.156157,
-    "Longitud": -111.010746
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0936696,
+    "Longitud": -110.9805021
   },
   "PL/5784/EXP/ES/2015": {
-    "Nombre": "AUTO SERVICIO BACHOCO S.A. DE C.V.",
+    "Nombre_original": "AUTO SERVICIO BACHOCO S.A. DE C.V.",
+    "Nombre_Google": "ARCO Gasolinera",
     "Direccion": "Boulevard Morelos S/N Y Calle Siete",
-    "Direccion_completa": "Boulevard Morelos S/N Y Calle Siete, hermosillo, sonora, mexico",
-    "Latitud": 29.1218472,
-    "Longitud": -110.9513228
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1160305,
+    "Longitud": -111.0045165
   },
   "PL/6145/EXP/ES/2015": {
-    "Nombre": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_original": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Las Torres",
     "Direccion": "Tayde López del Castillo Esquina Ignacio Salazar 498",
-    "Direccion_completa": "Tayde López del Castillo Esquina Ignacio Salazar 498, hermosillo, sonora, mexico",
-    "Latitud": 29.11662209999999,
-    "Longitud": -110.9832852
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.11664399999999,
+    "Longitud": -110.9833106
   },
   "PL/6149/EXP/ES/2015": {
-    "Nombre": "SERVICIO EL GALLO S.A. DE C.V.",
+    "Nombre_original": "SERVICIO EL GALLO S.A. DE C.V.",
+    "Nombre_Google": "Servicio El Gallo",
     "Direccion": "Boulevard Vildosola Y Periférico Sur S/N",
-    "Direccion_completa": "Boulevard Vildosola Y Periférico Sur S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0374499,
-    "Longitud": -110.9583478
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0360106,
+    "Longitud": -110.9591366
   },
   "PL/6150/EXP/ES/2015": {
-    "Nombre": "EL CHARRO GASOLINERA S. A.",
+    "Nombre_original": "EL CHARRO GASOLINERA S. A.",
+    "Nombre_Google": "Pemex",
     "Direccion": "Veracruz No. 263 Esquina Francisco Monteverde",
-    "Direccion_completa": "Veracruz No. 263 Esquina Francisco Monteverde, hermosillo, sonora, mexico",
-    "Latitud": 29.092335,
-    "Longitud": -110.9690073
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0923024,
+    "Longitud": -110.9692003
   },
   "PL/6151/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES Y LUBRICANTES CF S.A. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES Y LUBRICANTES CF S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Encinas",
     "Direccion": "Avenida Lázaro Cárdenas No. 413",
-    "Direccion_completa": "Avenida Lázaro Cárdenas No. 413, hermosillo, sonora, mexico",
-    "Latitud": 29.0420985,
-    "Longitud": -110.9945406
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0913435,
+    "Longitud": -110.9921581
   },
   "PL/6154/EXP/ES/2015": {
-    "Nombre": "PETROMEX DE HERMOSILLO S.A. DE C.V.",
+    "Nombre_original": "PETROMEX DE HERMOSILLO S.A. DE C.V.",
+    "Nombre_Google": "Combustibles Y Servicios Perisur",
     "Direccion": "Avenida Periférico Poniente No. 328",
-    "Direccion_completa": "Avenida Periférico Poniente No. 328, hermosillo, sonora, mexico",
-    "Latitud": 29.1111566,
-    "Longitud": -110.982407
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.032942,
+    "Longitud": -110.94544
   },
   "PL/6197/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "Windstar La Colorada",
     "Direccion": "Carretera a La Colorada No. 98",
-    "Direccion_completa": "Carretera a La Colorada No. 98, hermosillo, sonora, mexico",
-    "Latitud": 29.0183718,
-    "Longitud": -110.9289068
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0263238,
+    "Longitud": -110.9392579
   },
   "PL/6198/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "WINDSTAR",
     "Direccion": "Matamoros No. 57",
-    "Direccion_completa": "Matamoros No. 57, hermosillo, sonora, mexico",
-    "Latitud": 29.0878264,
-    "Longitud": -110.9534656
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0796587,
+    "Longitud": -110.9560026
   },
   "PL/6199/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "WINDSTAR",
     "Direccion": "Calle Dr Noriega S/N",
-    "Direccion_completa": "Calle Dr Noriega S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0800989,
-    "Longitud": -110.9534265
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0796587,
+    "Longitud": -110.9560026
   },
   "PL/6201/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "WINDSTAR",
     "Direccion": "Boulevard Paseo del Lago No. 4",
-    "Direccion_completa": "Boulevard Paseo del Lago No. 4, hermosillo, sonora, mexico",
-    "Latitud": 29.0488745,
-    "Longitud": -110.9344625
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0796587,
+    "Longitud": -110.9560026
   },
   "PL/6202/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "Gasolinera Windstar",
     "Direccion": "Boulevard Solidaridad No. 766",
-    "Direccion_completa": "Boulevard Solidaridad No. 766, hermosillo, sonora, mexico",
-    "Latitud": 29.056516,
-    "Longitud": -110.9651141
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1128646,
+    "Longitud": -110.9930657
   },
   "PL/6204/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "GPPerinorte",
     "Direccion": "Boulevard de Los Ganaderos No. 492",
-    "Direccion_completa": "Boulevard de Los Ganaderos No. 492, hermosillo, sonora, mexico",
-    "Latitud": 29.0529665,
-    "Longitud": -110.9307829
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1121803,
+    "Longitud": -110.9743909
   },
   "PL/6290/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "Windstar \"Monteverde\"",
     "Direccion": "Avenida José S Healy No. 161",
-    "Direccion_completa": "Avenida José S Healy No. 161, hermosillo, sonora, mexico",
-    "Latitud": 29.101644,
-    "Longitud": -110.9632577
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1005039,
+    "Longitud": -110.9705068
   },
   "PL/6291/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "GPPerinorte",
     "Direccion": "Boulevard Lázaro Cárdenas No. 531",
-    "Direccion_completa": "Boulevard Lázaro Cárdenas No. 531, hermosillo, sonora, mexico",
-    "Latitud": 29.1204884,
-    "Longitud": -110.9852651
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1121803,
+    "Longitud": -110.9743909
   },
   "PL/6292/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "Gasolinera Windstar",
     "Direccion": "Boulevard Solidaridad No. 392",
-    "Direccion_completa": "Boulevard Solidaridad No. 392, hermosillo, sonora, mexico",
-    "Latitud": 29.1128478,
-    "Longitud": -110.9930595
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1128646,
+    "Longitud": -110.9930657
   },
   "PL/6294/EXP/ES/2015": {
-    "Nombre": "GUADALUPANA GASOLINERA S.A. DE C.V.",
+    "Nombre_original": "GUADALUPANA GASOLINERA S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera 76 \"Guadalupana\"",
     "Direccion": "Carretera Internacional Km 247.3",
-    "Direccion_completa": "Carretera Internacional Km 247.3, hermosillo, sonora, mexico",
-    "Latitud": 29.0869466,
-    "Longitud": -110.9303523
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 28.9880192,
+    "Longitud": -110.970844
   },
   "PL/6360/EXP/ES/2015": {
-    "Nombre": "GASOLINERA RENDIMAS DEL CENTRO S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA RENDIMAS DEL CENTRO S.A. DE C.V.",
+    "Nombre_Google": "Rendimás - Periférico Norte",
     "Direccion": "Boulevard Abelardo Lt. Rodriguez No. 109",
-    "Direccion_completa": "Boulevard Abelardo Lt. Rodriguez No. 109, hermosillo, sonora, mexico",
-    "Latitud": 29.1469773,
-    "Longitud": -110.9989983
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1094786,
+    "Longitud": -110.9587686
   },
   "PL/6365/EXP/ES/2015": {
-    "Nombre": "GASOLINERA RENDIMAS S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA RENDIMAS S.A. DE C.V.",
+    "Nombre_Google": "Rendimás - Periférico Norte",
     "Direccion": "Periférico Norte No. 89 Esquina Israel Gonzalez",
-    "Direccion_completa": "Periférico Norte No. 89 Esquina Israel Gonzalez, hermosillo, sonora, mexico",
-    "Latitud": 29.1094518,
-    "Longitud": -110.9589297
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1094786,
+    "Longitud": -110.9587686
   },
   "PL/6426/EXP/ES/2015": {
-    "Nombre": "GASERVICIO NUEVO HERMOSILLO S.A. DE C.V.",
+    "Nombre_original": "GASERVICIO NUEVO HERMOSILLO S.A. DE C.V.",
+    "Nombre_Google": "8004 - Gaservicio Morelos",
     "Direccion": "Boulevard Capomo No. 17 Esquina Con Junta de Rios",
-    "Direccion_completa": "Boulevard Capomo No. 17 Esquina Con Junta de Rios, hermosillo, sonora, mexico",
-    "Latitud": 29.018687,
-    "Longitud": -110.9319427
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1448342,
+    "Longitud": -110.9527507
   },
   "PL/6525/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "El Guardian Gasolineras Padre Kino",
     "Direccion": "Boulevard Rodriguez Y Revolución S/N",
-    "Direccion_completa": "Boulevard Rodriguez Y Revolución S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0977766,
-    "Longitud": -110.9509543
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0936696,
+    "Longitud": -110.9805021
   },
   "PL/6542/EXP/ES/2015": {
-    "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_original": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_Google": "El Guardián Gasolineras ARCOS",
     "Direccion": "Boulevard Lázaro Cárdenas No. 910",
-    "Direccion_completa": "Boulevard Lázaro Cárdenas No. 910, hermosillo, sonora, mexico",
-    "Latitud": 29.1306113,
-    "Longitud": -111.005645
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0807019,
+    "Longitud": -110.9706385
   },
   "PL/6639/EXP/ES/2015": {
-    "Nombre": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_original": "CORPORATIVO ENERVISION, S.A.P.I. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Boulevard Rodriguez Y Calle Everardo Monroy",
-    "Direccion_completa": "Boulevard Rodriguez Y Calle Everardo Monroy, hermosillo, sonora, mexico",
-    "Latitud": 29.0869383,
-    "Longitud": -110.9578189
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/6714/EXP/ES/2015": {
-    "Nombre": "MANUEL DE LA FUENTE S.A. DE C.V.",
+    "Nombre_original": "MANUEL DE LA FUENTE S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera Pemex",
     "Direccion": "Km 63 Carretera Hermosillo-Bahia de Kino Sur",
-    "Direccion_completa": "Km 63 Carretera Hermosillo-Bahia de Kino Sur, hermosillo, sonora, mexico",
-    "Latitud": 29.0900161,
-    "Longitud": -111.0458873
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.094638,
+    "Longitud": -111.015146
   },
   "PL/6849/EXP/ES/2015": {
-    "Nombre": "SERVI GAS LA ESPIGA S.A. DE C.V.",
+    "Nombre_original": "SERVI GAS LA ESPIGA S.A. DE C.V.",
+    "Nombre_Google": "RedCo Miguel Alemán",
     "Direccion": "Carretera Hermosillo-Bahia de Kino No. 290",
-    "Direccion_completa": "Carretera Hermosillo-Bahia de Kino No. 290, hermosillo, sonora, mexico",
-    "Latitud": 29.0944253,
-    "Longitud": -111.0095909
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 28.8395101,
+    "Longitud": -111.4813107
   },
   "PL/6961/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO GEMA LC S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO GEMA LC S.A. DE C.V.",
+    "Nombre_Google": "Gastop Gasolineras, salida a Nogales",
     "Direccion": "Boulevard Lázaro Cárdenas No. 884",
-    "Direccion_completa": "Boulevard Lázaro Cárdenas No. 884, hermosillo, sonora, mexico",
-    "Latitud": 29.1266538,
-    "Longitud": -110.9976995
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1034223,
+    "Longitud": -110.9132512
   },
   "PL/7105/EXP/ES/2015": {
-    "Nombre": "AUTOSERVICIO VERACRUZ S.A. DE C.V.",
+    "Nombre_original": "AUTOSERVICIO VERACRUZ S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera San Javier suc Veracruz",
     "Direccion": "Veracruz No. 288 Esquina 12 de Octubre",
-    "Direccion_completa": "Veracruz No. 288 Esquina 12 de Octubre, hermosillo, sonora, mexico",
-    "Latitud": 29.0917035,
-    "Longitud": -110.9710495
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0918055,
+    "Longitud": -110.9711247
   },
   "PL/7116/EXP/ES/2015": {
-    "Nombre": "GASOLINERA ZAMORA S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA ZAMORA S.A. DE C.V.",
+    "Nombre_Google": "Pemex",
     "Direccion": "Carretera a Pesqueira Km 8.400 Zamora",
-    "Direccion_completa": "Carretera a Pesqueira Km 8.400 Zamora, hermosillo, sonora, mexico",
-    "Latitud": 29.0849201,
-    "Longitud": -110.990191
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.37066,
+    "Longitud": -110.970832
   },
   "PL/7117/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DEC VERACRUZ S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DEC VERACRUZ S.A. DE C.V.",
+    "Nombre_Google": "Tienda Evans Hermosillo",
     "Direccion": "Veracruz Y Garmendia No. 71",
-    "Direccion_completa": "Veracruz Y Garmendia No. 71, hermosillo, sonora, mexico",
-    "Latitud": 29.0804503,
-    "Longitud": -110.9548637
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0935292,
+    "Longitud": -110.9574469
   },
   "PL/7222/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.",
+    "Nombre_Google": "El Rey Gasolineras",
     "Direccion": "Boulevard Antonio Quiroga No. 91",
-    "Direccion_completa": "Boulevard Antonio Quiroga No. 91, hermosillo, sonora, mexico",
-    "Latitud": 29.0870484,
-    "Longitud": -111.0220097
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.087145,
+    "Longitud": -111.021907
   },
   "PL/7223/EXP/ES/2015": {
-    "Nombre": "GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.",
+    "Nombre_original": "GRUPO EL REY CORPORATIVO S. DE R.L. DE C.V.",
+    "Nombre_Google": "Mr Fill Gasolinera",
     "Direccion": "Boulevard García Morales No. 961",
-    "Direccion_completa": "Boulevard García Morales No. 961, hermosillo, sonora, mexico",
-    "Latitud": 29.089415,
-    "Longitud": -111.0482052
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.055531,
+    "Longitud": -110.9649619
   },
   "PL/7452/EXP/ES/2015": {
-    "Nombre": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_original": "ESTACION PIRU, S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Reforma",
     "Direccion": "Boulevard G. Morales No 448 A",
-    "Direccion_completa": "Boulevard G. Morales No 448 A, hermosillo, sonora, mexico",
-    "Latitud": 29.08781179999999,
-    "Longitud": -111.0546377
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0946797,
+    "Longitud": -110.9675247
   },
   "PL/7549/EXP/ES/2015": {
-    "Nombre": "SERVICIO VALLE DEL DESIERTO S.A. DE C.V.",
+    "Nombre_original": "SERVICIO VALLE DEL DESIERTO S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera Libertad",
     "Direccion": "Carretera Hermosillo-Guaymas Esquina Boulevard Libertad S/N",
-    "Direccion_completa": "Carretera Hermosillo-Guaymas Esquina Boulevard Libertad S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0319755,
-    "Longitud": -110.9594809
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0318512,
+    "Longitud": -110.9601059
   },
   "PL/7692/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO 5162 S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO 5162 S.A. DE C.V.",
+    "Nombre_Google": "El Sahuaro S.A.",
     "Direccion": "Boulevard García Morales No. 202",
-    "Direccion_completa": "Boulevard García Morales No. 202, hermosillo, sonora, mexico",
-    "Latitud": 29.094106,
-    "Longitud": -111.0016115
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0961571,
+    "Longitud": -110.9926872
   },
   "PL/7694/EXP/ES/2015": {
-    "Nombre": "PLAZA PROGRESO S.A. DE C.V.",
+    "Nombre_original": "PLAZA PROGRESO S.A. DE C.V.",
+    "Nombre_Google": "Chevron Soliplaza",
     "Direccion": "Boulevard Solidaridad No. 735",
-    "Direccion_completa": "Boulevard Solidaridad No. 735, hermosillo, sonora, mexico",
-    "Latitud": 29.1435735,
-    "Longitud": -110.996023
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.143603,
+    "Longitud": -110.9959125
   },
   "PL/7701/EXP/ES/2015": {
-    "Nombre": "SERVICIO DELSI S.A. DE C.V.",
+    "Nombre_original": "SERVICIO DELSI S.A. DE C.V.",
+    "Nombre_Google": "Servicio Delsi",
     "Direccion": "Boulevard López Portillo No. 302",
-    "Direccion_completa": "Boulevard López Portillo No. 302, hermosillo, sonora, mexico",
-    "Latitud": 29.124533,
-    "Longitud": -110.9721699
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1244352,
+    "Longitud": -110.9721101
   },
   "PL/7722/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO 1642 S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO 1642 S.A. DE C.V.",
+    "Nombre_Google": "El Guardian Gasolineras Padre Kino",
     "Direccion": "Boulevard Luis Encinas Y Gustavo Muñoz",
-    "Direccion_completa": "Boulevard Luis Encinas Y Gustavo Muñoz, hermosillo, sonora, mexico",
-    "Latitud": 29.0932181,
-    "Longitud": -110.9808654
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0936696,
+    "Longitud": -110.9805021
   },
   "PL/7725/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN DE SERVICIO 3210 S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN DE SERVICIO 3210 S.A. DE C.V.",
+    "Nombre_Google": "Masterfuel Colosio",
     "Direccion": "Boulevard Luis Donaldo Colosio Y Madrid",
-    "Direccion_completa": "Boulevard Luis Donaldo Colosio Y Madrid, hermosillo, sonora, mexico",
-    "Latitud": 29.0793089,
-    "Longitud": -111.0044565
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0849039,
+    "Longitud": -110.9850948
   },
   "PL/7726/EXP/ES/2015": {
-    "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_original": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_Google": "Chevron Jardín Juárez",
     "Direccion": "Boulevard Luis Encinas Esquina Niños Heroes",
-    "Direccion_completa": "Boulevard Luis Encinas Esquina Niños Heroes, hermosillo, sonora, mexico",
-    "Latitud": 29.083854,
-    "Longitud": -110.9530154
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0821713,
+    "Longitud": -110.9525419
   },
   "PL/7727/EXP/ES/2015": {
-    "Nombre": "OPERADORA RIO COLORADO S. DE R.L. DE C.V.",
+    "Nombre_original": "OPERADORA RIO COLORADO S. DE R.L. DE C.V.",
+    "Nombre_Google": "El Guardián Gasolineras ARCOS",
     "Direccion": "Periférico Norte Esquina Esteban Vaca Calderon",
-    "Direccion_completa": "Periférico Norte Esquina Esteban Vaca Calderon, hermosillo, sonora, mexico",
-    "Latitud": 29.1123153,
-    "Longitud": -110.971555
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0807019,
+    "Longitud": -110.9706385
   },
   "PL/7728/EXP/ES/2015": {
-    "Nombre": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_original": "OPERADORA RIO COLORADO, S. DE R.L. DE C.V.",
+    "Nombre_Google": "El Guardián Gasolineras CENTENARIO",
     "Direccion": "Reforma Y Manuel Z Cubillas",
-    "Direccion_completa": "Reforma Y Manuel Z Cubillas, hermosillo, sonora, mexico",
-    "Latitud": 29.0722657,
-    "Longitud": -110.9638389
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0723596,
+    "Longitud": -110.9649359
   },
   "PL/7834/EXP/ES/2015": {
-    "Nombre": "GASOLINERA RENDIMAS DEL NOROESTE S.A. DE C.V.",
+    "Nombre_original": "GASOLINERA RENDIMAS DEL NOROESTE S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Villa De Seris",
     "Direccion": "Boulevard Periférico Oriente S/N Esquina Con Calle Canal Principal",
-    "Direccion_completa": "Boulevard Periférico Oriente S/N Esquina Con Calle Canal Principal, hermosillo, sonora, mexico",
-    "Latitud": 29.0811076,
-    "Longitud": -110.9252641
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.061809,
+    "Longitud": -110.954637
   },
   "PL/8712/EXP/ES/2015": {
-    "Nombre": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_original": "SUPER GASOLINERAS DE LA FRONTERA S.A. DE C.V. ",
+    "Nombre_Google": "Gasolinera Windstar",
     "Direccion": "Boulevard Antonio Quiroga No. 507",
-    "Direccion_completa": "Boulevard Antonio Quiroga No. 507, hermosillo, sonora, mexico",
-    "Latitud": 29.1421479,
-    "Longitud": -111.0240728
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.131559,
+    "Longitud": -111.0230992
   },
   "PL/8715/EXP/ES/2015": {
-    "Nombre": "COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.",
+    "Nombre_original": "COMBUSTIBLES REYMEX, S. DE R.L. DE C.V.",
+    "Nombre_Google": "Combustibles Y Servicios Perisur",
     "Direccion": "Boulevard Luis Donaldo Colosio No. 987",
-    "Direccion_completa": "Boulevard Luis Donaldo Colosio No. 987, hermosillo, sonora, mexico",
-    "Latitud": 29.08137859999999,
-    "Longitud": -111.0373824
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.032942,
+    "Longitud": -110.94544
   },
   "PL/8768/EXP/ES/2015": {
-    "Nombre": "GASERVICIO ENCINAS SA DE CV",
+    "Nombre_original": "GASERVICIO ENCINAS SA DE CV",
+    "Nombre_Google": "Oficinas Corporativas Grupo Gasolinero",
     "Direccion": "Avenida Paseo Rio Sonora Norte S/N",
-    "Direccion_completa": "Avenida Paseo Rio Sonora Norte S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.0688764,
-    "Longitud": -110.9674999
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0894629,
+    "Longitud": -110.9695985
   },
   "PL/8876/EXP/ES/2015": {
-    "Nombre": "SERVICIO EL KENO S.A. DE C.V.",
+    "Nombre_original": "SERVICIO EL KENO S.A. DE C.V.",
+    "Nombre_Google": null,
     "Direccion": "Avenida Periférico Poniente No. 239",
-    "Direccion_completa": "Avenida Periférico Poniente No. 239, hermosillo, sonora, mexico",
-    "Latitud": 29.0943675,
-    "Longitud": -110.9311248
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": null,
+    "Longitud": null
   },
   "PL/8914/EXP/ES/2015": {
-    "Nombre": "GASERVICIO EL LLANITO QUIROGA SA DE CV",
+    "Nombre_original": "GASERVICIO EL LLANITO QUIROGA SA DE CV",
+    "Nombre_Google": "Oficinas Corporativas Grupo Gasolinero",
     "Direccion": "Periférico Poniente Esquina Avenida Escuinapa Y Rosario",
-    "Direccion_completa": "Periférico Poniente Esquina Avenida Escuinapa Y Rosario, hermosillo, sonora, mexico",
-    "Latitud": 29.1485315,
-    "Longitud": -110.9808949
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0894629,
+    "Longitud": -110.9695985
   },
   "PL/9031/EXP/ES/2015": {
-    "Nombre": "EDUARDO PERALTA ENCINAS",
+    "Nombre_original": "EDUARDO PERALTA ENCINAS",
+    "Nombre_Google": "GPPerinorte",
     "Direccion": "Avenida Periférico Norte No. 371",
-    "Direccion_completa": "Avenida Periférico Norte No. 371, hermosillo, sonora, mexico",
-    "Latitud": 29.1121667,
-    "Longitud": -110.9743933
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.1121803,
+    "Longitud": -110.9743909
   },
   "PL/9577/EXP/ES/2015": {
-    "Nombre": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_original": "ESTACIÓN PIRU S.A. DE C.V.",
+    "Nombre_Google": "Rendichicas Reforma",
     "Direccion": "De La Reforma Esquina Con Aguascalientes No. 79",
-    "Direccion_completa": "De La Reforma Esquina Con Aguascalientes No. 79, hermosillo, sonora, mexico",
-    "Latitud": 29.0956824,
-    "Longitud": -110.9591224
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0946797,
+    "Longitud": -110.9675247
   },
   "PL/9672/EXP/ES/2015": {
-    "Nombre": "SERVICIOS DEL RÍO RG S.A. DE C.V.",
+    "Nombre_original": "SERVICIOS DEL RÍO RG S.A. DE C.V.",
+    "Nombre_Google": "Gasolinera Arco",
     "Direccion": "Boulevard Paseo del Canal Sur Al Este Fraccionamiento Montecarlo",
-    "Direccion_completa": "Boulevard Paseo del Canal Sur Al Este Fraccionamiento Montecarlo, hermosillo, sonora, mexico",
-    "Latitud": 29.0647339,
-    "Longitud": -110.9961161
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 29.0691437,
+    "Longitud": -110.9902212
   },
   "PL/9958/EXP/ES/2015": {
-    "Nombre": "SERVIGAS BROCA SA DE CV",
+    "Nombre_original": "SERVIGAS BROCA SA DE CV",
+    "Nombre_Google": "SERVIGAS BROCA",
     "Direccion": "Calle 4 S/N",
-    "Direccion_completa": "Calle 4 S/N, hermosillo, sonora, mexico",
-    "Latitud": 29.1015162,
-    "Longitud": -110.9952597
+    "Municipio": "hermosillo",
+    "Estado": "sonora",
+    "Latitud": 28.5684295,
+    "Longitud": -111.3910199
   }
 }
