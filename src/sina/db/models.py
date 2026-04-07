@@ -24,3 +24,19 @@ class PrecioQQP(Base):
     municipio = Column(String, nullable=False)
     latitud = Column(Float, nullable=False)
     longitud = Column(Float, nullable=False)
+
+class PrecioGasolina(Base):
+    __tablename__ = "precio_gasolina"
+
+    id          = Column(Integer, primary_key=True, autoincrement=True)
+    estado      = Column(String, nullable=False)   # "Sonora"
+    municipio   = Column(String, nullable=False)
+    numero      = Column(String, nullable=False)  # PL/10156/EXP/ES/2015
+    nombre      = Column(String, nullable=False)
+    direccion   = Column(String, nullable=True)
+    diesel      = Column(Float,  nullable=True)
+    magna       = Column(Float,  nullable=True)
+    premium     = Column(Float,  nullable=True)
+    latitud     = Column(Float,  nullable=True)
+    longitud    = Column(Float,  nullable=True)
+    fecha_registro = Column(DateTime)

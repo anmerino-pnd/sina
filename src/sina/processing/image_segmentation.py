@@ -1,10 +1,33 @@
 import cv2
 import json
 from typing import List, Any
-
+from pydantic import BaseModel
 # Adjust these imports according to your actual project structure
 from sina.config.paths import DATA
 
+class BoundingBox(BaseModel):
+    label: str
+    x: int
+    y: int
+    w: int
+    h: int
+
+class AnnotationPayload(BaseModel):
+    supermarket: str
+    city: str
+    date: str
+    image_name: str
+    bboxes: List[BoundingBox]
+
+class FlyerPayload(BaseModel):
+    supermarket: str
+    city: str
+
+class ExtractPayload(BaseModel):
+    supermarket: str
+    city: str
+    date: str
+    
 def hex_to_bgr(hex_color: str) -> tuple:
     """
     Converts a HEX color string (e.g., '#FF0000') to a BGR tuple for OpenCV (0, 0, 255).

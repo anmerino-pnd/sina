@@ -1,30 +1,50 @@
 # src/sina/db/repository.py
+from typing import Generic, TypeVar
 from sqlalchemy import create_engine, insert
-from sqlalchemy.orm import sessionmaker
-from src.sina.db.models import Base, PrecioQQP
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from src.sina.db.models import Base, PrecioQQP, PrecioGasolina
+
+T = TypeVar("T", bound=DeclarativeBase)
 
 
-class QQPRepository:
-    def __init__(self, db_url: str = "sqlite:///qqp_data.db"):
+class BaseRepository(Generic[T]):
+    """Repositorio genérico reutilizable para cualquier modelo SQLAlchemy."""
+
+    model: type[T] 
+
+    def __init__(self, db_url: str = "sqlite:///sina_data.db"):
         self.engine = create_engine(db_url)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
     def guardar_en_bulk(self, lista_datos: list[dict]) -> None:
-        """
-        Recibe una lista de diccionarios y hace un bulk insert.
-        Forma moderna compatible con SQLAlchemy 2.x
-        """
         if not lista_datos:
             print("⚠️ No hay datos para insertar.")
             return
 
+        try:
+            with self.engine.begin() as conn:
+                conn.execute(insert(self.model), lista_datos)
+            print(f"✅ [{self.model.__tablename__}] {len(lista_datos):,} registros guardados.")
+        except Exception as e:
+            print(f"❌ [{self.model.__tablename__}] Error al guardar: {e}")
+            raise
+
+    def contar(self) -> int:
+        """Cuenta los registros en la tabla."""
         with self.Session() as session:
-            try:
-                session.execute(insert(PrecioQQP), lista_datos)
-                session.commit()
-                print(f"✅ Se guardaron {len(lista_datos)} registros exitosamente.")
-            except Exception as e:
-                session.rollback()
-                print(f"❌ Error al guardar en la base de datos: {e}")
-                raise  # Re-lanza para no silenciar errores
+            return session.query(self.model).count()
+
+    # def borrar_todo(self) -> None:
+    #     """Borra todos los registros de la tabla. Úsalo con cuidado."""
+    #     with self.engine.begin() as conn:
+    #         conn.execute(self.model.__table__.delete())
+    #     print(f"🗑️ [{self.model.__tablename__}] Tabla vaciada.")
+
+
+class QQPRepository(BaseRepository[PrecioQQP]):
+    model = PrecioQQP
+
+
+class GasolinaRepository(BaseRepository[PrecioGasolina]):
+    model = PrecioGasolina
