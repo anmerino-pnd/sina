@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from sina.config.paths import DB
 
 load_dotenv()
 
@@ -31,6 +32,6 @@ def get_db_url() -> str:
         return url
 
     print("🗄️  Usando SQLite local: sina_data.db")
-    return "sqlite:///sina_data.db"
+    return "sqlite:///datos/db/sina_data.db"
 
 DB_URL: str = get_db_url()

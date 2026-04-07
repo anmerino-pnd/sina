@@ -19,6 +19,7 @@ BASE_DIR = find_project_root(Path(__file__))
 
 # --- Datos existentes ---
 DATA = BASE_DIR / "datos"
+DB = DATA / "db"
 CASA_LEY_DATA = DATA / "casa_ley" 
 ABARREY_DATA = DATA / "abarrey"
 GAS_DATA = DATA / "gasolineras"
@@ -32,6 +33,7 @@ STATIC_DIR = BASE_DIR / "static"
 CLASSES = BASE_DIR / "src" / "sina" / "config" / "classes.json"
 
 for path in [
+    DB,
     DATA, 
     CASA_LEY_DATA,
     ABARREY_DATA,

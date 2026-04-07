@@ -3,8 +3,30 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from datetime import date
 import traceback 
 import json
+
+from sina.processing.image_segmentation import (
+    process_annotations,
+    AnnotationPayload,
+    ExtractPayload,
+    FlyerPayload,
+)
+from sina.processing.records import df_to_dict
+
+from sina.scraping.casa_ley import download_flyer
+from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS
+from sina.scraping.gas import df_gas_prices, GAS_COLUMN_MAP, GAS_FLOAT_COLS
+
+from sina.config.credentials import (
+    DB_URL,
+    casa_ley_url
+)
+from sina.config.settings import (
+    get_classes_config,
+    build_filesystem_tree
+)
 
 from sina.config.paths import (
     TEMPLATES_DIR, 
@@ -14,27 +36,13 @@ from sina.config.paths import (
     DATA, 
     GAS_DATA
 )
-from sina.processing.image_segmentation import (
-    process_annotations,
-    AnnotationPayload,
-    ExtractPayload,
-    FlyerPayload,
-)
 
-from sina.scraping.casa_ley import download_flyer
-from sina.scraping.gas import df_gas_prices
-from sina.config.settings import (
-    get_classes_config,
-    build_filesystem_tree
-)
 try:
     from sina.ollama.extract_flyer_text import extract_text
 except ImportError:
     extract_text = None 
 
-from sina.config.credentials import (
-    casa_ley_url
-)
+from sina.db.repository import QQPRepository, GasolinaRepository
 
 app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
 
@@ -128,7 +136,7 @@ def save_and_crop_annotations(payload: AnnotationPayload):
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         # MAGIA: Esto imprimirá la línea exacta del error en tu terminal negra
-        print("\n❌ ERROR INTERNO EN /sina/annotate:")
+        print("\nERROR INTERNO EN /sina/annotate:")
         traceback.print_exc()
         print("----------------------------------\n")
         raise HTTPException(status_code=500, detail=str(e))
@@ -161,7 +169,7 @@ def extract_crops_data(payload: ExtractPayload):
         if extract_text is None:
             raise HTTPException(status_code=500, detail="Extraction module not found.")
             
-        print(f"🤖 Inciando LLM para {payload.supermarket} - {payload.city} - {payload.date}")
+        print(f"Inciando LLM para {payload.supermarket} - {payload.city} - {payload.date}")
         
         success = extract_text(
             supermarket=payload.supermarket,
@@ -171,13 +179,13 @@ def extract_crops_data(payload: ExtractPayload):
         if not success:
             raise HTTPException(status_code=500, detail="Failed to generate the document with the LLM.")
     else:
-        print(f"📂 flyer_data.json already exists for {payload.date}. Loading directly...")
+        print(f"flyer_data.json already exists for {payload.date}. Loading directly...")
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return {"status": "success", "data": data}
     except Exception as e:
-        print("\n❌ ERROR READING JSON:")
+        print("\nERROR READING JSON:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error reading JSON file: {e}")
 
@@ -206,7 +214,6 @@ async def get_precios_gasolina(estado: str, municipio: str):
     try:
         df = df_gas_prices(estado, municipio)
 
-        # Latitud y Longitud pueden no estar en el pivot; las agregamos si existen
         cols_base = ["Numero", "Nombre", "Direccion", "Latitud", "Longitud",
                      "Magna", "Premium", "Diesel"]
         cols_out  = [c for c in cols_base if c in df.columns]
@@ -227,6 +234,87 @@ async def get_precios_gasolina(estado: str, municipio: str):
             detail=f"No se encontró '{municipio}' en '{estado}' en el catálogo."
         )
     except Exception as e:
-        print("\n❌ ERROR EN /sina/gasolina:")
+        print("\nERROR EN /sina/gasolina:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/sina/update/qqp")
+async def actualizar_qqp():
+    """
+    Descarga el CSV más reciente de QQP, borra los datos anteriores
+    y reinserta los nuevos.
+    """
+    try:
+        repo = QQPRepository(db_url=DB_URL)
+
+        print("Descargando datos QQP...")
+        df = extract_qqp()
+
+        print("Convirtiendo a registros...")
+        registros = df_to_dict(
+                    df,
+                    column_map=QQP_COLUMN_MAP,
+                    float_cols=QQP_FLOAT_COLS
+                )
+
+        print("Borrando datos anteriores...")
+        repo.borrar_todo()
+
+        print("Insertando nuevos datos...")
+        repo.guardar_en_bulk(registros)
+
+        total = repo.contar()
+
+        return {
+            "status": "ok",
+            "registros_insertados": len(registros),
+            "total_en_db": total
+        }
+
+    except Exception as e:
+        print("\nERROR EN /sina/update/qqp:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/sina/update/gas")
+async def actualizar_gas(estado: str, municipio: str):
+    """
+    Descarga el CSV más reciente de QQP, borra los datos anteriores
+    y reinserta los nuevos.
+    """
+    try:
+        repo = GasolinaRepository(db_url=DB_URL)
+
+        print("Descargando datos Gas...")
+        df = df_gas_prices(estado, municipio)
+
+        print("Convirtiendo a registros...")
+        registros = df_to_dict(
+                    df,
+                    column_map=GAS_COLUMN_MAP,
+                    float_cols=GAS_FLOAT_COLS,
+                    extra_fields={
+                        "estado":         estado,
+                        "municipio":      municipio,
+                        "fecha_registro": date.today(),
+                    }
+                )
+
+        print("Borrando datos anteriores...")
+        repo.borrar_todo()
+
+        print("Insertando nuevos datos...")
+        repo.guardar_en_bulk(registros)
+
+        total = repo.contar()
+
+        return {
+            "status": "ok",
+            "registros_insertados": len(registros),
+            "total_en_db": total
+        }
+
+    except Exception as e:
+        print("\nERROR EN /sina/update/gas:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

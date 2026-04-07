@@ -5,7 +5,6 @@ import pandas as pd
 from datetime import date
 
 from bs4 import BeautifulSoup, Tag
-from src.sina.db.repository import QQPRepository
 from sina.config.credentials import (
     qqp_url,
     datos_abiertos_url, 
@@ -13,6 +12,24 @@ from sina.config.credentials import (
 
 year = str(date.today().year)
 
+QQP_COLUMN_MAP = {
+    "PRODUCTO":        "producto",
+    "PRESENTACION":    "presentacion",
+    "MARCA":           "marca",
+    "CATEGORIA":       "categoria",
+    "CATALOGO":        "catalogo",
+    "PRECIO":          "precio",
+    "FECHAREGISTRO":   "fecha_registro",
+    "CADENACOMERCIAL": "cadena_comercial",
+    "GIRO":            "giro",
+    "NOMBRECOMERCIAL": "nombre_comercial",
+    "DIRECCION":       "direccion",
+    "ESTADO":          "estado",
+    "MUNICIPIO":       "municipio",
+    "LATITUD":         "latitud",
+    "LONGITUD":        "longitud",
+}
+QQP_FLOAT_COLS = ["precio", "latitud", "longitud"]
 
 nombres_columnas = [
     'PRODUCTO',
@@ -108,26 +125,3 @@ def extract_qqp() -> pd.DataFrame:
     df_qqp = fix_df_encoding(df_qqp)
 
     return df_qqp
-
-def df_to_dict(df: pd.DataFrame) -> list[dict]:
-    """Convierte el DataFrame a lista de dicts lista para bulk insert."""
-    registros = []
-    for _, row in df.iterrows():
-        registros.append({
-            "producto":        row["PRODUCTO"],
-            "presentacion":    row["PRESENTACION"],
-            "marca":           row["MARCA"],
-            "categoria":       row["CATEGORIA"],
-            "catalogo":        row["CATALOGO"],
-            "precio":          None if pd.isna(row["PRECIO"])    else float(row["PRECIO"]),
-            "fecha_registro":  row["FECHAREGISTRO"],
-            "cadena_comercial":row["CADENACOMERCIAL"],
-            "giro":            row["GIRO"],
-            "nombre_comercial":row["NOMBRECOMERCIAL"],
-            "direccion":       row["DIRECCION"],
-            "estado":          row["ESTADO"],
-            "municipio":       row["MUNICIPIO"],
-            "latitud":         None if pd.isna(row["LATITUD"])   else float(row["LATITUD"]),
-            "longitud":        None if pd.isna(row["LONGITUD"])  else float(row["LONGITUD"]),
-        })
-    return registros
