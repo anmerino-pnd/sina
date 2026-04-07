@@ -12,6 +12,8 @@ var userCircle   = null;
 var userLoc      = null;          // {lat, lng} — GPS o manual
 var modoFijar    = false;         // modo para clic manual en mapa
 var pinManual    = null;          // marker del punto fijado manualmente
+var catFiltro = null; // null = todas, 'Barato', 'Promedio', 'Caro'
+var zoomAntes = null; // zoom antes de seleccionar un marker
 
 // ─────────────────────────────────────────────
 //  AUTOCOMPLETE ESTADO
@@ -199,24 +201,54 @@ function renderKPIs() {
 function initMapa() {
     if (mapInit) { mLayer.clearLayers(); return; }
 
-    map = L.map('map', { zoomControl: true });
+    map = L.map('map', { 
+        zoomControl: true,
+        center: [23.6345, -102.5528],
+        zoom: 5
+    });
 
-    // Tile OpenStreetMap estándar (el colorido de leaflet.com)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
     }).addTo(map);
 
     mLayer = L.layerGroup().addTo(map);
 
-    // Clic en el mapa → fijar ubicación manual
+    // 👇 Un solo listener que maneja ambos casos
     map.on('click', function(e) {
-        if (!modoFijar) return;
-        fijarUbicacionManual(e.latlng.lat, e.latlng.lng);
+        if (modoFijar) {
+            // Modo fijar activo → clavar pin
+            fijarUbicacionManual(e.latlng.lat, e.latlng.lng);
+        } else {
+            // Click normal en mapa vacío → deseleccionar
+            deseleccionarMarker();
+        }
     });
 
     mapInit = true;
+}
+
+function deseleccionarMarker() {
+    // Restaurar marker anterior
+    if (markerSelIdx !== -1 && markersRef[markerSelIdx]) {
+        var p = markersRef[markerSelIdx];
+        p.m.setIcon(mkPunto(p.color, false));
+        p.m.setZIndexOffset(0);
+        p.m.closeTooltip();
+    }
+    markerSelIdx = -1;
+
+    // Cerrar todos los tooltips
+    markersRef.forEach(function(ref) { ref.m.closeTooltip(); });
+
+    // Zoom out suave (2 niveles menos, mínimo zoom 11)
+    var zoomActual = map.getZoom();
+    var zoomNuevo  = Math.max(zoomActual - 2, 11);
+    map.setZoom(zoomNuevo, { animate: true, duration: 0.4 });
+
+    // Reset detalle
+    resetDetalle();
 }
 
 // ─────────────────────────────────────────────
@@ -717,4 +749,61 @@ function esc(s) {
 function txt(id, v) {
     var el = document.getElementById(id);
     if (el) el.textContent = v;
+}
+
+function toggleCatFiltro(cat) {
+    // Si ya está activo, lo desactiva
+    catFiltro = (catFiltro === cat) ? null : cat;
+    syncLeyenda();
+    aplicarFiltroMapa();
+}
+
+function syncLeyenda() {
+    var cats = ['Barato', 'Promedio', 'Caro'];
+    cats.forEach(function(c) {
+        var el = document.getElementById('ley-' + c.toLowerCase());
+        if (!el) return;
+        el.classList.remove('activo', 'opacado');
+        if (catFiltro === null) return; // todas visibles, sin clase
+        if (c === catFiltro) {
+            el.classList.add('activo');
+        } else {
+            el.classList.add('opacado');
+        }
+    });
+}
+
+function aplicarFiltroMapa() {
+    markersRef.forEach(function(ref) {
+        var cat   = categorizar(ref.precio, markersRef.map(function(r){ return r.precio; }));
+        var activo = (catFiltro === null || cat === catFiltro);
+
+        // Opacidad via iconHTML
+        var sz = 15, bw = 2;
+        var color  = ref.color;
+        var opacity = activo ? 1 : 0.18;
+
+        ref.m.setIcon(L.divIcon({
+            html: '<div style="width:' + sz + 'px;height:' + sz + 'px;' +
+                  'background:' + color + ';border-radius:50%;' +
+                  'border:' + bw + 'px solid white;' +
+                  'box-shadow:0 1px 3px rgba(0,0,0,0.22);' +
+                  'opacity:' + opacity + ';' +
+                  'transition:all 0.2s"></div>',
+            className: '', iconSize: [sz,sz], iconAnchor: [sz/2,sz/2]
+        }));
+
+        // Deshabilitar click en opacados
+        if (activo) {
+            ref.m.off('click');
+            ref.m.on('click', (function(d, precio, ps, idx) {
+                return function() {
+                    selMarker(idx);
+                    mostrarDetalle(d, precio, ps);
+                };
+            })(ref.d, ref.precio, markersRef.map(function(r){ return r.precio; }), ref._idx));
+        } else {
+            ref.m.off('click');
+        }
+    });
 }

@@ -115,9 +115,15 @@
                         <div class="map-head-left">
                             <span class="card-title" id="mapa-titulo">Gasolineras</span>
                             <div class="leyenda">
-                                <div class="leyenda-item"><div class="dot" style="background:#34c759"></div>Barato</div>
-                                <div class="leyenda-item"><div class="dot" style="background:#ff9500"></div>Promedio</div>
-                                <div class="leyenda-item"><div class="dot" style="background:#ff3b30"></div>Caro</div>
+                                <div class="leyenda-item filtro-cat" onclick="toggleCatFiltro('Barato')" id="ley-barato">
+                                    <div class="dot" style="background:#34c759"></div>Barato
+                                </div>
+                                <div class="leyenda-item filtro-cat" onclick="toggleCatFiltro('Promedio')" id="ley-promedio">
+                                    <div class="dot" style="background:#ff9500"></div>Promedio
+                                </div>
+                                <div class="leyenda-item filtro-cat" onclick="toggleCatFiltro('Caro')" id="ley-caro">
+                                    <div class="dot" style="background:#ff3b30"></div>Caro
+                                </div>
                             </div>
                         </div>
                         <div class="map-head-right">
