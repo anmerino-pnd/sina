@@ -24,6 +24,7 @@ from sina.scraping.gas import (
     df_gas_prices, 
     GAS_COLUMN_MAP, 
     GAS_FLOAT_COLS)
+from sina.scraping.gas_pipeline import pipeline_nacional
 
 from sina.config.credentials import (
     DB_URL,
@@ -344,3 +345,18 @@ async def actualizar_gas(estado: str, municipio: str):
         print("\nERROR EN /sina/update/gas:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/sina/pipeline/gas")
+async def correr_pipeline_gas(estados: list[str] | None = None):
+    """Dispara el pipeline nacional. Opcionalmente filtra por estados."""
+    resultado = await pipeline_nacional(estados_filtro=estados)
+    return resultado
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+scheduler = AsyncIOScheduler(timezone="America/Mexico_City")
+scheduler.add_job(pipeline_nacional, "cron", hour=6, minute=0)
+
+@app.on_event("startup")
+async def start_scheduler():
+    scheduler.start()
