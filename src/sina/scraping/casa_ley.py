@@ -4,17 +4,13 @@ import json
 import time
 import datetime
 import requests
+from bs4 import BeautifulSoup
 from selenium import webdriver
+from sina.config.credentials import HEADERS
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from bs4 import BeautifulSoup
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-}
-
 
 def extract_images(driver) -> set[str]:
     """Extracts high-res image URLs from current page view."""

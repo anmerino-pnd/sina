@@ -9,6 +9,7 @@ datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL', "")
 gasolina_hmo_url: str = os.getenv('GASOLINA_HMO_URL', "")
 casa_ley_url: str = os.getenv('CASA_LEY_URL', "")
 gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
+gasolineras_ubi: str = os.getenv('GASOLINERAS_UBI', '')
 
 ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
 google_api_key: str = os.getenv('GOOGLE_API_KEY', "")
@@ -31,7 +32,17 @@ def get_db_url() -> str:
         print(f"🐘 Conectando a PostgreSQL: {host}:{port}/{name}")
         return url
 
-    print("🗄️  Usando SQLite local: sina_data.db")
-    return "sqlite:///datos/db/sina_data.db"
+    db_path = DB / "sina_data.db"
+    print(f"🗄️  Usando SQLite local: {db_path}")
+    return f"sqlite:///{db_path}"
 
 DB_URL: str = get_db_url()
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "es-MX,es;q=0.9",
+}

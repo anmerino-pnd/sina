@@ -61,7 +61,7 @@ function downloadFlyer() {
         url: "" 
     };
 
-    fetch('/sina/flyer', {
+    fetch('/api/v1/annotator/flyer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -213,7 +213,7 @@ async function checkProcessingStatus(store, city, date) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`/sina/status?supermarket=${store}&city=${city}&date=${date}`);
+        const response = await fetch(`/api/v1/annotator/status?supermarket=${store}&city=${city}&date=${date}`);
         const status = await response.json();
 
         btn.disabled = false;
@@ -459,7 +459,7 @@ function saveAll() {
         bboxes: boundingBoxes // Backend expects 'bboxes'
     };
 
-    fetch('/sina/annotate', {
+    fetch('/api/v1/annotator/annotate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -519,7 +519,7 @@ async function extractData() {
 
     try {
         // 5. Hacer la petición POST a tu backend
-        const response = await fetch("/sina/extract_text", {
+        const response = await fetch("/api/v1/annotator/extract", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

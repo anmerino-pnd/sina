@@ -107,8 +107,7 @@ async function cargarCiudad() {
 
     try {
         const res = await fetch(
-            `/sina/gasolina/db?estado=${encodeURIComponent(estadoSel)}&municipio=${encodeURIComponent(munSel)}`
-
+            `/api/v1/gasolina?estado=${encodeURIComponent(estadoSel)}&municipio=${encodeURIComponent(munSel)}`
         );
 
         if (!res.ok) {

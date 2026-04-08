@@ -2,7 +2,8 @@
 from typing import Generic, TypeVar
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy import create_engine, insert, delete, select
-from src.sina.db.models import Base, PrecioQQP, PrecioGasolina
+from sina.db.models import Base, PrecioQQP, PrecioGasolina
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 T = TypeVar("T", bound=DeclarativeBase)
 
@@ -69,3 +70,55 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                 }
                 for r in rows
             ]
+    def upsert_ubicaciones(self, registros: list[dict]):
+        """
+        Fase 1: Inserta ubicaciones. Si el numero ya existe, actualiza lat/lng.
+        """
+        with self.Session() as session:
+            for r in registros:
+                stmt = sqlite_insert(self.model).values(
+                    numero    = r["permiso"],
+                    estado    = r["estado"],
+                    municipio = r["municipio"],
+                    latitud   = r["latitud"],
+                    longitud  = r["longitud"],
+                ).on_conflict_do_update(
+                    index_elements=["numero"],
+                    set_={
+                        "latitud" : r["latitud"],
+                        "longitud": r["longitud"],
+                    }
+                )
+                session.execute(stmt)
+            session.commit()
+
+    def upsert_precios(self, registros: list[dict]):
+        """
+        Fase 2: Actualiza precios. Respeta latitud/longitud ya existentes.
+        """
+        with self.Session() as session:
+            for r in registros:
+                stmt = sqlite_insert(self.model).values(
+                    numero         = r["numero"],
+                    estado         = r["estado"],
+                    municipio      = r["municipio"],
+                    nombre         = r["nombre"],
+                    direccion      = r["direccion"],
+                    magna          = r["magna"],
+                    premium        = r["premium"],
+                    diesel         = r["diesel"],
+                    fecha_registro = r["fecha_registro"],
+                ).on_conflict_do_update(
+                    index_elements=["numero"],
+                    set_={
+                        "nombre"        : r["nombre"],
+                        "direccion"     : r["direccion"],
+                        "magna"         : r["magna"],
+                        "premium"       : r["premium"],
+                        "diesel"        : r["diesel"],
+                        "fecha_registro": r["fecha_registro"],
+                        # ✅ latitud y longitud NO están aquí → se preservan
+                    }
+                )
+                session.execute(stmt)
+            session.commit()

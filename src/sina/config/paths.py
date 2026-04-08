@@ -5,9 +5,6 @@ from datetime import date
 import locale
 locale.setlocale(locale.LC_TIME, "es_MX.UTF-8")
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-}
 
 def find_project_root(start_path: Path, marker_file: str = "pyproject.toml") -> Path:
     current = start_path.resolve()

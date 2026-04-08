@@ -2,12 +2,12 @@ from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES
 from pathlib import Path
 import json 
 
-def get_classes_config() -> dict:
+def _get_classes_config() -> dict:
     """Reads the classes and colors from the JSON configuration file."""
        
     with open(CLASSES, "r", encoding="utf-8") as f:
         return json.load(f)
-    
+
 def build_filesystem_tree(base_path: Path) -> dict:
     """
     Scans the DATA directory and builds a nested dictionary:

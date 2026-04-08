@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from datetime import date
-import traceback 
+import traceback
 import json
 
 from sina.processing.image_segmentation import (
@@ -14,121 +14,104 @@ from sina.processing.image_segmentation import (
     FlyerPayload,
 )
 from sina.processing.records import df_to_dict
-
 from sina.scraping.casa_ley import download_flyer
 from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS
 from sina.scraping.gas import (
     _load_catalogo,
     _build_catalogo_js,
     _build_municipios_validos,
-    df_gas_prices, 
-    GAS_COLUMN_MAP, 
-    GAS_FLOAT_COLS)
-from sina.scraping.gas_pipeline import pipeline_nacional
-
-from sina.config.credentials import (
-    DB_URL,
-    casa_ley_url
+    transform_gas_prices,
 )
-from sina.config.settings import (
-    get_classes_config,
-    build_filesystem_tree
-)
-
+# from sina.pipeline.gas import pipeline_nacional
+from sina.config.credentials import DB_URL, casa_ley_url
+from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
-    TEMPLATES_DIR, 
-    CASA_LEY_DATA,
-    STATIC_DIR, 
-    CLASSES,
-    DATA, 
-    GAS_DATA
+    TEMPLATES_DIR, CASA_LEY_DATA, STATIC_DIR, DATA
 )
+from sina.db.repository import QQPRepository, GasolinaRepository
 
 try:
     from sina.ollama.extract_flyer_text import extract_text
 except ImportError:
-    extract_text = None 
+    extract_text = None
 
-from sina.db.repository import QQPRepository, GasolinaRepository
-
+# ============================================================
+#  APP & MOUNTS
+# ============================================================
 _mun_dict      = _load_catalogo()
 _municipios_ok = _build_municipios_validos(_mun_dict)
 
-app = FastAPI(title="SINA - Data Annotation & Scraping Hub")
+app = FastAPI(
+    title       = "SINA API",
+    description = "Sistema de Información de precios y anotaciones",
+    version     = "1.0.0",
+)
 
-# ============================================================
-#  STATIC MOUNTS
-# ============================================================
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-app.mount("/datos", StaticFiles(directory=str(DATA)), name="datos")
+app.mount("/datos",  StaticFiles(directory=str(DATA)),       name="datos")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-def get_classes_config() -> dict:
-    """Reads the classes and colors from the JSON configuration file."""
-       
-    with open(CLASSES, "r", encoding="utf-8") as f:
-        return json.load(f)
+# ============================================================
+#  HELPERS
+# ============================================================
+def _validar_ubicacion(estado: str, municipio: str) -> tuple[str, str]:
+    """Valida y normaliza estado/municipio. Lanza 400 si no son válidos."""
+    e = estado.strip().lower()
+    m = municipio.strip().lower()
+    if e not in _municipios_ok or m not in _municipios_ok:
+        raise HTTPException(status_code=400, detail="Estado o municipio no válido.")
+    return e, m
+
 
 # ============================================================
-#  FRONTEND ROUTES
+#  FRONTEND ROUTES  (HTML)
 # ============================================================
-
-@app.get("/annotator", response_class=HTMLResponse)
-async def get_annotator(request: Request):
-    """Renders the HTML UI dynamically passing the filesystem tree and config."""
-    
-    class_config = get_classes_config()
-    annotation_classes = list(class_config.keys())
-    
-    file_tree = build_filesystem_tree(DATA)
-    
+@app.get("/sina/annotator", response_class=HTMLResponse)
+async def view_annotator(request: Request):
+    """UI de anotación de volantes."""
+    class_config = _get_classes_config()
     return templates.TemplateResponse("annotator.html", {
-        "request": request,
-        "file_tree": file_tree,  
-        "classes": annotation_classes,
-        "colors": class_config
+        "request" : request,
+        "file_tree": build_filesystem_tree(DATA),
+        "classes" : list(class_config.keys()),
+        "colors"  : class_config,
     })
 
-@app.get("/gasolina", response_class=HTMLResponse)
-async def get_gasolina(request: Request):
-    """Renderiza el HTML inyectando solo el catálogo de estados/municipios."""
-    catalogo = _build_catalogo_js(_mun_dict)  
-
+@app.get("/sina/gasolina", response_class=HTMLResponse)
+async def view_gasolina(request: Request):
+    """UI de precios de gasolina."""
+    catalogo = _build_catalogo_js(_mun_dict)
     return templates.TemplateResponse("gasolina.html", {
         "request" : request,
         "catalogo": json.dumps(catalogo, ensure_ascii=False),
-        # 👆 ya no inyectas DATOS_DISPONIBLES
     })
 
-@app.get("/sina/gasolina/db")
-async def get_precios_gasolina_db(estado: str, municipio: str):
+# ============================================================
+#  API · GASOLINA
+# ============================================================
+@app.get("/api/v1/gasolina")
+async def get_gasolina(estado: str, municipio: str):
     """
-    Consulta precios desde la DB local.
-    Valida estado y municipio contra el catálogo para evitar injection.
+    Consulta precios de gasolineras desde la DB.
+    Fuente: scraping (lat/lng) + CRE API (precios).
     """
-    estado_clean    = estado.strip().lower()
-    municipio_clean = municipio.strip().lower()
-
-    if estado_clean not in _municipios_ok or municipio_clean not in _municipios_ok:
-        raise HTTPException(
-            status_code=400,
-            detail="Estado o municipio no válido."
-        )
+    estado, municipio = _validar_ubicacion(estado, municipio)
 
     try:
         repo      = GasolinaRepository(db_url=DB_URL)
-        registros = repo.obtener_por_municipio(estado_clean, municipio_clean)
+        registros = repo.obtener_por_municipio(estado, municipio)
 
         if not registros:
             raise HTTPException(
                 status_code=404,
-                detail=f"No hay datos para '{municipio}', '{estado}'."
+                detail=f"Sin datos para {municipio}, {estado}. "
+                       f"Ejecuta POST /api/v1/gasolina/update primero."
             )
 
         return {
             "status"   : "ok",
-            "estado"   : estado_clean,
-            "municipio": municipio_clean,
+            "estado"   : estado,
+            "municipio": municipio,
             "total"    : len(registros),
             "datos"    : registros,
         }
@@ -136,227 +119,146 @@ async def get_precios_gasolina_db(estado: str, municipio: str):
     except HTTPException:
         raise
     except Exception as e:
-        print("\n❌ ERROR EN /sina/gasolina/db:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/update/gasolina")
+async def update_gasolina(estado: str, municipio: str):
+    """
+    Descarga precios desde la API CRE y hace upsert en DB.
+    Preserva lat/lng ya scrapeadas.
+    """
+    estado, municipio = _validar_ubicacion(estado, municipio)
+
+    try:
+        repo      = GasolinaRepository(db_url=DB_URL)
+        registros = transform_gas_prices(estado, municipio)
+        repo.upsert_precios(registros)
+
+        return {
+            "status"   : "ok",
+            "estado"   : estado,
+            "municipio": municipio,
+            "actualizados": len(registros),
+            "total_en_db" : repo.contar(),
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# @app.post("/api/v1/gasolina/pipeline")
+# async def run_pipeline_gasolina(estados: list[str] | None = None):
+#     """
+#     Dispara el pipeline nacional de scraping de ubicaciones.
+#     Filtra por estados si se especifican.
+#     """
+#     try:
+#         resultado = await pipeline_nacional(estados_filtro=estados)
+#         return {"status": "ok", **resultado}
+#     except Exception as e:
+#         traceback.print_exc()
+#         raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================
+#  API · QQP
+# ============================================================
+@app.post("/api/v1/update/qqp")
+async def update_qqp():
+    """
+    Descarga el CSV más reciente de QQP y reemplaza los datos en DB.
+    """
+    try:
+        repo      = QQPRepository(db_url=DB_URL)
+        df        = extract_qqp()
+        registros = df_to_dict(df, column_map=QQP_COLUMN_MAP, float_cols=QQP_FLOAT_COLS)
+
+        repo.borrar_todo()
+        repo.guardar_en_bulk(registros)
+
+        return {
+            "status"     : "ok",
+            "insertados" : len(registros),
+            "total_en_db": repo.contar(),
+        }
+
+    except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================
-#  API ENDPOINTS
+#  API · ANNOTATOR
 # ============================================================
-
-@app.post("/sina/annotate")
-def save_and_crop_annotations(payload: AnnotationPayload):
-    """
-    Receives bounding box coordinates from the UI, crops the image, 
-    and saves the dataset files for future model training.
-    """
+@app.post("/api/v1/annotator/annotate")
+def annotate(payload: AnnotationPayload):
+    """Guarda bounding boxes y genera recortes."""
     try:
         result = process_annotations(
             supermarket=payload.supermarket,
-            city=payload.city,
-            date=payload.date,
-            image_name=payload.image_name,
-            bboxes=payload.bboxes
+            city       =payload.city,
+            date       =payload.date,
+            image_name =payload.image_name,
+            bboxes     =payload.bboxes,
         )
-        return {"status": "success", "data": result}
+        return {"status": "ok", "data": result}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        # MAGIA: Esto imprimirá la línea exacta del error en tu terminal negra
-        print("\nERROR INTERNO EN /sina/annotate:")
         traceback.print_exc()
-        print("----------------------------------\n")
         raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/sina/flyer")
-def get_flyer(payload: FlyerPayload):
+
+
+@app.post("/api/v1/annotator/flyer")
+def download_flyer_endpoint(payload: FlyerPayload):
+    """Descarga el volante del supermercado indicado."""
     match payload.supermarket:
         case "Casa Ley" | "casa_ley":
             return download_flyer(
-                city = payload.city,
-                base_url = casa_ley_url,
-                base_dir = str(CASA_LEY_DATA)
+                city    =payload.city,
+                base_url=casa_ley_url,
+                base_dir=str(CASA_LEY_DATA),
             )
-        case "Walmart":
-            pass
-        case "Bodega Aurrera":
-            pass
-        case "Soriana":
-            pass
+        case _:
+            raise HTTPException(
+                status_code=501,
+                detail=f"Supermercado '{payload.supermarket}' no implementado aún."
+            )
 
-@app.post("/sina/extract_text")
-def extract_crops_data(payload: ExtractPayload):
-    """
-    Checks if flyer_data.json exists. If not, runs the LLM extraction.
-    Returns the JSON content to be displayed in the UI.
-    """
+
+@app.post("/api/v1/annotator/extract")
+def extract_flyer_text(payload: ExtractPayload):
+    """Extrae texto de recortes usando LLM. Usa caché si ya existe."""
     json_path = DATA / payload.supermarket / payload.city / payload.date / "flyer_data.json"
 
     if not json_path.exists():
         if extract_text is None:
-            raise HTTPException(status_code=500, detail="Extraction module not found.")
-            
-        print(f"Inciando LLM para {payload.supermarket} - {payload.city} - {payload.date}")
-        
+            raise HTTPException(status_code=500, detail="Módulo de extracción no disponible.")
+
         success = extract_text(
             supermarket=payload.supermarket,
-            city=payload.city,
-            date=payload.date
+            city       =payload.city,
+            date       =payload.date,
         )
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to generate the document with the LLM.")
-    else:
-        print(f"flyer_data.json already exists for {payload.date}. Loading directly...")
+            raise HTTPException(status_code=500, detail="Error al generar documento con LLM.")
+
     try:
         with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return {"status": "success", "data": data}
+            return {"status": "ok", "data": json.load(f)}
     except Exception as e:
-        print("\nERROR READING JSON:")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error reading JSON file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/sina/status")
-def check_status(supermarket: str, city: str, date: str):
-    """Verifica si existen recortes y si ya se generó el flyer_data.json"""
-    base_dir = DATA / supermarket / city / date
-    json_path = base_dir / "flyer_data.json"
+
+@app.get("/api/v1/annotator/status")
+def get_annotator_status(supermarket: str, city: str, date: str):
+    """Verifica si existen recortes y flyer_data.json para una fecha."""
+    base_dir     = DATA / supermarket / city / date
     recortes_dir = base_dir / "recortes"
 
-    has_json = json_path.exists()
-    
-    has_recortes = recortes_dir.exists() and any(recortes_dir.iterdir())
-
     return {
-        "has_json": has_json,
-        "has_recortes": has_recortes
+        "has_json"    : (base_dir / "flyer_data.json").exists(),
+        "has_recortes": recortes_dir.exists() and any(recortes_dir.iterdir()),
     }
-
-@app.get("/sina/gasolina")
-async def get_precios_gasolina(estado: str, municipio: str):
-    """
-    Llama a la API de la CRE y devuelve los precios del municipio.
-    El frontend llama a este endpoint al hacer clic en 'Ver precios'.
-    """
-    try:
-        df = df_gas_prices(estado, municipio)
-
-        cols_base = ["Numero", "Nombre", "Direccion", "Latitud", "Longitud",
-                     "Magna", "Premium", "Diesel"]
-        cols_out  = [c for c in cols_base if c in df.columns]
-
-        registros = df[cols_out].where(df[cols_out].notna(), other=None).to_dict(orient="records")
-
-        return {
-            "status":    "ok",
-            "estado":    estado,
-            "municipio": municipio,
-            "total":     len(registros),
-            "datos":     registros,
-        }
-
-    except KeyError:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No se encontró '{municipio}' en '{estado}' en el catálogo."
-        )
-    except Exception as e:
-        print("\nERROR EN /sina/gasolina:")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/sina/update/qqp")
-async def actualizar_qqp():
-    """
-    Descarga el CSV más reciente de QQP, borra los datos anteriores
-    y reinserta los nuevos.
-    """
-    try:
-        repo = QQPRepository(db_url=DB_URL)
-
-        print("Descargando datos QQP...")
-        df = extract_qqp()
-
-        print("Convirtiendo a registros...")
-        registros = df_to_dict(
-                    df,
-                    column_map=QQP_COLUMN_MAP,
-                    float_cols=QQP_FLOAT_COLS
-                )
-
-        print("Borrando datos anteriores...")
-        repo.borrar_todo()
-
-        print("Insertando nuevos datos...")
-        repo.guardar_en_bulk(registros)
-
-        total = repo.contar()
-
-        return {
-            "status": "ok",
-            "registros_insertados": len(registros),
-            "total_en_db": total
-        }
-
-    except Exception as e:
-        print("\nERROR EN /sina/update/qqp:")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/sina/update/gas")
-async def actualizar_gas(estado: str, municipio: str):
-    """
-    Descarga el CSV más reciente de QQP, borra los datos anteriores
-    y reinserta los nuevos.
-    """
-    try:
-        repo = GasolinaRepository(db_url=DB_URL)
-
-        print("Descargando datos Gas...")
-        df = df_gas_prices(estado, municipio)
-
-        print("Convirtiendo a registros...")
-        registros = df_to_dict(
-                    df,
-                    column_map=GAS_COLUMN_MAP,
-                    float_cols=GAS_FLOAT_COLS,
-                    extra_fields={
-                        "estado":         estado,
-                        "municipio":      municipio,
-                        "fecha_registro": date.today(),
-                    }
-                )
-
-        print("Borrando datos anteriores...")
-        repo.borrar_todo()
-
-        print("Insertando nuevos datos...")
-        repo.guardar_en_bulk(registros)
-
-        total = repo.contar()
-
-        return {
-            "status": "ok",
-            "registros_insertados": len(registros),
-            "total_en_db": total
-        }
-
-    except Exception as e:
-        print("\nERROR EN /sina/update/gas:")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/sina/pipeline/gas")
-async def correr_pipeline_gas(estados: list[str] | None = None):
-    """Dispara el pipeline nacional. Opcionalmente filtra por estados."""
-    resultado = await pipeline_nacional(estados_filtro=estados)
-    return resultado
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-scheduler = AsyncIOScheduler(timezone="America/Mexico_City")
-scheduler.add_job(pipeline_nacional, "cron", hour=6, minute=0)
-
-@app.on_event("startup")
-async def start_scheduler():
-    scheduler.start()
