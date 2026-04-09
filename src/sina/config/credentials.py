@@ -16,8 +16,6 @@ gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
 gasolineras_ubi: str = os.getenv('GASOLINERAS_UBI', '')
 
 cne_refer : str = os.getenv('CNE_REFER', "")
-cne_entidades_url: str = os.getenv('CNE_ENTIDADES_URL', "")
-cne_municipios_url: str = os.getenv('CNE_MUNICIPIOS_URL', "")
 cne_localidades_url: str = os.getenv('CNE_LOCALIDADES_URL', "")
 cne_precios_gas_lp_url: str = os.getenv('CNE_PRECIOS_GAS_LP_URL', "")
 
