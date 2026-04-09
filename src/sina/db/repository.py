@@ -269,7 +269,7 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
             if ultimo is None:
                 return True  # No hay datos
             
-            return not ultimo.esta_vigente(dias)  # True si expiró
+            return not ultimo.esta_vigente()  # True si expiró
 
 # ── Helper para obtener session (mantén compatibilidad) ────────
 @contextmanager

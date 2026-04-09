@@ -4,7 +4,8 @@ from sqlalchemy import (
     DateTime, ForeignKey, UniqueConstraint
 )
 from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime
+from datetime import datetime, timedelta
+from typing import cast
 
 Base = declarative_base()
 
@@ -66,13 +67,12 @@ class Municipio(Base):
     """Catálogo de municipios por entidad (CNE)."""
     __tablename__ = "cne_municipios"
 
-    id          = Column(Integer, primary_key=True, autoincrement=True)
-    municipio_id = Column(String, nullable=False)   # ej. "030" — string porque viene con ceros
-    nombre      = Column(String, nullable=False)
-    entidad_id  = Column(Integer, ForeignKey("cne_entidades.id"), nullable=False)
+    id           = Column(Integer, primary_key=True, autoincrement=True)
+    municipio_id = Column(String,  nullable=False)  # ej. "030"
+    nombre       = Column(String,  nullable=False)
+    entidad_id   = Column(Integer, ForeignKey("cne_entidades.id"), nullable=False)
 
-    entidad    = relationship("EntidadFederativa", back_populates="municipios")
-    localidades = relationship("Localidad", back_populates="municipio")
+    entidad = relationship("EntidadFederativa", back_populates="municipios")
 
     __table_args__ = (
         UniqueConstraint("municipio_id", "entidad_id", name="uq_municipio_entidad"),
@@ -83,18 +83,39 @@ class Localidad(Base):
     """Catálogo de localidades por municipio (CNE)."""
     __tablename__ = "cne_localidades"
 
-    id           = Column(Integer, primary_key=True, autoincrement=True)
-    localidad_id = Column(Integer, nullable=False)   # el ID que da la CNE
-    nombre       = Column(String, nullable=False)
-    municipio_id = Column(Integer, ForeignKey("cne_municipios.id"), nullable=False)
+    # ── PK interna ─────────────────────────────────────────────
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
-    municipio = relationship("Municipio", back_populates="localidades")
+    # ── IDs reales CNE (para armar URL de precios y joins) ─────
+    localidad_id  = Column(Integer, nullable=False)  # ej. 289
+    entidad_id    = Column(Integer, nullable=False)  # ej. 26
+    municipio_id = Column(String,  nullable=False)  # ej. "030"
+
+    # ── Nombre para UI ─────────────────────────────────────────
+    nombre = Column(String, nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("localidad_id", "municipio_id", name="uq_localidad_municipio"),
+        UniqueConstraint(
+            "localidad_id", "municipio_id", "entidad_id",
+            name="uq_localidad_municipio"
+        ),
     )
 
-# sina/db/models.py
+    def __repr__(self):
+        return (
+            f"<Localidad id={self.localidad_id} "
+            f"nombre={self.nombre} "
+            f"entidad={self.entidad_id} "
+            f"municipio={self.municipio_id}>"
+        )
+
+    def api_params(self) -> dict:
+        """Parámetros listos para la API de precios CNE."""
+        return {
+            "localidadId": self.localidad_id,
+            "entidadId":   self.entidad_id,
+            "municipioId": self.municipio_id,
+        }
 
 class GasLPPrecio(Base):
     """
@@ -149,7 +170,12 @@ class GasLPPrecio(Base):
             f"{self.municipio_nombre}, {self.entidad_nombre}>"
         )
     
-    def esta_vigente(self, dias: int = 7) -> bool:
-        """True si el precio fue extraído hace menos de `dias` días."""
-        delta = datetime.utcnow() - self.fecha_extraccion
-        return delta.days < dias
+    def esta_vigente(self) -> bool:
+        hoy = datetime.utcnow().date()
+        dias_desde_sabado = (hoy.weekday() - 5) % 7
+        ultimo_sabado = datetime.combine(
+            hoy - timedelta(days=dias_desde_sabado),
+            datetime.min.time()
+        )
+        fecha: datetime = cast(datetime, self.fecha_extraccion)
+        return fecha >= ultimo_sabado
