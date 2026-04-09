@@ -8,13 +8,18 @@ qqp_url : str = os.getenv('QQP_DATOS_URL', "")
 datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL', "")
 gasolina_hmo_url: str = os.getenv('GASOLINA_HMO_URL', "")
 casa_ley_url: str = os.getenv('CASA_LEY_URL', "")
-gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
-gasolineras_ubi: str = os.getenv('GASOLINERAS_UBI', '')
 
 ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
 google_api_key: str = os.getenv('GOOGLE_API_KEY', "")
 
-cne_refere : str = os.getenv('CNE_REFER', "")
+gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
+gasolineras_ubi: str = os.getenv('GASOLINERAS_UBI', '')
+
+cne_refer : str = os.getenv('CNE_REFER', "")
+cne_entidades_url: str = os.getenv('CNE_ENTIDADES_URL', "")
+cne_municipios_url: str = os.getenv('CNE_MUNICIPIOS_URL', "")
+cne_localidades_url: str = os.getenv('CNE_LOCALIDADES_URL', "")
+cne_precios_gas_lp_url: str = os.getenv('CNE_PRECIOS_GAS_LP_URL', "")
 
 def get_db_url() -> str:
     """

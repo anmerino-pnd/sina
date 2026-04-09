@@ -1,8 +1,13 @@
 # src/sina/db/repository.py
 from typing import Generic, TypeVar
+from contextlib import contextmanager
+from typing import cast as typing_cast
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy import create_engine, insert, delete, select
-from sina.db.models import Base, PrecioQQP, PrecioGasolina
+from sina.db.models import  (
+    Base, PrecioQQP, PrecioGasolina,
+    EntidadFederativa, Municipio, Localidad, GasLPPrecio  # ← nuevos
+)
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 T = TypeVar("T", bound=DeclarativeBase)
@@ -122,3 +127,162 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                 )
                 session.execute(stmt)
             session.commit()
+
+class EntidadFederativaRepository(BaseRepository[EntidadFederativa]):
+    model = EntidadFederativa
+
+class MunicipioRepository(BaseRepository[Municipio]):
+    model = Municipio
+
+    def obtener_catalogo(self) -> dict[str, list[str]]:
+        """
+        Devuelve { estado_nombre: [municipio_nombre, ...] }
+        para el frontend. Todo en lowercase como el JSON anterior.
+        """
+        with self.Session() as session:
+            entidades = session.query(EntidadFederativa).all()
+            return {
+                entidad.nombre.lower(): sorted([
+                    m.nombre.lower() for m in entidad.municipios
+                ])
+                for entidad in entidades
+            }
+
+    def obtener_ids(self, estado: str, municipio: str) -> tuple[int, str] | None:
+        """
+        Dado estado y municipio como strings normalizados,
+        devuelve (entidad_id, municipio_id_str) o None si no existe.
+        """
+        with self.Session() as session:
+            entidad = (
+                session.query(EntidadFederativa)
+                .filter(EntidadFederativa.nombre.ilike(estado))
+                .first()
+            )
+            if not entidad:
+                return None
+
+            municipio_row = (
+                session.query(Municipio)
+                .filter(
+                    Municipio.entidad_id == entidad.id,
+                    Municipio.nombre.ilike(municipio),
+                )
+                .first()
+            )
+            if not municipio_row:
+                return None
+
+            return (typing_cast(int, entidad.id), typing_cast(str, municipio_row.municipio_id))
+
+
+    def obtener_nombres_validos(self) -> set[str]:
+        """
+        Devuelve todos los estados y municipios como strings
+        lowercase. Reemplaza _build_municipios_validos().
+        """
+        with self.Session() as session:
+            estados = {
+                e.nombre.lower()
+                for e in session.query(EntidadFederativa).all()
+            }
+            municipios = {
+                m.nombre.lower()
+                for m in session.query(Municipio).all()
+            }
+            return estados | municipios
+
+class LocalidadRepository(BaseRepository[Localidad]):
+    model = Localidad
+
+class GasLPRepository(BaseRepository[GasLPPrecio]):
+    model = GasLPPrecio
+
+    def obtener_por_localidad(self, entidad_id: int, municipio_id: str, localidad_id: int) -> list[dict]:
+        """Obtiene todos los precios de Gas LP para una localidad específica."""
+        with self.Session() as session:
+            stmt = select(self.model).where(
+                self.model.entidad_id   == entidad_id,
+                self.model.municipio_id == municipio_id,
+                self.model.localidad_id == localidad_id,
+            ).order_by(self.model.precio.asc())  # ← ordenado por precio (barato → caro)
+            
+            rows = session.execute(stmt).scalars().all()
+            return [
+                {
+                    "numero_permiso":       r.numero_permiso,
+                    "marca_comercial":      r.marca_comercial,
+                    "tipo":                 r.tipo,
+                    "capacidad_recipiente": r.capacidad_recipiente,
+                    "precio":               r.precio,
+                    "entidad_nombre":       r.entidad_nombre,
+                    "municipio_nombre":     r.municipio_nombre,
+                    "localidad_nombre":     r.localidad_nombre,
+                    "fecha_extraccion":     r.fecha_extraccion,
+                    "vigente":              r.esta_vigente(),
+                }
+                for r in rows
+            ]
+
+    def upsert_precios_gas_lp(self, registros: list[dict]):
+        """
+        Inserta o actualiza precios de Gas LP.
+        Si ya existe (mismo permiso + tipo + capacidad + localidad), actualiza precio y fecha.
+        """
+        with self.Session() as session:
+            for r in registros:
+                stmt = sqlite_insert(self.model).values(**r).on_conflict_do_update(
+                    index_elements=[
+                        "entidad_id", "municipio_id", "localidad_id",
+                        "numero_permiso", "tipo", "capacidad_recipiente"
+                    ],
+                    set_={
+                        "precio":           r["precio"],
+                        "marca_comercial":  r["marca_comercial"],
+                        "fecha_extraccion": r["fecha_extraccion"],
+                    }
+                )
+                session.execute(stmt)
+            session.commit()
+            print(f"[gas_lp_precios] {len(registros):,} registros actualizados.")
+
+    def necesita_actualizacion(self, entidad_id: int, municipio_id: str, localidad_id: int, dias: int = 7) -> bool:
+        """
+        Verifica si los precios de esta localidad necesitan actualizarse.
+        True = no hay datos O son más viejos que `dias` días.
+        """
+        with self.Session() as session:
+            # Buscar el registro más reciente para esta localidad
+            stmt = (
+                select(self.model)
+                .where(
+                    self.model.entidad_id   == entidad_id,
+                    self.model.municipio_id == municipio_id,
+                    self.model.localidad_id == localidad_id,
+                )
+                .order_by(self.model.fecha_extraccion.desc())
+                .limit(1)
+            )
+            
+            ultimo = session.execute(stmt).scalars().first()
+            
+            if ultimo is None:
+                return True  # No hay datos
+            
+            return not ultimo.esta_vigente(dias)  # True si expiró
+
+# ── Helper para obtener session (mantén compatibilidad) ────────
+@contextmanager
+def get_session():
+    from sina.config.paths import DB
+    engine = create_engine(f"sqlite:///{DB}/sina_data.db")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    try:
+        yield session
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()

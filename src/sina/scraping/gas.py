@@ -9,10 +9,10 @@ from typing import Any
 from pathlib import Path
 from datetime import date
 from bs4 import BeautifulSoup, Tag
-from sina.config.paths import GAS_DATA
+from sina.config.paths import CATALOGO_MUNICIPIOS_PATH
 from sina.config.credentials import (
     gasolina_api_rest, 
-    cne_refere, 
+    cne_refer, 
     gasolineras_ubi, 
     HEADERS
     )
@@ -32,14 +32,8 @@ GAS_COLUMN_MAP = {
 
 GAS_FLOAT_COLS = ["diesel", "magna", "premium", "latitud", "longitud"]
 
-MUNICIPIOS_JSON = GAS_DATA / Path("catalogo_municipios.json")
 
-with open(MUNICIPIOS_JSON, "r", encoding="utf-8") as f:
-    mun_dict = json.load(f)
 
-def _load_catalogo() -> dict:
-    with open(MUNICIPIOS_JSON, "r", encoding="utf-8") as f:
-        return json.load(f)
 
 def _build_catalogo_js(mun_dict: dict) -> dict:
     """
@@ -52,45 +46,28 @@ def _build_catalogo_js(mun_dict: dict) -> dict:
         for estado, info in mun_dict.items()
     }
 
-def _build_municipios_validos(mun_dict: dict) -> set[str]:
-    validos = set()
-    for estado, info in mun_dict.items():
-        validos.add(estado.lower())
-        for municipio in info["municipios"].keys():
-            validos.add(municipio.lower())
-    return validos
-
-def extract_gas_prices(estado: str, municipio: str) -> dict:
+def extract_gas_prices(entidad_id: int, municipio_id: str) -> dict:
+    """
+    Los IDs ya vienen calculados desde el repositorio,
+    no del JSON.
+    """
     params = {
-        "entidadId"  : mun_dict[estado]['id'],
-        "municipioId": mun_dict[estado]['municipios'][municipio].get('id')
+        "entidadId"  : entidad_id,
+        "municipioId": municipio_id,
     }
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Referer"   : cne_refere
-    }
+    headers = {"User-Agent": "Mozilla/5.0", "Referer": cne_refer}
     response = requests.get(gasolina_api_rest, params=params, headers=headers)
-    print(f"Status  : {response.status_code}")
-    print(f"Size    : {len(response.content) / 1024:.1f} KB")
-    print(f"Content : {response.headers.get('Content-Type')}")
+    return response.json()
 
-    data = response.json()
-
-    if isinstance(data, list):
-        print(f"Registros : {len(data)}")
-    elif isinstance(data, dict):
-        print(f"Keys : {list(data.keys())}")
-
-    return dict(data)
-
-def transform_gas_prices(estado: str, municipio: str) -> list[dict]:
+def transform_gas_prices(estado: str, municipio: str,
+                         entidad_id: int, municipio_id: str) -> list[dict]:
     """
     Extrae precios de la API CRE y los transforma en registros
     listos para upsert_precios().
     
     Ya NO usa cache file — lat/lng viven en la DB.
     """
-    data = extract_gas_prices(estado, municipio)
+    data = extract_gas_prices(entidad_id, municipio_id)
     df   = pd.DataFrame(data["Value"])
 
     # ── Mapeo de subproductos ─────────────────────────────

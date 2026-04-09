@@ -40,4 +40,5 @@ for path in [
 ]:
     path.mkdir(parents=True, exist_ok=True)
 
+CATALOGO_MUNICIPIOS_PATH = GAS_DATA / "catalogo_municipios.json"
 

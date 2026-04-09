@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from contextlib import asynccontextmanager
 from datetime import date
 import traceback
 import json
@@ -17,9 +18,7 @@ from sina.processing.records import df_to_dict
 from sina.scraping.casa_ley import download_flyer
 from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS
 from sina.scraping.gas import (
-    _load_catalogo,
-    _build_catalogo_js,
-    _build_municipios_validos,
+    scrape_municipio,
     transform_gas_prices,
 )
 # from sina.pipeline.gas import pipeline_nacional
@@ -28,7 +27,7 @@ from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
     TEMPLATES_DIR, CASA_LEY_DATA, STATIC_DIR, DATA
 )
-from sina.db.repository import QQPRepository, GasolinaRepository
+from sina.db.repository import QQPRepository, GasolinaRepository, MunicipioRepository
 
 try:
     from sina.ollama.extract_flyer_text import extract_text
@@ -38,13 +37,23 @@ except ImportError:
 # ============================================================
 #  APP & MOUNTS
 # ============================================================
-_mun_dict      = _load_catalogo()
-_municipios_ok = _build_municipios_validos(_mun_dict)
+_municipios_validos: set[str] = set()
+_catalogo_js: dict            = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Carga el catálogo desde la DB al arrancar. Una sola vez."""
+    global _municipios_validos, _catalogo_js
+    repo = MunicipioRepository(db_url=DB_URL)
+    _municipios_validos = repo.obtener_nombres_validos()
+    _catalogo_js        = repo.obtener_catalogo()
+    yield
 
 app = FastAPI(
     title       = "SINA API",
     description = "Sistema de Información de precios y anotaciones",
     version     = "1.0.0",
+    lifespan=lifespan
 )
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -54,13 +63,19 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 # ============================================================
 #  HELPERS
 # ============================================================
-def _validar_ubicacion(estado: str, municipio: str) -> tuple[str, str]:
-    """Valida y normaliza estado/municipio. Lanza 400 si no son válidos."""
+def _validar_ubicacion(estado: str, municipio: str) -> tuple[str, str, int, str]:
     e = estado.strip().lower()
     m = municipio.strip().lower()
-    if e not in _municipios_ok or m not in _municipios_ok:
+    if e not in _municipios_validos or m not in _municipios_validos:
         raise HTTPException(status_code=400, detail="Estado o municipio no válido.")
-    return e, m
+
+    repo = MunicipioRepository(db_url=DB_URL)
+    ids  = repo.obtener_ids(e, m)
+    if not ids:
+        raise HTTPException(status_code=400, detail="Combinación estado/municipio no encontrada.")
+
+    entidad_id, municipio_id = ids
+    return e, m, entidad_id, municipio_id
 
 
 # ============================================================
@@ -80,10 +95,9 @@ async def view_annotator(request: Request):
 @app.get("/sina/gasolina", response_class=HTMLResponse)
 async def view_gasolina(request: Request):
     """UI de precios de gasolina."""
-    catalogo = _build_catalogo_js(_mun_dict)
     return templates.TemplateResponse("gasolina.html", {
         "request" : request,
-        "catalogo": json.dumps(catalogo, ensure_ascii=False),
+        "catalogo": json.dumps(_catalogo_js, ensure_ascii=False),
     })
 
 # ============================================================
@@ -95,7 +109,7 @@ async def get_gasolina(estado: str, municipio: str):
     Consulta precios de gasolineras desde la DB.
     Fuente: scraping (lat/lng) + CRE API (precios).
     """
-    estado, municipio = _validar_ubicacion(estado, municipio)
+    estado, municipio, _, _ = _validar_ubicacion(estado, municipio)
 
     try:
         repo      = GasolinaRepository(db_url=DB_URL)
@@ -129,11 +143,11 @@ async def update_gasolina(estado: str, municipio: str):
     Descarga precios desde la API CRE y hace upsert en DB.
     Preserva lat/lng ya scrapeadas.
     """
-    estado, municipio = _validar_ubicacion(estado, municipio)
+    estado, municipio, entidad_id, municipio_id = _validar_ubicacion(estado, municipio)
+    registros = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
 
     try:
         repo      = GasolinaRepository(db_url=DB_URL)
-        registros = transform_gas_prices(estado, municipio)
         repo.upsert_precios(registros)
 
         return {
@@ -148,19 +162,26 @@ async def update_gasolina(estado: str, municipio: str):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/v1/update/ubicacion/gasolineras")
+async def update_ubicaciones_gasolineras(estado: str, municipio: str):
+    estado, municipio, _, _ = _validar_ubicacion(estado, municipio)
+    registros = scrape_municipio(estado, municipio)
 
-# @app.post("/api/v1/gasolina/pipeline")
-# async def run_pipeline_gasolina(estados: list[str] | None = None):
-#     """
-#     Dispara el pipeline nacional de scraping de ubicaciones.
-#     Filtra por estados si se especifican.
-#     """
-#     try:
-#         resultado = await pipeline_nacional(estados_filtro=estados)
-#         return {"status": "ok", **resultado}
-#     except Exception as e:
-#         traceback.print_exc()
-#         raise HTTPException(status_code=500, detail=str(e))
+    try:
+        repo      = GasolinaRepository(db_url=DB_URL)
+        repo.upsert_ubicaciones(registros)
+
+        return {
+            "status"   : "ok",
+            "estado"   : estado,
+            "municipio": municipio,
+            "actualizados": len(registros),
+            "total_en_db" : repo.contar(),
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================
 #  API · QQP
