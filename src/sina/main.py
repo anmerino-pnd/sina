@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
+from sqlalchemy import select
 import traceback
 import json
 
@@ -21,13 +22,14 @@ from sina.scraping.gas import (
     transform_gas_prices,
     get_precios_gasolina
 )
-from sina.scraping.gas_lp import get_precios_gas_lp
+from sina.scraping.gas_lp import get_precios_gas_lp, get_localidades_by_municipio
 from sina.config.credentials import DB_URL, casa_ley_url
 from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
     TEMPLATES_DIR, CASA_LEY_DATA, STATIC_DIR, DATA
 )
 from sina.db.repository import QQPRepository, GasolinaRepository, MunicipioRepository
+from sina.db.models import EntidadFederativa, Municipio, Localidad
 
 try:
     from sina.ollama.extract_flyer_text import extract_text
@@ -96,6 +98,14 @@ async def view_annotator(request: Request):
 async def view_gasolina(request: Request):
     """UI de precios de gasolina."""
     return templates.TemplateResponse("gasolina.html", {
+        "request" : request,
+        "catalogo": json.dumps(_catalogo_js, ensure_ascii=False),
+    })
+
+@app.get("/sina/gas-lp", response_class=HTMLResponse)
+async def view_gas_lp(request: Request):
+    """UI de precios de Gas LP."""
+    return templates.TemplateResponse("gas_lp.html", {
         "request" : request,
         "catalogo": json.dumps(_catalogo_js, ensure_ascii=False),
     })
@@ -182,6 +192,83 @@ async def get_gas_lp(estado: str, municipio: str, localidad: str):
     Precios de Gas LP por localidad.
     Caché semanal on-demand — llama a CNE solo si los datos vencieron.
     """
+    try:
+        resultado = get_precios_gas_lp(estado, municipio, localidad)
+
+        if "error" in resultado:
+            status = 404 if "no encontrada" in resultado["error"].lower() else 503
+            raise HTTPException(status_code=status, detail=resultado["error"])
+
+        return resultado
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/gas-lp/localidades")
+async def get_localidades(estado: str, municipio: str):
+    """
+    Devuelve localidades disponibles para un estado/municipio.
+    """
+    estado = estado.strip().lower()
+    municipio = municipio.strip().lower()
+
+    if estado not in _municipios_validos or municipio not in _municipios_validos:
+        raise HTTPException(status_code=400, detail="Estado o municipio no válido.")
+
+    repo = MunicipioRepository(db_url=DB_URL)
+    ids = repo.obtener_ids(estado, municipio)
+    if not ids:
+        raise HTTPException(status_code=404, detail="Combinación estado/municipio no encontrada.")
+
+    entidad_id, municipio_id = ids
+    localidades = get_localidades_by_municipio(entidad_id, municipio_id)
+
+    return {
+        "estado": estado,
+        "municipio": municipio,
+        "entidad_id": entidad_id,
+        "municipio_id": municipio_id,
+        "localidades": localidades,
+    }
+
+@app.get("/api/v1/gas-lp/by-ids")
+async def get_gas_lp_by_ids(entidad_id: int, municipio_id: str, localidad_id: int):
+    """
+    Precios de Gas LP usando IDs directamente (más eficiente para UI).
+    Caché semanal on-demand — llama a CNE solo si los datos vencieron.
+    """
+    # Resolver nombres desde DB
+    repo = MunicipioRepository(db_url=DB_URL)
+
+    with repo.Session() as session:
+        entidad = session.get(EntidadFederativa, entidad_id)
+        if not entidad:
+            raise HTTPException(status_code=404, detail="Entidad no encontrada.")
+
+        mun_row = session.execute(
+            select(Municipio).where(
+                Municipio.entidad_id == entidad_id,
+                Municipio.municipio_id == municipio_id,
+            )
+        ).scalars().first()
+        if not mun_row:
+            raise HTTPException(status_code=404, detail="Municipio no encontrado.")
+
+        loc_row = session.execute(
+            select(Localidad).where(
+                Localidad.localidad_id == localidad_id,
+            )
+        ).scalars().first()
+        if not loc_row:
+            raise HTTPException(status_code=404, detail="Localidad no encontrada.")
+
+    estado = entidad.nombre.lower()
+    municipio = mun_row.nombre.lower()
+    localidad = str(loc_row.nombre)
+
     try:
         resultado = get_precios_gas_lp(estado, municipio, localidad)
 

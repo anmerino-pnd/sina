@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas LP México</title>
+
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="/static/css/gas_lp.css"/>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">🔥 Gas LP México</div>
+    <div class="navbar-right" id="nav-right">Datos CNE</div>
+</nav>
+
+<!-- Hero / Buscador -->
+<div class="hero">
+    <h1>Encuentra el Gas LP más barato</h1>
+    <p>Precios por localidad · Autotanques y recipientes · México</p>
+
+    <div class="search-row">
+        <div class="ac-wrap" id="wrap-estado">
+            <label>Estado</label>
+            <input id="inp-estado" class="ac-input"
+                   placeholder="Busca un estado..."
+                   autocomplete="off"
+                   oninput="filtrarEstados()"
+                   onfocus="abrirDrop('estado')" />
+            <div class="drop" id="drop-estado"></div>
+        </div>
+
+        <div class="ac-wrap" id="wrap-municipio">
+            <label>Municipio</label>
+            <input id="inp-municipio" class="ac-input"
+                   placeholder="Busca un municipio..."
+                   autocomplete="off"
+                   disabled
+                   oninput="filtrarMunicipios()"
+                   onfocus="abrirDrop('municipio')" />
+            <div class="drop" id="drop-municipio"></div>
+        </div>
+
+        <div class="ac-wrap" id="wrap-localidad">
+            <label>Localidad</label>
+            <input id="inp-localidad" class="ac-input"
+                   placeholder="Busca una localidad..."
+                   autocomplete="off"
+                   disabled
+                   oninput="filtrarLocalidades()"
+                   onfocus="abrirDrop('localidad')" />
+            <div class="drop" id="drop-localidad"></div>
+        </div>
+
+        <div style="align-self:flex-end">
+            <button class="btn-ver" id="btn-ver" onclick="cargarLocalidad()" disabled>
+                Ver precios →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido -->
+<div class="wrap">
+
+    <!-- Bienvenida -->
+    <div class="screen-welcome" id="sc-welcome">
+        <div class="ico">🔥</div>
+        <h2>Selecciona tu localidad</h2>
+        <p>Elige estado, municipio y localidad para ver precios de Gas LP y encontrar la opción más económica cerca de ti.</p>
+    </div>
+
+    <!-- Próximamente -->
+    <div class="screen-prox" id="sc-prox">
+        <div class="ico">🚧</div>
+        <h2>Próximamente</h2>
+        <p id="prox-txt">Aún no tenemos datos para esta localidad.</p>
+        <span class="chip-prox">⏳ En desarrollo</span>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+
+        <!-- Fila de tipo -->
+        <div class="pills-row">
+            <span class="pills-label">Tipo</span>
+            <button class="pill active" id="pill-autotanque" onclick="setTipo('autotanque')">🚛 Autotanques</button>
+            <button class="pill"        id="pill-recipiente" onclick="setTipo('recipiente')">🏺 Recipientes</button>
+        </div>
+
+        <!-- Sub-pills para capacidad (solo recipientes) -->
+        <div class="pills-row" id="cap-row" style="display:none">
+            <span class="pills-label">Capacidad</span>
+            <button class="pill cap-pill active" data-cap="all" onclick="setCapacidad('all')">Todos</button>
+            <!-- Se llenan dinámicamente -->
+        </div>
+
+        <div class="sec-label" id="sec-label">—</div>
+
+        <!-- KPIs -->
+        <div class="kpis">
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-prom">--</div>
+                <div class="kpi-l">Promedio</div>
+            </div>
+            <div class="kpi min">
+                <div class="kpi-v" id="kpi-min">--</div>
+                <div class="kpi-l">Mínimo</div>
+            </div>
+            <div class="kpi max">
+                <div class="kpi-v" id="kpi-max">--</div>
+                <div class="kpi-l">Máximo</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-v" id="kpi-total">--</div>
+                <div class="kpi-l">Proveedores</div>
+            </div>
+        </div>
+
+        <!-- Grid 2 columnas (sin mapa) -->
+        <div class="grid2">
+
+            <!-- COLUMNA 1: RANKING -->
+            <div>
+                <div class="card" style="overflow:hidden;">
+                    <div class="card-head">
+                        <span class="card-title" id="rank-titulo">10 más baratos</span>
+                        <span class="cache-badge" id="cache-badge">—</span>
+                    </div>
+                    <div class="t-scroll">
+                        <table class="tabla">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Permisionario</th>
+                                    <th>Precio</th>
+                                    <th>Cat.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rank-body">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;color:#ccc;padding:18px">
+                                        Cargando...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 2: DETALLE -->
+            <div class="detail-panel">
+                <div class="detail-card" id="detail-card">
+                    <div class="detail-placeholder" id="detail-ph">
+                        <div class="detail-placeholder-ico">🔥</div>
+                        <div class="detail-placeholder-txt">
+                            Haz clic en una fila del ranking<br>para ver detalles del proveedor
+                        </div>
+                    </div>
+                    <div id="detail-content" style="display:none">
+                        <div class="detail-nombre" id="d-marca">—</div>
+                        <div class="detail-permiso" id="d-permiso">—</div>
+                        <div class="detail-meta" id="d-meta">—</div>
+                        <div class="detail-precio">
+                            <div class="precio-grande" id="d-precio">--</div>
+                            <div class="precio-label">por kg</div>
+                        </div>
+                        <div class="detail-tags" id="d-tags"></div>
+                    </div>
+                </div>
+
+                <!-- Info de caché -->
+                <div class="cache-card" id="cache-card">
+                    <div class="cache-info">
+                        <div class="cache-ico" id="cache-ico">💾</div>
+                        <div>
+                            <div class="cache-titulo" id="cache-titulo">Sin datos</div>
+                            <div class="cache-sub" id="cache-sub">Los datos se actualizan cada semana</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /grid2 -->
+
+        <div class="footer">
+            Fuente: Comisión Nacional de Energía (CNE) · México · Datos actualizados semanalmente
+        </div>
+
+    </div><!-- /dashboard -->
+
+</div><!-- /wrap -->
+
+<script>
+    var CATALOGO = {{ catalogo | safe }};
+</script>
+
+<script src="/static/js/gas_lp.js"></script>
+
+</body>
+</html>

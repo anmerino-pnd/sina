@@ -163,6 +163,31 @@ def save_localidades_to_db(entidad_id: int, municipio_id_str: str) -> dict:
 
     return resultado
 
+def get_localidades_by_municipio(entidad_id: int, municipio_id: str) -> list[dict]:
+    """
+    Devuelve lista de localidades para un municipio dado, desde la DB.
+    Ideal para poblar el dropdown de localidad en el frontend.
+
+    Returns:
+        [
+            {"id": 289, "nombre": "Hermosillo"},
+            {"id": 664, "nombre": "20 de Noviembre"},
+            ...
+        ]
+    """
+    with get_session() as session:
+        rows = (
+            session.query(Localidad.localidad_id, Localidad.nombre)
+            .filter_by(
+                entidad_id=entidad_id,
+                municipio_id=municipio_id,
+            )
+            .order_by(Localidad.nombre.asc())
+            .all()
+        )
+        return [{"id": r.localidad_id, "nombre": r.nombre} for r in rows]
+
+
 def get_precios_gas_lp(
     estado:    str,
     municipio: str,
