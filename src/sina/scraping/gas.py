@@ -7,9 +7,10 @@ import unicodedata
 import pandas as pd
 from typing import Any
 from pathlib import Path
-from datetime import date
+from datetime import datetime
 from bs4 import BeautifulSoup, Tag
-from sina.config.paths import CATALOGO_MUNICIPIOS_PATH
+from sina.config.credentials import DB_URL
+from sina.db.repository import GasolinaRepository
 from sina.config.credentials import (
     gasolina_api_rest, 
     cne_refer, 
@@ -106,7 +107,7 @@ def transform_gas_prices(estado: str, municipio: str,
             "magna"         : row.get("Magna"),
             "premium"       : row.get("Premium"),
             "diesel"        : row.get("Diesel"),
-            "fecha_registro": date.today(),
+            "fecha_registro": datetime.utcnow(),
         }
         for _, row in df_pivot.iterrows()
     ]
@@ -242,3 +243,57 @@ def scrape_municipio(
 
     log.info(f"  ✅ {municipio}: {len(resultados)}/{total} exitosas")
     return resultados
+
+def get_precios_gasolina(estado: str, municipio: str,
+                         entidad_id: int, municipio_id: str) -> dict:
+    """
+    Caché on-demand 24h para precios de gasolina.
+    Espejo de get_precios_gas_lp().
+    """
+
+    repo = GasolinaRepository(db_url=DB_URL)
+
+    # ── 1. Verificar caché ─────────────────────────────────────
+    if not repo.necesita_actualizacion(estado, municipio):
+        registros = repo.obtener_por_municipio(estado, municipio)
+        return {
+            "status"   : "ok",
+            "fuente"   : "cache",
+            "estado"   : estado,
+            "municipio": municipio,
+            "total"    : len(registros),
+            "datos"    : registros,
+        }
+
+    # ── 2. Llamar a CRE y actualizar DB ───────────────────────
+    try:
+        nuevos = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
+        repo.upsert_precios(nuevos)
+    except Exception as e:
+        log.error(f"Error actualizando gasolina {estado}/{municipio}: {e}")
+        # Si hay datos viejos, los devolvemos igual
+        registros = repo.obtener_por_municipio(estado, municipio)
+        if registros:
+            return {
+                "status"   : "ok",
+                "fuente"   : "cache_vencido",
+                "estado"   : estado,
+                "municipio": municipio,
+                "total"    : len(registros),
+                "datos"    : registros,
+            }
+        return {
+            "status" : "error",
+            "detail" : f"API no disponible y sin datos en caché: {e}",
+        }
+
+    # ── 3. Leer de DB y devolver (consistencia) ───────────────
+    registros = repo.obtener_por_municipio(estado, municipio)
+    return {
+        "status"   : "ok",
+        "fuente"   : "api",
+        "estado"   : estado,
+        "municipio": municipio,
+        "total"    : len(registros),
+        "datos"    : registros,
+    }

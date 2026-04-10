@@ -128,6 +128,24 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                 session.execute(stmt)
             session.commit()
 
+    def necesita_actualizacion(self, estado: str, municipio: str) -> bool:
+        """
+        True = no hay datos O tienen más de 24 horas.
+        """
+        with self.Session() as session:
+            ultimo = (
+                session.query(self.model)
+                .filter_by(
+                    estado=estado.lower(),
+                    municipio=municipio.lower()
+                )
+                .order_by(self.model.fecha_registro.desc())
+                .first()
+            )
+            if ultimo is None:
+                return True
+            return not ultimo.esta_vigente()
+
 class EntidadFederativaRepository(BaseRepository[EntidadFederativa]):
     model = EntidadFederativa
 

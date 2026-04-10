@@ -50,6 +50,24 @@ class PrecioGasolina(Base):
 
     fecha_registro = Column(DateTime, nullable=True)
 
+    def __repr__(self):
+        return (
+            f"<PrecioGasolina {self.numero} | "
+            f"{self.municipio}, {self.estado} | "
+            f"magna={self.magna} premium={self.premium} diesel={self.diesel}>"
+        )
+
+    def esta_vigente(self) -> bool:
+        """
+        Gasolina se actualiza casi diario.
+        Consideramos vigente si tiene menos de 24 horas.
+        """
+        if self.fecha_registro is None:
+            return False
+        fecha: datetime = cast(datetime, self.fecha_registro)
+        delta = datetime.utcnow() - fecha
+        return delta.total_seconds() < 86400  # 24 horas en segundos
+
 class EntidadFederativa(Base):
     """Catálogo de estados de México (CNE)."""
     __tablename__ = "cne_entidades"

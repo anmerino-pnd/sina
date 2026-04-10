@@ -20,8 +20,9 @@ from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS
 from sina.scraping.gas import (
     scrape_municipio,
     transform_gas_prices,
+    get_precios_gasolina
 )
-# from sina.pipeline.gas import pipeline_nacional
+from sina.scraping.gas_lp import get_precios_gas_lp
 from sina.config.credentials import DB_URL, casa_ley_url
 from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
@@ -105,37 +106,27 @@ async def view_gasolina(request: Request):
 # ============================================================
 @app.get("/api/v1/gasolina")
 async def get_gasolina(estado: str, municipio: str):
-    """
-    Consulta precios de gasolineras desde la DB.
-    Fuente: scraping (lat/lng) + CRE API (precios).
-    """
-    estado, municipio, _, _ = _validar_ubicacion(estado, municipio)
+    estado, municipio, entidad_id, municipio_id = _validar_ubicacion(estado, municipio)
 
     try:
-        repo      = GasolinaRepository(db_url=DB_URL)
-        registros = repo.obtener_por_municipio(estado, municipio)
+        resultado = get_precios_gasolina(estado, municipio, entidad_id, municipio_id)
 
-        if not registros:
+        if resultado.get("status") == "error":
+            raise HTTPException(status_code=503, detail=resultado["detail"])
+
+        if resultado["total"] == 0:
             raise HTTPException(
                 status_code=404,
-                detail=f"Sin datos para {municipio}, {estado}. "
-                       f"Ejecuta POST /api/v1/gasolina/update primero."
+                detail=f"Sin datos para {municipio}, {estado}."
             )
 
-        return {
-            "status"   : "ok",
-            "estado"   : estado,
-            "municipio": municipio,
-            "total"    : len(registros),
-            "datos"    : registros,
-        }
+        return resultado
 
     except HTTPException:
         raise
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/api/v1/update/gasolina")
 async def update_gasolina(estado: str, municipio: str):
@@ -179,6 +170,30 @@ async def update_ubicaciones_gasolineras(estado: str, municipio: str):
             "total_en_db" : repo.contar(),
         }
 
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+# ============================================================
+#  API · GAS LP
+# ============================================================
+@app.get("/api/v1/gas-lp")
+async def get_gas_lp(estado: str, municipio: str, localidad: str):
+    """
+    Precios de Gas LP por localidad.
+    Caché semanal on-demand — llama a CNE solo si los datos vencieron.
+    """
+    try:
+        resultado = get_precios_gas_lp(estado, municipio, localidad)
+
+        if "error" in resultado:
+            status = 404 if "no encontrada" in resultado["error"].lower() else 503
+            raise HTTPException(status_code=status, detail=resultado["error"])
+
+        return resultado
+
+    except HTTPException:
+        raise
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
