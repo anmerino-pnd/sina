@@ -4,7 +4,7 @@ from sqlalchemy import (
     DateTime, ForeignKey, UniqueConstraint
 )
 from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import cast
 
 Base = declarative_base()
@@ -65,7 +65,9 @@ class PrecioGasolina(Base):
         if self.fecha_registro is None:
             return False
         fecha: datetime = cast(datetime, self.fecha_registro)
-        delta = datetime.utcnow() - fecha
+        if fecha.tzinfo is None:
+            fecha = fecha.replace(tzinfo=timezone.utc)
+        delta = datetime.now(timezone.utc) - fecha
         return delta.total_seconds() < 86400  # 24 horas en segundos
 
 class EntidadFederativa(Base):
@@ -171,7 +173,8 @@ class GasLPPrecio(Base):
     precio = Column(Float, nullable=False)
 
     # ── Control de caché ───────────────────────────────────────
-    fecha_extraccion = Column(DateTime, default=datetime.utcnow, nullable=False)
+    fecha_extraccion = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
 
     __table_args__ = (
         UniqueConstraint(
@@ -189,11 +192,14 @@ class GasLPPrecio(Base):
         )
     
     def esta_vigente(self) -> bool:
-        hoy = datetime.utcnow().date()
+        hoy = datetime.now(timezone.utc).date()
         dias_desde_sabado = (hoy.weekday() - 5) % 7
         ultimo_sabado = datetime.combine(
             hoy - timedelta(days=dias_desde_sabado),
-            datetime.min.time()
+            datetime.min.time(),
+            tzinfo=timezone.utc  # ← agregar esto
         )
         fecha: datetime = cast(datetime, self.fecha_extraccion)
+        if fecha.tzinfo is None:
+            fecha = fecha.replace(tzinfo=timezone.utc)
         return fecha >= ultimo_sabado

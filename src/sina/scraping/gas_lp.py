@@ -18,7 +18,7 @@ Uso típico:
 import logging
 import requests
 from typing import cast
-from datetime import datetime
+from datetime import datetime, timezone
 from sina.config.credentials import DB_URL
 from sina.db.repository import get_session, GasLPRepository
 from sina.db.models import Localidad, EntidadFederativa, Municipio
@@ -343,7 +343,7 @@ def _transformar_para_db(datos_api: dict, loc: Localidad,
         "Recipientes": [{"Precio": 19.71, "CapacidadRecipiente": 10, ...}, ...]
     }
     """
-    ahora    = datetime.utcnow()
+    ahora    = datetime.now(timezone.utc)
     registros = []
 
     # ── Autotanques ────────────────────────────────────────────

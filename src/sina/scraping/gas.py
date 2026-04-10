@@ -1,14 +1,12 @@
 import re
 import time
-import json
 import logging
 import requests
 import unicodedata
 import pandas as pd
 from typing import Any
-from pathlib import Path
-from datetime import datetime
 from bs4 import BeautifulSoup, Tag
+from datetime import datetime, timezone
 from sina.config.credentials import DB_URL
 from sina.db.repository import GasolinaRepository
 from sina.config.credentials import (
@@ -107,7 +105,7 @@ def transform_gas_prices(estado: str, municipio: str,
             "magna"         : row.get("Magna"),
             "premium"       : row.get("Premium"),
             "diesel"        : row.get("Diesel"),
-            "fecha_registro": datetime.utcnow(),
+            "fecha_registro": datetime.now(timezone.utc),
         }
         for _, row in df_pivot.iterrows()
     ]
@@ -255,6 +253,7 @@ def get_precios_gasolina(estado: str, municipio: str,
 
     # ── 1. Verificar caché ─────────────────────────────────────
     if not repo.necesita_actualizacion(estado, municipio):
+        print(f"Devolviendo datos en caché para {estado}/{municipio}")
         registros = repo.obtener_por_municipio(estado, municipio)
         return {
             "status"   : "ok",
@@ -267,6 +266,7 @@ def get_precios_gasolina(estado: str, municipio: str,
 
     # ── 2. Llamar a CRE y actualizar DB ───────────────────────
     try:
+        print(f"Actualizando precios de gasolina para {estado}/{municipio} desde API...")
         nuevos = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
         repo.upsert_precios(nuevos)
     except Exception as e:

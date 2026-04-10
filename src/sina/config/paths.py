@@ -1,7 +1,6 @@
 # sina/config/paths.py
 
 from pathlib import Path
-from datetime import date
 import locale
 locale.setlocale(locale.LC_TIME, "es_MX.UTF-8")
 
