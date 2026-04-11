@@ -14,6 +14,9 @@ var modoFijar    = false;         // modo para clic manual en mapa
 var pinManual    = null;          // marker del punto fijado manualmente
 var catFiltro = null; // null = todas, 'Barato', 'Promedio', 'Caro'
 var zoomAntes = null; // zoom antes de seleccionar un marker
+var calcType = 'litros'; // 'litros' o 'pesos'
+var calcAmount = 0;
+var selectedStation = null; // Estación seleccionada por el usuario
 
 // ─────────────────────────────────────────────
 //  AUTOCOMPLETE ESTADO
@@ -21,7 +24,17 @@ var zoomAntes = null; // zoom antes de seleccionar un marker
 function filtrarEstados() {
     var q  = document.getElementById('inp-estado').value.toLowerCase().trim();
     var ks = Object.keys(CATALOGO).sort();
-    var f  = q ? ks.filter(function(k){ return k.toLowerCase().indexOf(q) !== -1; }) : ks;
+    var f;
+    if (!q) {
+        f = ks;
+    } else {
+        // Prioritize prefix matches, then include substring matches
+        var prefix = ks.filter(function(k){ return k.toLowerCase().startsWith(q); });
+        var contains = ks.filter(function(k){ 
+            return !k.toLowerCase().startsWith(q) && k.toLowerCase().indexOf(q) !== -1; 
+        });
+        f = prefix.concat(contains);
+    }
     renderDrop('drop-estado', f, false, seleccionarEstado);
 }
 
@@ -42,7 +55,17 @@ function filtrarMunicipios() {
     if (!estadoSel) return;
     var q    = document.getElementById('inp-municipio').value.toLowerCase().trim();
     var muns = CATALOGO[estadoSel] || [];
-    var f    = q ? muns.filter(function(m){ return m.toLowerCase().indexOf(q) !== -1; }) : muns;
+    var f;
+    if (!q) {
+        f = muns;
+    } else {
+        // Prioritize prefix matches, then include substring matches
+        var prefix = muns.filter(function(m){ return m.toLowerCase().startsWith(q); });
+        var contains = muns.filter(function(m){ 
+            return !m.toLowerCase().startsWith(q) && m.toLowerCase().indexOf(q) !== -1; 
+        });
+        f = prefix.concat(contains);
+    }
     renderDrop('drop-municipio', f, true, seleccionarMunicipio);
 }
 
@@ -146,6 +169,7 @@ async function cargarCiudad() {
         if (modoFijar) toggleModoFijar();
         initMapa();
         render();
+        renderFooterFecha(json.fecha_datos);
 
     } catch (e) {
         console.error(e);
@@ -355,6 +379,9 @@ function selMarker(idx) {
         s.m.setZIndexOffset(999);
         map.setView([s.d.Latitud, s.d.Longitud], 15, { animate: true, duration: 0.5 });
         s.m.openTooltip();
+        
+        // Actualizar calculadora con la estación seleccionada
+        setStationForCalculator(s.d);
     }
 }
 
@@ -366,25 +393,42 @@ function mostrarDetalle(d, precio, todosPrecios) {
     var dist = userLoc ? ' · ' + distKm(userLoc.lat, userLoc.lng, d.Latitud, d.Longitud).toFixed(1) + ' km' : '';
     var meta = combustible + ' · ' + cat + dist;
 
-    // Desktop (columna 3)
-    document.getElementById('detail-ph').style.display      = 'none';
-    document.getElementById('detail-content').style.display = 'block';
-    document.getElementById('detail-card').classList.add('filled');
-    txt('d-nombre', d.Nombre || '—');
-    txt('d-dir',    d.Direccion || 'Sin dirección registrada');
-    txt('d-meta',   meta);
-    setDV('d-magna',   d.Magna);
-    setDV('d-premium', d.Premium);
-    setDV('d-diesel',  d.Diesel);
+    // Check if right column is visible via CSS (detail card is inside col-side-right)
+    var colRight = document.querySelector('.col-right');
+    var isDesktop = colRight && window.getComputedStyle(colRight).display !== 'none';
 
-    // Inline (tablet/móvil)
-    document.getElementById('detail-inline').classList.add('visible');
-    txt('di-nombre', d.Nombre || '—');
-    txt('di-dir',    d.Direccion || 'Sin dirección registrada');
-    txt('di-meta',   meta);
-    setDVId('di-magna',   d.Magna);
-    setDVId('di-premium', d.Premium);
-    setDVId('di-diesel',  d.Diesel);
+    if (isDesktop) {
+        // Desktop — show detail card only
+        document.getElementById('detail-ph').style.display      = 'none';
+        document.getElementById('detail-content').style.display = 'block';
+        document.getElementById('detail-card').classList.add('filled');
+        txt('d-nombre', d.Nombre || '—');
+        txt('d-dir',    d.Direccion || 'Sin dirección registrada');
+        txt('d-meta',   meta);
+        setDV('d-magna',   d.Magna);
+        setDV('d-premium', d.Premium);
+        setDV('d-diesel',  d.Diesel);
+
+        // Hide inline
+        document.getElementById('detail-inline').classList.remove('visible');
+    } else {
+        // Tablet/mobile — show inline detail only
+        document.getElementById('detail-inline').classList.add('visible');
+        txt('di-nombre', d.Nombre || '—');
+        txt('di-dir',    d.Direccion || 'Sin dirección registrada');
+        txt('di-meta',   meta);
+        setDVId('di-magna',   d.Magna);
+        setDVId('di-premium', d.Premium);
+        setDVId('di-diesel',  d.Diesel);
+
+        // Reset desktop detail
+        document.getElementById('detail-ph').style.display      = 'flex';
+        document.getElementById('detail-content').style.display = 'none';
+        document.getElementById('detail-card').classList.remove('filled');
+    }
+
+    // Update calculator with selected station
+    setStationForCalculator(d);
 }
 
 function setDV(id, val) {
@@ -401,10 +445,20 @@ function setDV(id, val) {
 function setDVId(id, val) { setDV(id, val); }
 
 function resetDetalle() {
-    document.getElementById('detail-ph').style.display      = 'flex';
-    document.getElementById('detail-content').style.display = 'none';
-    document.getElementById('detail-card').classList.remove('filled');
+    var colRight = document.querySelector('.col-right');
+    var isDesktop = colRight && window.getComputedStyle(colRight).display !== 'none';
+
+    if (isDesktop) {
+        document.getElementById('detail-ph').style.display      = 'flex';
+        document.getElementById('detail-content').style.display = 'none';
+        document.getElementById('detail-card').classList.remove('filled');
+    }
+
     document.getElementById('detail-inline').classList.remove('visible');
+
+    // Clear selected station — falls back to most expensive
+    selectedStation = null;
+    calcularCosto();
 }
 
 // ─────────────────────────────────────────────
@@ -805,4 +859,163 @@ function aplicarFiltroMapa() {
             ref.m.off('click');
         }
     });
+}
+
+// ─────────────────────────────────────────────
+//  CALCULADORA DE COSTO
+// ─────────────────────────────────────────────
+function setCalcType(type) {
+    calcType = type;
+    document.getElementById('calc-type-litros').classList.toggle('active', type === 'litros');
+    document.getElementById('calc-type-pesos').classList.toggle('active', type === 'pesos');
+
+    // Set default amount for the selected type
+    var input = document.getElementById('calc-amount');
+    input.placeholder = type === 'litros' ? '35' : '300';
+    input.value = type === 'litros' ? 35 : 300;
+
+    calcularCosto();
+}
+
+function getEstacionMasCara() {
+    var estacionCara = null;
+    var precioCaro = -Infinity;
+
+    for (var i = 0; i < datos.length; i++) {
+        var precio = datos[i][combustible];
+        if (precio !== null && !isNaN(precio) && precio > precioCaro) {
+            precioCaro = precio;
+            estacionCara = datos[i];
+        }
+    }
+    return estacionCara;
+}
+
+function calcularCosto() {
+    if (datos.length === 0) {
+        document.getElementById('calc-results').style.display = 'none';
+        return;
+    }
+
+    var amountInput = document.getElementById('calc-amount');
+    var amount = parseFloat(amountInput.value);
+
+    // Find cheapest station
+    var estacionBarata = null;
+    var precioBarato = Infinity;
+    for (var i = 0; i < datos.length; i++) {
+        var precio = datos[i][combustible];
+        if (precio !== null && !isNaN(precio) && precio < precioBarato) {
+            precioBarato = precio;
+            estacionBarata = datos[i];
+        }
+    }
+
+    if (!estacionBarata) {
+        document.getElementById('calc-results').style.display = 'none';
+        return;
+    }
+
+    // Default amount if not set
+    if (!amount || amount <= 0) {
+        amount = calcType === 'litros' ? 35 : 300;
+    }
+
+    calcAmount = amount;
+
+    // Calculate values for cheapest station
+    var litrosBarato = 0;
+    var costoBarato = 0;
+
+    if (calcType === 'litros') {
+        litrosBarato = amount;
+        costoBarato = amount * precioBarato;
+    } else {
+        litrosBarato = amount / precioBarato;
+        costoBarato = amount;
+    }
+
+    // Display cheapest station result
+    document.getElementById('calc-results').style.display = 'block';
+
+    if (calcType === 'litros') {
+        txt('calc-cheap-value', '$' + costoBarato.toFixed(2));
+        txt('calc-cheap-name', estacionBarata.Nombre || '—');
+    } else {
+        txt('calc-cheap-value', litrosBarato.toFixed(2) + ' L');
+        txt('calc-cheap-name', estacionBarata.Nombre || '—');
+    }
+
+    // Reference station (user selection or most expensive by default)
+    var referencia = selectedStation || getEstacionMasCara();
+
+    if (referencia && referencia.Numero !== estacionBarata.Numero) {
+        var precioSeleccionado = referencia[combustible];
+
+        if (precioSeleccionado !== null && !isNaN(precioSeleccionado)) {
+            var litrosSeleccionado = 0;
+            var costoSeleccionado = 0;
+
+            if (calcType === 'litros') {
+                litrosSeleccionado = amount;
+                costoSeleccionado = amount * precioSeleccionado;
+            } else {
+                litrosSeleccionado = amount / precioSeleccionado;
+                costoSeleccionado = amount;
+            }
+
+            document.getElementById('calc-sel-line').style.display = 'flex';
+            txt('calc-sel-name', referencia.Nombre || '—');
+
+            if (calcType === 'litros') {
+                txt('calc-selected-value', '$' + costoSeleccionado.toFixed(2));
+            } else {
+                txt('calc-selected-value', litrosSeleccionado.toFixed(2) + ' L');
+            }
+
+            document.getElementById('calc-diff').style.display = 'flex';
+
+            if (calcType === 'litros') {
+                var diffPesos = costoSeleccionado - costoBarato;
+                var diffPercent = ((diffPesos / costoBarato) * 100).toFixed(1);
+                txt('calc-diff-amount', '+$' + diffPesos.toFixed(2));
+                txt('calc-diff-percent', '+' + diffPercent + '%');
+            } else {
+                var diffLitros = litrosBarato - litrosSeleccionado;
+                var diffPercent = ((diffLitros / litrosBarato) * 100).toFixed(1);
+                txt('calc-diff-amount', '+' + diffLitros.toFixed(2) + ' L más');
+                txt('calc-diff-percent', '+' + diffPercent + '%');
+            }
+        } else {
+            document.getElementById('calc-sel-line').style.display = 'none';
+            document.getElementById('calc-diff').style.display = 'none';
+        }
+    } else {
+        document.getElementById('calc-sel-line').style.display = 'none';
+        document.getElementById('calc-diff').style.display = 'none';
+    }
+}
+
+function setStationForCalculator(station) {
+    selectedStation = station;
+    calcularCosto();
+}
+
+// ─────────────────────────────────────────────
+//  FOOTER FECHA
+// ─────────────────────────────────────────────
+function renderFooterFecha(fecha) {
+    txt('footer-fecha', formatFecha(fecha));
+}
+
+function formatFecha(fecha) {
+    if (!fecha) return '—';
+    try {
+        var d = new Date(fecha);
+        if (isNaN(d.getTime())) return '—';
+        var opciones = { day: 'numeric', month: 'short', year: 'numeric' };
+        return d.toLocaleDateString('es-MX', opciones);
+    } catch(e) {
+        return '—';
+    }
 }

@@ -6,6 +6,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timedelta, timezone
 from typing import cast
+from sina.config.timezone import get_mexico_now, to_mexico_tz
 
 Base = declarative_base()
 
@@ -67,7 +68,9 @@ class PrecioGasolina(Base):
         fecha: datetime = cast(datetime, self.fecha_registro)
         if fecha.tzinfo is None:
             fecha = fecha.replace(tzinfo=timezone.utc)
-        delta = datetime.now(timezone.utc) - fecha
+        fecha_mx = to_mexico_tz(fecha)
+        ahora_mx = get_mexico_now()
+        delta = ahora_mx - fecha_mx
         return delta.total_seconds() < 86400  # 24 horas en segundos
 
 class EntidadFederativa(Base):
@@ -192,14 +195,21 @@ class GasLPPrecio(Base):
         )
     
     def esta_vigente(self) -> bool:
-        hoy = datetime.now(timezone.utc).date()
-        dias_desde_sabado = (hoy.weekday() - 5) % 7
-        ultimo_sabado = datetime.combine(
-            hoy - timedelta(days=dias_desde_sabado),
-            datetime.min.time(),
-            tzinfo=timezone.utc  # ← agregar esto
-        )
+        """
+        Gas LP se actualiza semanalmente (cada sábado).
+        Usamos la fecha de México para determinar vigencia.
+        """
         fecha: datetime = cast(datetime, self.fecha_extraccion)
         if fecha.tzinfo is None:
             fecha = fecha.replace(tzinfo=timezone.utc)
-        return fecha >= ultimo_sabado
+        fecha_mx = to_mexico_tz(fecha)
+        ahora_mx = get_mexico_now()
+        
+        # Obtener el último sábado en zona horaria de México
+        hoy_mx = ahora_mx.date()
+        dias_desde_sabado = (hoy_mx.weekday() - 5) % 7
+        ultimo_sabado = ahora_mx.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) - timedelta(days=dias_desde_sabado)
+        
+        return fecha_mx >= ultimo_sabado

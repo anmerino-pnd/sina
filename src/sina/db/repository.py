@@ -72,6 +72,7 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                     "diesel"   : r.diesel,
                     "latitud"  : r.latitud,
                     "longitud" : r.longitud,
+                    "fecha_extraccion": r.fecha_registro,
                 }
                 for r in rows
             ]

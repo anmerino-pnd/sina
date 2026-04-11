@@ -23,6 +23,7 @@ from sina.config.credentials import DB_URL
 from sina.db.repository import get_session, GasLPRepository
 from sina.db.models import Localidad, EntidadFederativa, Municipio
 from sina.config.credentials import cne_localidades_url, cne_precios_gas_lp_url
+from sina.config.timezone import get_mexico_now, to_mexico_tz
 
 logger = logging.getLogger(__name__)
 
@@ -368,7 +369,7 @@ def _transformar_para_db(datos_api: dict, loc: Localidad,
         "Recipientes": [{"Precio": 19.71, "CapacidadRecipiente": 10, ...}, ...]
     }
     """
-    ahora    = datetime.now(timezone.utc)
+    ahora    = get_mexico_now()
     registros = []
 
     # ── Autotanques ────────────────────────────────────────────

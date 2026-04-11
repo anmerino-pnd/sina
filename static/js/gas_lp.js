@@ -3,8 +3,8 @@
    ============================================================ */
 
 var datos        = [];
-var tipoSel      = 'autotanque';
-var capSel       = 'all';
+var tipoSel      = 'recipiente';
+var capSel       = null;
 var estadoSel    = '';
 var munSel       = '';
 var locSel       = '';
@@ -20,7 +20,17 @@ var _locCache    = [];
 function filtrarEstados() {
     var q  = document.getElementById('inp-estado').value.toLowerCase().trim();
     var ks = Object.keys(CATALOGO).sort();
-    var f  = q ? ks.filter(function(k){ return k.toLowerCase().indexOf(q) !== -1; }) : ks;
+    var f;
+    if (!q) {
+        f = ks;
+    } else {
+        // Prioritize prefix matches, then include substring matches
+        var prefix = ks.filter(function(k){ return k.toLowerCase().startsWith(q); });
+        var contains = ks.filter(function(k){ 
+            return !k.toLowerCase().startsWith(q) && k.toLowerCase().indexOf(q) !== -1; 
+        });
+        f = prefix.concat(contains);
+    }
     renderDrop('drop-estado', f, false, seleccionarEstado);
 }
 
@@ -49,7 +59,17 @@ function filtrarMunicipios() {
     if (!estadoSel) return;
     var q    = document.getElementById('inp-municipio').value.toLowerCase().trim();
     var muns = CATALOGO[estadoSel] || [];
-    var f    = q ? muns.filter(function(m){ return m.toLowerCase().indexOf(q) !== -1; }) : muns;
+    var f;
+    if (!q) {
+        f = muns;
+    } else {
+        // Prioritize prefix matches, then include substring matches
+        var prefix = muns.filter(function(m){ return m.toLowerCase().startsWith(q); });
+        var contains = muns.filter(function(m){ 
+            return !m.toLowerCase().startsWith(q) && m.toLowerCase().indexOf(q) !== -1; 
+        });
+        f = prefix.concat(contains);
+    }
     renderDrop('drop-municipio', f, true, seleccionarMunicipio);
 }
 
@@ -76,9 +96,17 @@ async function filtrarLocalidades() {
     // Si ya tenemos cached, filtramos local
     if (_locCache.length > 0) {
         var q = document.getElementById('inp-localidad').value.toLowerCase().trim();
-        var f = q
-            ? _locCache.filter(function(l){ return l.nombre.toLowerCase().indexOf(q) !== -1; })
-            : _locCache;
+        var f;
+        if (!q) {
+            f = _locCache;
+        } else {
+            // Prioritize prefix matches, then include substring matches
+            var prefix = _locCache.filter(function(l){ return l.nombre.toLowerCase().startsWith(q); });
+            var contains = _locCache.filter(function(l){ 
+                return !l.nombre.toLowerCase().startsWith(q) && l.nombre.toLowerCase().indexOf(q) !== -1; 
+            });
+            f = prefix.concat(contains);
+        }
         renderLocalidadesDrop(f.map(function(l){ return l.nombre; }));
         return;
     }
@@ -102,9 +130,17 @@ async function filtrarLocalidades() {
     }
 
     var q2 = document.getElementById('inp-localidad').value.toLowerCase().trim();
-    var f2 = q2
-        ? _locCache.filter(function(l){ return l.nombre.toLowerCase().indexOf(q2) !== -1; })
-        : _locCache;
+    var f2;
+    if (!q2) {
+        f2 = _locCache;
+    } else {
+        // Prioritize prefix matches, then include substring matches
+        var prefix2 = _locCache.filter(function(l){ return l.nombre.toLowerCase().startsWith(q2); });
+        var contains2 = _locCache.filter(function(l){ 
+            return !l.nombre.toLowerCase().startsWith(q2) && l.nombre.toLowerCase().indexOf(q2) !== -1; 
+        });
+        f2 = prefix2.concat(contains2);
+    }
     renderLocalidadesDrop(f2.map(function(l){ return l.nombre; }));
 }
 
@@ -228,8 +264,8 @@ async function cargarLocalidad() {
 
         if (datos.length === 0) { mostrarSinDatos(); return; }
 
-        tipoSel  = 'autotanque';
-        capSel   = 'all';
+        tipoSel  = 'recipiente';
+        capSel   = null;
         idxSel   = -1;
 
         document.getElementById('dashboard').style.display = 'block';
@@ -238,7 +274,7 @@ async function cargarLocalidad() {
 
         syncPills();
         render();
-        renderCacheInfo(json);
+        renderFooterFecha(json.fecha_datos);
 
     } catch (e) {
         console.error(e);
@@ -272,9 +308,9 @@ async function fetchLocationIds() {
 //  RENDER COMPLETO
 // ─────────────────────────────────────────────
 function render() {
+    renderCapPills();   // Cap pills first — sets capSel to first available
     renderKPIs();
     renderRanking();
-    renderCapPills();
 }
 
 // ─────────────────────────────────────────────
@@ -285,7 +321,7 @@ function renderKPIs() {
     var ps = filtrados.map(function(d){ return d.precio; }).filter(function(v){ return v !== null && !isNaN(v); });
 
     txt('sec-label',   'Precios de Gas LP · ' + cap(locSel) + ', ' + cap(munSel));
-    txt('rank-titulo', '🏆 Top 10 más baratos · ' + labelTipo(tipoSel));
+    txt('rank-titulo', 'Proveedores · ' + labelTipo(tipoSel));
 
     if (ps.length === 0) {
         txt('kpi-prom','--'); txt('kpi-min','--'); txt('kpi-max','--'); txt('kpi-total','0');
@@ -325,9 +361,18 @@ function renderCapPills() {
 
     var capsArr = Array.from(caps).sort(function(a,b){ return a - b; });
 
-    // Reconstruir pills (mantener "Todos")
+    if (capsArr.length === 0) {
+        row.style.display = 'none';
+        return;
+    }
+
+    // Default: if no capacity selected, pick first available BEFORE building HTML
+    if (capSel === null) {
+        capSel = capsArr[0];
+    }
+
+    // Build pills with active class already set
     var html = '<span class="pills-label">Capacidad</span>';
-    html += '<button class="pill cap-pill ' + (capSel === 'all' ? 'active' : '') + '" onclick="setCapacidad(\'all\')">Todos</button>';
     capsArr.forEach(function(c){
         html += '<button class="pill cap-pill ' + (capSel == c ? 'active' : '') + '" onclick="setCapacidad(' + c + ')">' + c + ' kg</button>';
     });
@@ -340,7 +385,7 @@ function renderCapPills() {
 function datosFiltrados() {
     var lista = datos.filter(function(d){ return d.tipo === tipoSel; });
 
-    if (tipoSel === 'recipiente' && capSel !== 'all') {
+    if (tipoSel === 'recipiente' && capSel !== null) {
         var capNum = parseInt(capSel);
         lista = lista.filter(function(d){ return d.capacidad_recipiente === capNum; });
     }
@@ -436,21 +481,22 @@ function resetDetalle() {
 }
 
 // ─────────────────────────────────────────────
-//  CACHE INFO
+//  FOOTER FECHA
 // ─────────────────────────────────────────────
-function renderCacheInfo(json) {
-    var badge = document.getElementById('cache-badge');
-    var fuente = json.fuente || 'cache';
+function renderFooterFecha(fecha) {
+    txt('footer-fecha', formatFecha(fecha));
+}
 
-    badge.textContent = fuente === 'api' ? '📡 API CNE' :
-                        fuente === 'cache_vencido' ? '⏰ Datos anteriores' : '💾 Caché';
-    badge.className   = 'cache-badge fuente-' + fuente;
-
-    txt('cache-titulo', fuente === 'api' ? 'Datos actualizados hoy' :
-                         fuente === 'cache_vencido' ? 'Datos vigentes hasta nueva actualización' :
-                         'Datos en caché');
-    txt('cache-sub', 'Última extracción: ' + formatFecha(json.fecha_datos));
-    txt('cache-ico', fuente === 'api' ? '📡' : fuente === 'cache_vencido' ? '⏰' : '💾');
+function formatFecha(fecha) {
+    if (!fecha) return '—';
+    try {
+        var d = new Date(fecha);
+        if (isNaN(d.getTime())) return '—';
+        var opciones = { day: 'numeric', month: 'short', year: 'numeric' };
+        return d.toLocaleDateString('es-MX', opciones);
+    } catch(e) {
+        return '—';
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -458,7 +504,7 @@ function renderCacheInfo(json) {
 // ─────────────────────────────────────────────
 function setTipo(tipo) {
     tipoSel = tipo;
-    capSel  = 'all';
+    capSel  = null;
     idxSel  = -1;
     resetDetalle();
     syncPills();

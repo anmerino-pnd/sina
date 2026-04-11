@@ -86,14 +86,13 @@
         <!-- Fila de tipo -->
         <div class="pills-row">
             <span class="pills-label">Tipo</span>
-            <button class="pill active" id="pill-autotanque" onclick="setTipo('autotanque')">🚛 Autotanques</button>
-            <button class="pill"        id="pill-recipiente" onclick="setTipo('recipiente')">🏺 Recipientes</button>
+            <button class="pill active" id="pill-recipiente" onclick="setTipo('recipiente')">🏺 Recipientes</button>
+            <button class="pill"        id="pill-autotanque" onclick="setTipo('autotanque')">🚛 Autotanques</button>
         </div>
 
         <!-- Sub-pills para capacidad (solo recipientes) -->
         <div class="pills-row" id="cap-row" style="display:none">
             <span class="pills-label">Capacidad</span>
-            <button class="pill cap-pill active" data-cap="all" onclick="setCapacidad('all')">Todos</button>
             <!-- Se llenan dinámicamente -->
         </div>
 
@@ -127,7 +126,6 @@
                 <div class="card" style="overflow:hidden;">
                     <div class="card-head">
                         <span class="card-title" id="rank-titulo">10 más baratos</span>
-                        <span class="cache-badge" id="cache-badge">—</span>
                     </div>
                     <div class="t-scroll">
                         <table class="tabla">
@@ -172,22 +170,12 @@
                     </div>
                 </div>
 
-                <!-- Info de caché -->
-                <div class="cache-card" id="cache-card">
-                    <div class="cache-info">
-                        <div class="cache-ico" id="cache-ico">💾</div>
-                        <div>
-                            <div class="cache-titulo" id="cache-titulo">Sin datos</div>
-                            <div class="cache-sub" id="cache-sub">Los datos se actualizan cada semana</div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
         </div><!-- /grid2 -->
 
         <div class="footer">
-            Fuente: Comisión Nacional de Energía (CNE) · México · Datos actualizados semanalmente
+            Fuente: Comisión Nacional de Energía (CNE) · México · Última extracción: <span id="footer-fecha">—</span>
         </div>
 
     </div><!-- /dashboard -->

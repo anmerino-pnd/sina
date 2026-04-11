@@ -241,17 +241,6 @@ body {
 
 .card-title { font-size: 0.86rem; font-weight: 600; }
 
-.cache-badge {
-    font-size: 0.68rem;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-weight: 600;
-}
-
-.cache-badge.fuente-api   { background: #d4f5e2; color: #1a7a45; }
-.cache-badge.fuente-cache { background: #e8f0fe; color: #1a56a0; }
-.cache-badge.fuente-cache_vencido { background: #fff3cd; color: #856404; }
-
 /* ── Tabla ranking ── */
 .t-scroll { max-height: 560px; overflow-y: auto; }
 

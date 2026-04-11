@@ -10,11 +10,12 @@ from datetime import datetime, timezone
 from sina.config.credentials import DB_URL
 from sina.db.repository import GasolinaRepository
 from sina.config.credentials import (
-    gasolina_api_rest, 
-    cne_refer, 
-    gasolineras_ubi, 
+    gasolina_api_rest,
+    cne_refer,
+    gasolineras_ubi,
     HEADERS
-    )
+)
+from sina.config.timezone import get_mexico_now, to_mexico_tz
 
 log = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ def transform_gas_prices(estado: str, municipio: str,
             "magna"         : row.get("Magna"),
             "premium"       : row.get("Premium"),
             "diesel"        : row.get("Diesel"),
-            "fecha_registro": datetime.now(timezone.utc),
+            "fecha_registro": get_mexico_now(),
         }
         for _, row in df_pivot.iterrows()
     ]
@@ -255,9 +256,11 @@ def get_precios_gasolina(estado: str, municipio: str,
     if not repo.necesita_actualizacion(estado, municipio):
         print(f"Devolviendo datos en caché para {estado}/{municipio}")
         registros = repo.obtener_por_municipio(estado, municipio)
+        fecha_datos = registros[0].get("fecha_extraccion") if registros else None
         return {
             "status"   : "ok",
             "fuente"   : "cache",
+            "fecha_datos": fecha_datos,
             "estado"   : estado,
             "municipio": municipio,
             "total"    : len(registros),
@@ -274,9 +277,11 @@ def get_precios_gasolina(estado: str, municipio: str,
         # Si hay datos viejos, los devolvemos igual
         registros = repo.obtener_por_municipio(estado, municipio)
         if registros:
+            fecha_datos = registros[0].get("fecha_extraccion") if registros else None
             return {
                 "status"   : "ok",
                 "fuente"   : "cache_vencido",
+                "fecha_datos": fecha_datos,
                 "estado"   : estado,
                 "municipio": municipio,
                 "total"    : len(registros),
@@ -289,9 +294,11 @@ def get_precios_gasolina(estado: str, municipio: str,
 
     # ── 3. Leer de DB y devolver (consistencia) ───────────────
     registros = repo.obtener_por_municipio(estado, municipio)
+    fecha_datos = registros[0].get("fecha_extraccion") if registros else None
     return {
         "status"   : "ok",
         "fuente"   : "api",
+        "fecha_datos": fecha_datos,
         "estado"   : estado,
         "municipio": municipio,
         "total"    : len(registros),

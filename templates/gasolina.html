@@ -85,32 +85,32 @@
 
         <div class="sec-label" id="sec-label">—</div>
 
-        <!-- KPIs -->
-        <div class="kpis">
-            <div class="kpi">
-                <div class="kpi-v" id="kpi-prom">--</div>
-                <div class="kpi-l">Promedio</div>
-            </div>
-            <div class="kpi min">
+        <!-- KPIs: 4 cards en fila -->
+        <div class="kpis-row">
+            <div class="kpi-card min">
                 <div class="kpi-v" id="kpi-min">--</div>
                 <div class="kpi-l">Mínimo</div>
             </div>
-            <div class="kpi max">
+            <div class="kpi-card">
+                <div class="kpi-v" id="kpi-prom">--</div>
+                <div class="kpi-l">Promedio</div>
+            </div>
+            <div class="kpi-card max">
                 <div class="kpi-v" id="kpi-max">--</div>
                 <div class="kpi-l">Máximo</div>
             </div>
-            <div class="kpi">
+            <div class="kpi-card">
                 <div class="kpi-v" id="kpi-est">--</div>
                 <div class="kpi-l">Estaciones</div>
             </div>
         </div>
 
-        <!-- Grid 3 columnas -->
-        <div class="grid3">
+        <!-- Dashboard grid: Mapa 50% | Derecha 50% (con sub-grid) -->
+        <div class="dash-grid">
 
-            <!-- COLUMNA 1: MAPA -->
-            <div>
-                <div class="card">
+            <!-- COLUMNA IZQUIERDA: Mapa (50%) -->
+            <div class="col-map">
+                <div class="card card-map">
                     <div class="map-head-row">
                         <div class="map-head-left">
                             <span class="card-title" id="mapa-titulo">Gasolineras</span>
@@ -141,101 +141,135 @@
                 </div>
             </div>
 
-            <!-- COLUMNA 2: RANKING -->
-            <div>
-                <div class="card" style="overflow:hidden;">
-                    <div class="card-head">
-                        <span class="card-title" id="rank-titulo">10 más baratas</span>
+            <!-- COLUMNA DERECHA: Calculadora+Ranking | Detalle+Cerca (50% con sub-grid) -->
+            <div class="col-right">
+                <!-- Sub-col izquierda: Calculadora + Ranking -->
+                <div class="col-side-left">
+                    <!-- Calculadora -->
+                    <div class="calc-card">
+                        <div class="calc-header">
+                            <span class="calc-title">⛽ Calculadora</span>
+                            <div class="calc-type">
+                                <button class="calc-type-btn active" id="calc-type-litros" onclick="setCalcType('litros')">Litros</button>
+                                <button class="calc-type-btn" id="calc-type-pesos" onclick="setCalcType('pesos')">$ Pesos</button>
+                            </div>
+                        </div>
+                        <div class="calc-body">
+                            <input type="number" id="calc-amount" class="calc-input" placeholder="35" min="0" step="0.01" oninput="calcularCosto()">
+                            <div class="calc-results" id="calc-results" style="display:none">
+                                <div class="calc-line">
+                                    <span class="calc-label">💰 Barata:</span>
+                                    <span class="calc-value" id="calc-cheap-value">--</span>
+                                </div>
+                                <div class="calc-sub" id="calc-cheap-name">—</div>
+                                <div class="calc-line calc-sel-line" id="calc-sel-line">
+                                    <span class="calc-label">📍 Referencia:</span>
+                                    <span class="calc-value calc-expensive" id="calc-selected-value">--</span>
+                                </div>
+                                <div class="calc-sub calc-sel-sub" id="calc-sel-name">—</div>
+                                <div class="calc-diff" id="calc-diff" style="display:none">
+                                    <span class="calc-diff-val" id="calc-diff-amount">--</span>
+                                    <span class="calc-diff-pct" id="calc-diff-percent"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="t-scroll">
-                        <table class="tabla">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Estación</th>
-                                    <th>Precio</th>
-                                    <th>Cat.</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rank-body">
-                                <tr>
-                                    <td colspan="4" style="text-align:center;color:#ccc;padding:18px">
-                                        Cargando...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                <!-- Detalle inline móvil -->
-                <div class="detail-inline" id="detail-inline">
-                    <div class="detail-nombre" id="di-nombre">—</div>
-                    <div class="detail-dir"    id="di-dir">—</div>
-                    <div class="detail-meta"   id="di-meta">—</div>
-                    <div class="detail-precios">
-                        <div class="dp-item">
-                            <div class="dp-tipo">Magna</div>
-                            <div class="dp-val" id="di-magna">--</div>
+                    <!-- Ranking -->
+                    <div class="rank-card">
+                        <div class="card-head">
+                            <span class="card-title" id="rank-titulo">10 más baratas</span>
                         </div>
-                        <div class="dp-item">
-                            <div class="dp-tipo">Premium</div>
-                            <div class="dp-val" id="di-premium">--</div>
-                        </div>
-                        <div class="dp-item">
-                            <div class="dp-tipo">Diesel</div>
-                            <div class="dp-val" id="di-diesel">--</div>
+                        <div class="t-scroll">
+                            <table class="tabla">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Estación</th>
+                                        <th>Precio</th>
+                                        <th>Cat.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rank-body">
+                                    <tr>
+                                        <td colspan="4" style="text-align:center;color:#ccc;padding:18px">
+                                            Cargando...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- COLUMNA 3: DETALLE + CERCA (solo desktop) -->
-            <div class="detail-panel">
-                <div class="detail-card" id="detail-card">
-                    <div class="detail-placeholder" id="detail-ph">
-                        <div class="detail-placeholder-ico">⛽</div>
-                        <div class="detail-placeholder-txt">
-                            Haz clic en un punto del mapa<br>o en una fila del ranking
-                        </div>
-                    </div>
-                    <div id="detail-content" style="display:none">
-                        <div class="detail-nombre" id="d-nombre">—</div>
-                        <div class="detail-dir"    id="d-dir">—</div>
-                        <div class="detail-meta"   id="d-meta">—</div>
+                    <!-- Detalle inline móvil -->
+                    <div class="detail-inline" id="detail-inline">
+                        <div class="detail-nombre" id="di-nombre">—</div>
+                        <div class="detail-dir"    id="di-dir">—</div>
+                        <div class="detail-meta"   id="di-meta">—</div>
                         <div class="detail-precios">
                             <div class="dp-item">
                                 <div class="dp-tipo">Magna</div>
-                                <div class="dp-val" id="d-magna">--</div>
+                                <div class="dp-val" id="di-magna">--</div>
                             </div>
                             <div class="dp-item">
                                 <div class="dp-tipo">Premium</div>
-                                <div class="dp-val" id="d-premium">--</div>
+                                <div class="dp-val" id="di-premium">--</div>
                             </div>
                             <div class="dp-item">
                                 <div class="dp-tipo">Diesel</div>
-                                <div class="dp-val" id="d-diesel">--</div>
+                                <div class="dp-val" id="di-diesel">--</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="cerca-card" id="cerca-card">
-                    <div class="card-head">
-                        <span class="card-title">📍 Cerca de ti</span>
+                <!-- Sub-col derecha: Detalle + Cerca -->
+                <div class="col-side-right">
+                    <div class="detail-card" id="detail-card">
+                        <div class="detail-placeholder" id="detail-ph">
+                            <div class="detail-placeholder-ico">⛽</div>
+                            <div class="detail-placeholder-txt">
+                                Haz clic en un punto del mapa<br>o en una fila del ranking
+                            </div>
+                        </div>
+                        <div id="detail-content" style="display:none">
+                            <div class="detail-nombre" id="d-nombre">—</div>
+                            <div class="detail-dir"    id="d-dir">—</div>
+                            <div class="detail-meta"   id="d-meta">—</div>
+                            <div class="detail-precios">
+                                <div class="dp-item">
+                                    <div class="dp-tipo">Magna</div>
+                                    <div class="dp-val" id="d-magna">--</div>
+                                </div>
+                                <div class="dp-item">
+                                    <div class="dp-tipo">Premium</div>
+                                    <div class="dp-val" id="d-premium">--</div>
+                                </div>
+                                <div class="dp-item">
+                                    <div class="dp-tipo">Diesel</div>
+                                    <div class="dp-val" id="d-diesel">--</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="cerca-body">
-                        <div class="cerca-placeholder">
-                            Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas
+
+                    <div class="cerca-card" id="cerca-card">
+                        <div class="card-head">
+                            <span class="card-title">📍 Cerca de ti</span>
+                        </div>
+                        <div id="cerca-body">
+                            <div class="cerca-placeholder">
+                                Usa "Mi ubicación" o "Fijar punto"<br>para ver las más cercanas
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-        </div><!-- /grid3 -->
+        </div><!-- /dash-grid -->
 
         <div class="footer">
-            Fuente: Comisión Reguladora de Energía (CRE) · México
+            Fuente: Comisión Reguladora de Energía (CRE) · México · Última extracción: <span id="footer-fecha">—</span>
         </div>
 
     </div><!-- /dashboard -->

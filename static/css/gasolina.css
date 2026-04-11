@@ -200,23 +200,251 @@
 
         .sec-label { font-size: 0.8rem; color: var(--sec); margin-bottom: 11px; }
 
-        /* ── KPIs ── */
-        .kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+        /* ── KPIs: fila individual de 4 cards ── */
+        .kpis-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
 
-        .kpi {
-            background: var(--white); border-radius: var(--r); padding: 18px 18px 14px;
-            box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03);
+        .kpi-card {
+            background: var(--white);
+            border-radius: var(--r);
+            padding: 14px 12px 12px;
+            box-shadow: var(--sh);
+            border: 1px solid rgba(0,0,0,0.03);
+            text-align: center;
             transition: transform 0.18s, box-shadow 0.18s;
         }
 
-        .kpi:hover { transform: translateY(-2px); box-shadow: var(--shm); }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shm); }
 
-        .kpi-v { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; color: var(--text); }
-        .kpi-l { font-size: 0.7rem; font-weight: 500; color: var(--ter); text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi.min .kpi-v { color: var(--green); }
-        .kpi.max .kpi-v { color: var(--red); }
+        .kpi-card .kpi-v {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
 
-        /* ── Layout 3 columnas ── */
+        .kpi-card .kpi-l {
+            font-size: 0.62rem;
+            font-weight: 500;
+            color: var(--ter);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-card.min .kpi-v { color: var(--green); }
+        .kpi-card.max .kpi-v { color: var(--red); }
+
+        /* ── Dashboard grid: 50% mapa | 50% derecha con sub-grid 2 cols ── */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .col-map {
+            min-width: 0;
+        }
+
+        /* Columna derecha: sub-grid de 2 columnas iguales */
+        .col-right {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .col-side-left,
+        .col-side-right {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        /* Map card - dominant height */
+        .card-map {
+            height: 630px;
+            min-height: 630px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Ranking card - fills available space */
+        .rank-card {
+            background: var(--white);
+            border-radius: var(--r);
+            box-shadow: var(--sh);
+            border: 1px solid rgba(0,0,0,0.03);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+            flex: 1;
+        }
+
+        .rank-card .t-scroll {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ── Calculadora ── */
+        .calc-card {
+            background: var(--white);
+            border-radius: var(--r);
+            box-shadow: var(--sh);
+            border: 1px solid rgba(0,0,0,0.03);
+            flex-shrink: 0;
+        }
+
+        .calc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--bg);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .calc-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .calc-type {
+            display: flex;
+            gap: 4px;
+        }
+
+        .calc-type-btn {
+            padding: 4px 14px;
+            border: 1.5px solid var(--border);
+            background: var(--white);
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--sec);
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+
+        .calc-type-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .calc-type-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .calc-body {
+            padding: 12px 14px 14px;
+        }
+
+        .calc-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--rs);
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--bg);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .calc-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,113,227,0.08);
+            outline: none;
+            background: var(--white);
+        }
+
+        .calc-results {
+            margin-top: 10px;
+        }
+
+        .calc-line {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .calc-label {
+            font-size: 0.68rem;
+            color: var(--sec);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .calc-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: -0.3px;
+            text-align: right;
+        }
+
+        .calc-expensive {
+            color: var(--red);
+        }
+
+        .calc-sub {
+            font-size: 0.6rem;
+            color: var(--ter);
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: right;
+        }
+
+        .calc-sel-line {
+            margin-top: 6px;
+        }
+
+        .calc-sel-sub {
+            margin-bottom: 8px;
+        }
+
+        .calc-diff {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--bg);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .calc-diff-val {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--red);
+        }
+
+        .calc-diff-pct {
+            font-size: 0.6rem;
+            color: var(--ter);
+            background: var(--bg);
+            padding: 1px 6px;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        /* ── Layout 3 columnas (legacy) ── */
         .grid3 {
             display: grid;
             grid-template-columns: minmax(0,1.6fr) minmax(220px,0.8fr) minmax(220px,0.65fr);
@@ -407,13 +635,29 @@
 
         /* ── Responsive ── */
         @media (max-width: 1100px) {
-            .grid3 { grid-template-columns: minmax(0,1.4fr) minmax(200px,0.75fr); }
-            .detail-panel { display: none; }   /* oculta columna 3 */
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+            .col-map {
+                grid-column: auto;
+            }
+            .card-map {
+                height: 55vh;
+                min-height: 380px;
+            }
         }
 
         @media (max-width: 800px) {
-            .grid3 { grid-template-columns: 1fr; }
-            .kpis  { grid-template-columns: repeat(2,1fr); }
+            .col-right {
+                grid-template-columns: 1fr;
+            }
+            .card-map {
+                height: 50vh;
+                min-height: 300px;
+            }
+            .kpis-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 520px) {
@@ -421,6 +665,11 @@
             .hero   { padding: 24px 14px 20px; }
             .wrap   { padding: 18px 12px; }
             .hero h1 { font-size: 1.6rem; }
+            .calc-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
         }
 
         ::-webkit-scrollbar { width: 4px; }
