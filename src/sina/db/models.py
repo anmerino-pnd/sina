@@ -24,11 +24,11 @@ class PrecioQQP(Base):
     cadena_comercial = Column(String, nullable=True)
     giro = Column(String, nullable=True)
     nombre_comercial = Column(String, nullable=True)
-    direccion = Column(String, nullable=False)
+    direccion = Column(String, nullable=True)
     estado = Column(String, nullable=False)
     municipio = Column(String, nullable=False)
-    latitud = Column(Float, nullable=False)
-    longitud = Column(Float, nullable=False)
+    latitud = Column(Float, nullable=True)
+    longitud = Column(Float, nullable=True)
 
 # sina/db/models.py
 class PrecioGasolina(Base):

@@ -16,7 +16,7 @@ from sina.processing.image_segmentation import (
 )
 from sina.processing.records import df_to_dict
 from sina.scraping.casa_ley import download_flyer
-from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS
+from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS, QQP_DATETIME_COLS
 from sina.scraping.gas import (
     scrape_municipio,
     transform_gas_prices,
@@ -295,7 +295,7 @@ async def update_qqp():
     try:
         repo      = QQPRepository(db_url=DB_URL)
         df        = extract_qqp()
-        registros = df_to_dict(df, column_map=QQP_COLUMN_MAP, float_cols=QQP_FLOAT_COLS)
+        registros = df_to_dict(df, column_map=QQP_COLUMN_MAP, float_cols=QQP_FLOAT_COLS, datetime_cols=QQP_DATETIME_COLS)
 
         repo.borrar_todo()
         repo.guardar_en_bulk(registros)

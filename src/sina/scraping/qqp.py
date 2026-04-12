@@ -30,24 +30,7 @@ QQP_COLUMN_MAP = {
     "LONGITUD":        "longitud",
 }
 QQP_FLOAT_COLS = ["precio", "latitud", "longitud"]
-
-nombres_columnas = [
-    'PRODUCTO',
-    'PRESENTACION',
-    'MARCA',
-    'CATEGORIA',
-    'CATALOGO',
-    'PRECIO',
-    'FECHAREGISTRO',
-    'CADENACOMERCIAL',
-    'GIRO',
-    'NOMBRECOMERCIAL', # Cambiado de 'NOMBRE_SUCURSAL' para coincidir con tu lista
-    'DIRECCION',
-    'ESTADO', # Movido para coincidir con el orden
-    'MUNICIPIO', # Movido para coincidir con el orden
-    'LATITUD',
-    'LONGITUD'
-]
+QQP_DATETIME_COLS = ["fecha_registro"]
 
 CHAR_MAP = {
     'é': 'ú',     # Azécar → Azúcar
@@ -116,12 +99,11 @@ def extract_qqp() -> pd.DataFrame:
                 df_qqp = pd.read_csv(
                     csv_file_in_rar,
                     encoding='utf-8',
-                    header=None,
+                    header=0,
                     low_memory=False
                 )
 
     os.remove('temp.rar')
-    df_qqp.columns = nombres_columnas
     df_qqp = fix_df_encoding(df_qqp)
 
     return df_qqp

@@ -6,8 +6,9 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy import create_engine, insert, delete, select
 from sina.db.models import  (
     Base, PrecioQQP, PrecioGasolina,
-    EntidadFederativa, Municipio, Localidad, GasLPPrecio  # ← nuevos
+    EntidadFederativa, Municipio, Localidad, GasLPPrecio  
 )
+from sina.config.credentials import DB_URL
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 T = TypeVar("T", bound=DeclarativeBase)
@@ -18,7 +19,7 @@ class BaseRepository(Generic[T]):
 
     model: type[T] 
 
-    def __init__(self, db_url: str = "sqlite:///datos/db/sina_data.db"):
+    def __init__(self, db_url: str = DB_URL):
         self.engine = create_engine(db_url)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
@@ -50,6 +51,33 @@ class BaseRepository(Generic[T]):
 
 class QQPRepository(BaseRepository[PrecioQQP]):
     model = PrecioQQP
+
+    def obtener_por_municipio(self, estado: str, municipio: str) -> list[dict]:
+        """Consulta precios por estado y municipio."""
+        with self.Session() as session:
+            stmt = select(self.model).where(
+                self.model.estado    == estado,
+                self.model.municipio == municipio
+            )
+            rows = session.execute(stmt).scalars().all()
+            return [
+                {
+                    "producto"        : r.producto,
+                    "presentacion"    : r.presentacion,
+                    "marca"           : r.marca,
+                    "categoria"       : r.categoria,
+                    "precio"          : r.precio,
+                    "fecha_registro"  : r.fecha_registro,
+                    "cadena_comercial": r.cadena_comercial,
+                    "nombre_comercial": r.nombre_comercial,
+                    "direccion"       : r.direccion,
+                    "estado"          : r.estado,
+                    "municipio"       : r.municipio,
+                    "latitud"         : r.latitud,
+                    "longitud"        : r.longitud,
+                }
+                for r in rows
+            ]
 
 class GasolinaRepository(BaseRepository[PrecioGasolina]):
     model = PrecioGasolina
