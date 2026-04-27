@@ -13,15 +13,15 @@
 
 ### Tech Stack
 
-| Category | Technology |
-|---|---|
-| Backend | FastAPI (Python 3.12+) |
-| Database | SQLite (local) or PostgreSQL (remote) via SQLAlchemy ORM |
-| Scraping | Selenium, BeautifulSoup, requests |
-| Image Processing | OpenCV (cropping, annotation rendering) |
-| AI/LLM | Ollama (Qwen 3.5, cloud or local) |
-| Frontend | Jinja2 templates + vanilla JS/CSS, Leaflet maps |
-| Package Manager | `uv` (`pyproject.toml`, `uv.lock`) |
+| Category         | Technology                                               |
+| ---------------- | -------------------------------------------------------- |
+| Backend          | FastAPI (Python 3.12+)                                   |
+| Database         | SQLite (local) or PostgreSQL (remote) via SQLAlchemy ORM |
+| Scraping         | Selenium, BeautifulSoup, requests                        |
+| Image Processing | OpenCV (cropping, annotation rendering)                  |
+| AI/LLM           | Ollama (Qwen 3.5, cloud or local)                        |
+| Frontend         | Jinja2 templates + vanilla JS/CSS, Leaflet maps          |
+| Package Manager  | `uv` (`pyproject.toml`, `uv.lock`)                 |
 
 ---
 
@@ -47,7 +47,6 @@ sina/
 │   ├── config/
 │   │   ├── credentials.py      # Env vars → API URLs, DB connection string
 │   │   ├── paths.py            # Path resolution (DATA, DB, TEMPLATES, STATIC)
-│   │   ├── settings.py         # Classes JSON loader, filesystem tree builder
 │   │   ├── classes.json        # Annotation classes → hex colors
 │   │   └── prompt.py           # LLM prompt schema + JSON cleaner
 │   └── ollama/
@@ -66,16 +65,17 @@ sina/
 
 ## Database Models
 
-| Model | Table | Purpose | Cache TTL |
-|---|---|---|---|
-| `PrecioGasolina` | `gasolineras` | Gas station prices + coordinates | 24 hours |
-| `GasLPPrecio` | `gas_lp_precios` | LP gas prices by provider & locality | Weekly (Saturday) |
-| `PrecioQQP` | `qqp_precios` | Profeco product prices | N/A (full replace) |
-| `EntidadFederativa` | `cne_entidades` | Mexican states catalog | Static |
-| `Municipio` | `cne_municipios` | Municipalities per state | Static |
-| `Localidad` | `cne_localidades` | Localities per municipality | Static |
+| Model                 | Table               | Purpose                              | Cache TTL          |
+| --------------------- | ------------------- | ------------------------------------ | ------------------ |
+| `PrecioGasolina`    | `gasolineras`     | Gas station prices + coordinates     | 24 hours           |
+| `GasLPPrecio`       | `gas_lp_precios`  | LP gas prices by provider & locality | Weekly (Saturday)  |
+| `PrecioQQP`         | `qqp_precios`     | Profeco product prices               | N/A (full replace) |
+| `EntidadFederativa` | `cne_entidades`   | Mexican states catalog               | Static             |
+| `Municipio`         | `cne_municipios`  | Municipalities per state             | Static             |
+| `Localidad`         | `cne_localidades` | Localities per municipality          | Static             |
 
 Key design patterns:
+
 - **Upsert logic** via `sqlite_insert(...).on_conflict_do_update()` — preserves lat/lng when updating prices.
 - **Cache invalidation** — `esta_vigente()` method on price models checks age against TTL.
 - **Denormalization** — `GasLPPrecio` stores entity/municipality/locality names alongside IDs to avoid JOINs in frequent UI queries.
@@ -85,45 +85,55 @@ Key design patterns:
 ## API Endpoints
 
 ### Frontend
-| Method | Route | Description |
-|---|---|---|
-| GET | `/sina/annotator` | Annotation UI for supermarket flyers |
-| GET | `/sina/gasolina` | Gasoline price dashboard |
+
+| Method | Route               | Description                          |
+| ------ | ------------------- | ------------------------------------ |
+| GET    | `/sina/annotator` | Annotation UI for supermarket flyers |
+| GET    | `/sina/gasolina`  | Gasoline price dashboard             |
+| GET    | `/sina/gas-lp`    | LP gas price dashboard               |
 
 ### Gasoline
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/v1/gasolina` | Get prices by state/municipality (cached 24h) |
-| POST | `/api/v1/update/gasolina` | Refresh prices from CRE API |
-| POST | `/api/v1/update/ubicacion/gasolineras` | Scrape station coordinates |
+
+| Method | Route                                    | Description                                   |
+| ------ | ---------------------------------------- | --------------------------------------------- |
+| GET    | `/api/v1/gasolina`                     | Get prices by state/municipality (cached 24h) |
+| POST   | `/api/v1/update/gasolina`              | Refresh prices from CRE API                   |
+| POST   | `/api/v1/update/ubicacion/gasolineras` | Scrape station coordinates                    |
 
 ### LP Gas
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/v1/gas-lp` | Get LP gas prices by state/municipality/locality (cached weekly) |
+
+| Method | Route                          | Description                                                      |
+| ------ | ------------------------------ | ---------------------------------------------------------------- |
+| GET    | `/api/v1/gas-lp`             | Get LP gas prices by state/municipality/locality (cached weekly) |
+| GET    | `/api/v1/gas-lp/localidades` | Get available localities for a municipality                      |
+| GET    | `/api/v1/gas-lp/by-ids`      | Get LP gas prices using direct IDs                               |
 
 ### QQP (Profeco)
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/v1/update/qqp` | Download & import latest QQP CSV data |
+
+| Method | Route                  | Description                           |
+| ------ | ---------------------- | ------------------------------------- |
+| POST   | `/api/v1/update/qqp` | Download & import latest QQP CSV data |
 
 ### Annotator
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/v1/annotator/annotate` | Save bounding boxes, generate crops + annotated image |
-| POST | `/api/v1/annotator/flyer` | Download flyer from supermarket (Casa Ley) |
-| POST | `/api/v1/annotator/extract` | Extract text from crops using Ollama LLM |
-| GET | `/api/v1/annotator/status` | Check if recortes/JSON exist for a date |
+
+| Method | Route                          | Description                                           |
+| ------ | ------------------------------ | ----------------------------------------------------- |
+| POST   | `/api/v1/annotator/annotate` | Save bounding boxes, generate crops + annotated image |
+| POST   | `/api/v1/annotator/flyer`    | Download flyer from supermarket (Casa Ley)            |
+| POST   | `/api/v1/annotator/extract`  | Extract text from crops using Ollama LLM              |
+| GET    | `/api/v1/annotator/status`   | Check if recortes/JSON exist for a date               |
 
 ---
 
 ## Building and Running
 
 ### Prerequisites
+
 - Python 3.12+
-- [`uv`](https://github.com/astral-sh/uv) package manager
+- `uv` package manager
 
 ### Setup
+
 ```bash
 # Install dependencies
 uv sync
@@ -134,6 +144,7 @@ cp .env.example .env
 ```
 
 ### Run the Server
+
 ```bash
 uv run sina
 # or equivalently:
@@ -141,16 +152,20 @@ uvicorn sina.main:app --reload
 ```
 
 The app mounts:
+
 - `/static` → `static/` directory
 - `/datos` → `datos/` directory (serves stored images/data)
 
 ### Database Seeding
+
 Before using the app, seed the state/municipality catalog:
+
 ```bash
 uv run python -m sina.db.seeder
 ```
 
 ### Notebooks
+
 Exploratory analysis lives in `notebooks/` — gas price maps (`mapa_diesel.html`, etc.), LP gas analysis, QQP parsing, and early extraction attempts.
 
 ---
@@ -158,21 +173,24 @@ Exploratory analysis lives in `notebooks/` — gas price maps (`mapa_diesel.html
 ## Configuration
 
 ### Environment Variables (see `.env.example`)
-| Variable | Purpose |
-|---|---|
-| `QQP_DATOS_URL` | URL for Profeco QQP data |
-| `DATOS_ABIERTOS_URL` | Base URL for open data RAR files |
-| `CASA_LEY_URL` | Casa Ley flyer page URL |
-| `GASOLINA_API_REST` | CRE gasoline prices API endpoint |
-| `GASOLINERAS_UBI` | Gas station location scraper base URL |
-| `CNE_LOCALIDADES_URL` | CNE localities catalog API |
-| `CNE_PRECIOS_GAS_LP_URL` | CNE LP gas prices API |
-| `OLLAMA_API_KEY` | API key for cloud Ollama |
-| `GOOGLE_API_KEY` | (Unused currently) |
+
+| Variable                                                            | Purpose                                               |
+| ------------------------------------------------------------------- | ----------------------------------------------------- |
+| `QQP_DATOS_URL`                                                   | URL for Profeco QQP data                              |
+| `DATOS_ABIERTOS_URL`                                              | Base URL for open data RAR files                      |
+| `CASA_LEY_URL`                                                    | Casa Ley flyer page URL                               |
+| `GASOLINA_API_REST`                                               | CRE gasoline prices API endpoint                      |
+| `GASOLINERAS_UBI`                                                 | Gas station location scraper base URL                 |
+| `CNE_LOCALIDADES_URL`                                             | CNE localities catalog API                            |
+| `CNE_PRECIOS_GAS_LP_URL`                                          | CNE LP gas prices API                                 |
+| `OLLAMA_API_KEY`                                                  | API key for cloud Ollama                              |
+| `GOOGLE_API_KEY`                                                  | (Unused currently)                                    |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Optional PostgreSQL connection (falls back to SQLite) |
 
 ### DB Connection Strategy
+
 The app auto-detects the database backend:
+
 - If `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` are all set → **PostgreSQL**
 - Otherwise → **SQLite** at `datos/db/sina_data.db`
 
@@ -181,12 +199,14 @@ The app auto-detects the database backend:
 ## Development Conventions
 
 ### Code Style
+
 - Python 3.12+ syntax (pattern matching, union types `X | None`, walrus operator `:=`)
 - Type hints throughout — uses `cast()` from typing for ORM detachment scenarios
 - Pydantic models for API request payloads (`AnnotationPayload`, `FlyerPayload`, `ExtractPayload`)
 - Module-level logging via `logging.getLogger(__name__)`
 
 ### Architecture Patterns
+
 - **Repository pattern** — `BaseRepository[T]` generic class with specialized subclasses per model
 - **Caching** — Time-based staleness checks (`esta_vigente()`) before calling external APIs
 - **Fallback behavior** — If external API fails, returns stale cached data with `fuente: "cache_vencido"`
@@ -194,6 +214,7 @@ The app auto-detects the database backend:
 - **Path resolution** — `find_project_root()` walks up from `__file__` to locate `pyproject.toml`
 
 ### Data Directory Layout (`datos/`)
+
 ```
 datos/
 ├── db/                     # SQLite database (gitignored)
@@ -210,16 +231,17 @@ datos/
 ```
 
 ### Annotation Classes (`config/classes.json`)
-| Class | Color (hex) |
-|---|---|
-| frutas_verduras | `#2ecc71` |
-| carnes | `#e74c3c` |
-| abarrotes | `#f1c40f` |
-| lacteos | `#3498db` |
+
+| Class              | Color (hex) |
+| ------------------ | ----------- |
+| frutas_verduras    | `#2ecc71` |
+| carnes             | `#e74c3c` |
+| abarrotes          | `#f1c40f` |
+| lacteos            | `#3498db` |
 | ofertas_especiales | `#9b59b6` |
-| banner | `#e67e22` |
-| higiene | `#ff9ff3` |
-| otros | `#95a5a6` |
+| banner             | `#e67e22` |
+| higiene            | `#ff9ff3` |
+| otros              | `#95a5a6` |
 
 ---
 
@@ -237,32 +259,60 @@ The `clean_response()` function strips markdown code fences from LLM output and 
 
 ---
 
-## Key File Descriptions
-
-| File | Purpose |
-|---|---|
-| `src/sina/main.py` | FastAPI app entry point — all routes, lifespan (loads municipality catalog on startup), request validation |
-| `src/sina/db/models.py` | SQLAlchemy ORM models with cache validity logic |
-| `src/sina/db/repository.py` | Generic repository pattern + per-model upsert/query methods |
-| `src/sina/scraping/gas.py` | CRE API client + `gasolinamexico.com.mx` station scraper |
-| `src/sina/scraping/gas_lp.py` | CNE LP gas client with hierarchical location resolution |
-| `src/sina/scraping/qqp.py` | RAR archive parser with encoding fixes for accented characters |
-| `src/sina/scraping/casa_ley.py` | Selenium-based multi-page flyer downloader |
-| `src/sina/processing/image_segmentation.py` | OpenCV-based bbox processing — crops, annotations, label JSON |
-| `src/sina/config/credentials.py` | Environment variable loader, DB URL builder |
-| `src/sina/config/paths.py` | Project root resolution, directory creation, locale setup (`es_MX.UTF-8`) |
-| `src/sina/config/prompt.py` | LLM prompt schema for flyer extraction, JSON cleaner |
-| `src/sina/db/seeder.py` | Populates state/municipality tables from JSON catalog |
-| `src/sina/ollama/extract_flyer_text.py` | Batch-based LLM extraction from cropped images, merges into `flyer_data.json` |
-| `templates/annotator.html` | Annotation UI: file tree, draw/pan/zoom tools, class selection, LLM extraction button, JSON modal |
-| `templates/gasolina.html` | Gasoline dashboard: Leaflet map, autocomplete search, KPIs, ranking table, color-coded markers |
-| `static/js/annotator.js` | Canvas drawing logic, bbox management, zoom controls |
-| `static/js/gasolina.js` | Map rendering, autocomplete, ranking, nearby stations logic |
-
----
-
 ## Gitignored Files
+
 - `.env` — Local secrets
 - `datos/casa_ley/` — Downloaded flyer images
 - `datos/db/` — SQLite database
 - `__pycache__/`, `*.egg-info`, `chromedriver.exe`
+
+---
+
+## Key File Descriptions
+
+| File                                          | Purpose                                                                                                     |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `src/sina/main.py`                          | FastAPI app entry point — all routes, lifespan (loads municipality catalog on startup), request validation |
+| `src/sina/db/models.py`                     | SQLAlchemy ORM models with cache validity logic                                                             |
+| `src/sina/db/repository.py`                 | Generic repository pattern + per-model upsert/query methods                                                 |
+| `src/sina/scraping/gas.py`                  | CRE API client +`gasolinamexico.com.mx` station scraper                                                   |
+| `src/sina/scraping/gas_lp.py`               | CNE LP gas client with hierarchical location resolution                                                     |
+| `src/sina/scraping/qqp.py`                  | RAR archive parser with encoding fixes for accented characters                                              |
+| `src/sina/scraping/casa_ley.py`             | Selenium-based multi-page flyer downloader                                                                  |
+| `src/sina/processing/image_segmentation.py` | OpenCV-based bbox processing — crops, annotations, label JSON                                              |
+| `src/sina/config/credentials.py`            | Environment variable loader, DB URL builder                                                                 |
+| `src/sina/config/paths.py`                  | Project root resolution, directory creation, locale setup (`es_MX.UTF-8`)                                 |
+| `src/sina/config/prompt.py`                 | LLM prompt schema for flyer extraction, JSON cleaner                                                        |
+| `src/sina/db/seeder.py`                     | Populates state/municipality tables from JSON catalog                                                       |
+| `src/sina/ollama/extract_flyer_text.py`     | Batch-based LLM extraction from cropped images, merges into `flyer_data.json`                             |
+| `templates/annotator.html`                  | Annotation UI: file tree, draw/pan/zoom tools, class selection, LLM extraction button, JSON modal           |
+| `templates/gasolina.html`                   | Gasoline dashboard: Leaflet map, autocomplete search, KPIs, ranking table, color-coded markers              |
+| `static/js/annotator.js`                    | Canvas drawing logic, bbox management, zoom controls                                                        |
+| `static/js/gasolina.js`                     | Map rendering, autocomplete, ranking, nearby stations logic                                                 |
+
+---
+
+## SPEC.md Summary
+
+**SINA** evolves from independent data extraction pipelines toward a unified web application (HTML5 dynamic) driven by an AI agent assistant (custom MCP) capable of resolving complex hyper-personalization queries (e.g., supermarket list optimization, gas station location).
+
+### System Architecture
+
+- **Pattern:** Client-Server RESTful APIs
+- **Backend:** Python + FastAPI
+- **Frontend:** Vanilla HTML5/CSS/JS, dynamic async API consumption
+- **Database:** SQLite (dev) / PostgreSQL (prod) via SQLAlchemy
+- **Auth:** Delegated via Google OAuth 2.0 (no passwords stored)
+
+### Development Phases
+
+1. **Data Ingestion & Normalization:** Scraping → LLM extraction (Ollama) → Pandas/Pydantic → DB (write-heavy)
+2. **Dashboard & Dynamic Frontend:** SPA/multiple views, caching for read-heavy queries
+3. **Vector Search & RAG:** Embedding products/gasolineras with metadata (category, city, coords, update date)
+4. **Agentic Chatbot (Custom MCP + Ollama):** Intent routing, hard filters on metadata, spatial queries, shopping list optimization
+
+### Scalability Roadmap
+
+- **Basic:** Well-separated entities, structured JSON APIs
+- **Intermediate:** Load balancing, rate limiting, Celery/RQ for background tasks
+- **Advanced:** Observability (tracing), fault tolerance with read replicas (CAP Theorem)
