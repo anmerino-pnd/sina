@@ -79,6 +79,81 @@ class QQPRepository(BaseRepository[PrecioQQP]):
                 for r in rows
             ]
 
+    def obtener_canasta(self, estado: str, municipio: str) -> list[dict]:
+        """
+        Consulta productos de canasta básica para un estado-municipio.
+        Sin filtro de cadenas — incluye todas las tiendas.
+        Devuelve registros deduplicados.
+        """
+        from sina.config.canasta import todos_los_productos
+
+        productos = todos_los_productos()
+
+        with self.Session() as session:
+            stmt = (
+                select(self.model)
+                .where(
+                    self.model.estado == estado,
+                    self.model.municipio == municipio,
+                    self.model.producto.in_(productos),
+                )
+            )
+            rows = session.execute(stmt).scalars().all()
+
+            seen: set[tuple] = set()
+            resultado: list[dict] = []
+
+            for r in rows:
+                key = (r.producto, r.presentacion, r.marca, r.cadena_comercial, r.precio)
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                resultado.append({
+                    "producto":         r.producto,
+                    "presentacion":     r.presentacion,
+                    "marca":            r.marca,
+                    "categoria":        r.categoria,
+                    "precio":           float(typing_cast(int, r.precio)),
+                    "cadena_comercial": r.cadena_comercial,
+                    "nombre_comercial": r.nombre_comercial,
+                    "direccion":        r.direccion,
+                    "estado":           r.estado,
+                    "municipio":        r.municipio,
+                })
+
+            return resultado
+
+    def obtener_catalogo_qqp(self) -> dict[str, list[str]]:
+        """
+        Devuelve { estado: [municipio, ...] } solo para combinaciones
+        que realmente tienen datos de canasta básica.
+        """
+        from sina.config.canasta import todos_los_productos
+        from sqlalchemy import distinct, func
+
+        productos = todos_los_productos()
+
+        with self.Session() as session:
+            stmt = (
+                select(
+                    self.model.estado,
+                    self.model.municipio,
+                )
+                .where(self.model.producto.in_(productos))
+                .group_by(self.model.estado, self.model.municipio)
+                .having(func.count(distinct(self.model.producto)) >= 5)
+                .order_by(self.model.estado, self.model.municipio)
+            )
+
+            rows = session.execute(stmt).all()
+
+            catalogo: dict[str, list[str]] = {}
+            for estado, municipio in rows:
+                catalogo.setdefault(estado, []).append(municipio)
+
+            return catalogo
+
 class GasolinaRepository(BaseRepository[PrecioGasolina]):
     model = PrecioGasolina
 

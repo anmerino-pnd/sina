@@ -16,7 +16,12 @@ from sina.processing.image_segmentation import (
 )
 from sina.processing.records import df_to_dict
 from sina.scraping.casa_ley import download_flyer
-from sina.scraping.qqp import extract_qqp, QQP_COLUMN_MAP, QQP_FLOAT_COLS, QQP_DATETIME_COLS
+from sina.scraping.qqp import (
+    extract_qqp, 
+    QQP_COLUMN_MAP, 
+    QQP_FLOAT_COLS, 
+    QQP_DATETIME_COLS
+    )
 from sina.scraping.gas import (
     scrape_municipio,
     transform_gas_prices,
@@ -26,7 +31,13 @@ from sina.scraping.gas_lp import get_precios_gas_lp, get_localidades_by_municipi
 from sina.config.credentials import DB_URL, casa_ley_url
 from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
-    TEMPLATES_DIR, CASA_LEY_DATA, STATIC_DIR, DATA
+    TEMPLATES_DIR, 
+    CASA_LEY_DATA, 
+    STATIC_DIR, 
+    DATA
+)
+from sina.config.canasta import (
+    estructurar_canasta
 )
 from sina.db.repository import QQPRepository, GasolinaRepository, MunicipioRepository
 from sina.db.models import EntidadFederativa, Municipio, Localidad
@@ -109,6 +120,11 @@ async def view_gas_lp(request: Request):
         "request" : request,
         "catalogo": json.dumps(_catalogo_js, ensure_ascii=False),
     })
+
+@app.get("/sina/qqp", response_class=HTMLResponse)
+async def view_qqp(request: Request):
+    """UI de canasta básica — precios QQP Profeco."""
+    return templates.TemplateResponse("qqp.html", {"request": request})
 
 # ============================================================
 #  API · GASOLINA
@@ -309,6 +325,35 @@ async def update_qqp():
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/api/v1/qqp/catalogo")
+async def qqp_catalogo():
+    """Catálogo de estados/municipios con datos QQP de canasta básica."""
+    repo = QQPRepository(db_url=DB_URL)
+    return repo.obtener_catalogo_qqp()
+
+
+@app.get("/api/v1/qqp/canasta")
+async def qqp_canasta(estado: str, municipio: str):
+    """Canasta básica estructurada para un estado-municipio."""
+    repo = QQPRepository(db_url=DB_URL)
+    registros = repo.obtener_canasta(estado, municipio)
+
+    if not registros:
+        return {
+            "estado": estado, "municipio": municipio,
+            "items": {}, "cadenas": [],
+            "resumen": {
+                "costo_canasta_minima": 0, "n_cadenas": 0,
+                "n_items": 0, "n_productos_total": 0,
+            },
+            "error": "No se encontraron datos para este municipio.",
+        }
+
+    data = estructurar_canasta(registros)
+    data["estado"] = estado
+    data["municipio"] = municipio
+    return data
 
 # ============================================================
 #  API · ANNOTATOR

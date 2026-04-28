@@ -2,8 +2,8 @@ import os
 import rarfile
 import requests
 import pandas as pd
+from typing import cast
 from datetime import date
-
 from bs4 import BeautifulSoup, Tag
 from sina.config.credentials import (
     qqp_url,
@@ -105,5 +105,6 @@ def extract_qqp() -> pd.DataFrame:
 
     os.remove('temp.rar')
     df_qqp = fix_df_encoding(df_qqp)
+    df_qqp = cast(pd.DataFrame, df_qqp.drop_duplicates(inplace=True))
 
     return df_qqp
