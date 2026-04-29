@@ -227,6 +227,19 @@ body {
     color: var(--negro);
     font-weight: 600;
 }
+.insight-link {
+    color: var(--accent);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: rgba(61, 38, 78, 0.3);
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: text-decoration-color 0.15s;
+}
+
+.insight-link:hover {
+    text-decoration-color: var(--accent);
+}
 
 /* ══════════════════════════════════════════════════════
    Grid principal: 3 columnas
@@ -465,7 +478,12 @@ body {
 }
 
 .rs-item-precio { font-size: 0.82rem; font-weight: 700; color: var(--cafe); flex-shrink: 0; }
-
+.rs-item-manual {
+    font-size: 0.55rem;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
 .resumen-total {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 16px; border-top: 2px solid var(--accent); flex-shrink: 0;
@@ -483,7 +501,259 @@ body {
    Footer
    ══════════════════════════════════════════════════════ */
 .footer { text-align: center; padding: 24px; font-size: 0.73rem; color: var(--ter); margin-top: 8px; }
+/* ══════════════════════════════════════════════════════
+   POPOVERS — Paneles flotantes
+   ══════════════════════════════════════════════════════ */
+.popover-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(21, 17, 12, 0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
 
+.popover-overlay.visible {
+    opacity: 1;
+}
+
+.popover-panel {
+    background: var(--white);
+    border-radius: var(--r);
+    box-shadow: 0 20px 60px rgba(21, 17, 12, 0.18), 0 2px 12px rgba(21, 17, 12, 0.08);
+    width: 90%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(12px);
+    transition: transform 0.25s ease;
+}
+
+.popover-overlay.visible .popover-panel {
+    transform: translateY(0);
+}
+
+.popover-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--bg);
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    border-radius: var(--r) var(--r) 0 0;
+    z-index: 1;
+}
+
+.popover-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--negro);
+}
+
+.popover-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--ter);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.popover-close:hover {
+    background: var(--bg);
+    color: var(--negro);
+}
+
+.popover-body {
+    padding: 18px 22px 22px;
+}
+
+.popover-text {
+    font-size: 0.82rem;
+    color: var(--sec);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.popover-text strong {
+    color: var(--negro);
+    font-weight: 600;
+}
+
+.popover-divider {
+    height: 1px;
+    background: var(--bg);
+    margin: 14px 0;
+}
+
+.popover-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ter);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 10px;
+}
+
+/* ── Popover: tabla de desglose ── */
+.popover-table {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.popover-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: var(--rs);
+    transition: background 0.12s;
+}
+
+.popover-row:hover {
+    background: var(--bg);
+}
+
+.popover-row.best {
+    background: rgba(61, 38, 78, 0.06);
+}
+
+.popover-row.worst {
+    background: rgba(197, 176, 117, 0.1);
+}
+
+.popover-row-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.popover-row-detail {
+    font-size: 0.7rem;
+    color: var(--ter);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.popover-row-price {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--cafe);
+    flex-shrink: 0;
+}
+
+.popover-row.best .popover-row-price {
+    color: var(--accent);
+}
+
+.popover-row.worst .popover-row-price {
+    color: var(--highlight);
+}
+
+.popover-tip {
+    font-size: 0.78rem;
+    color: var(--sec);
+    line-height: 1.5;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(61, 38, 78, 0.04);
+    border-radius: var(--rs);
+    border-left: 3px solid var(--accent);
+}
+
+.popover-tip strong {
+    color: var(--negro);
+}
+
+/* ── Popover: agrupación por tienda ── */
+.popover-store-group {
+    margin-bottom: 14px;
+    border: 1px solid var(--bg);
+    border-radius: var(--rs);
+    overflow: hidden;
+}
+
+.popover-store-group:last-child {
+    margin-bottom: 0;
+}
+
+.popover-store-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg);
+}
+
+.popover-store-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--negro);
+}
+
+.popover-store-subtotal {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.popover-store-item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--bg);
+}
+
+.popover-store-item:first-child {
+    border-top: none;
+}
+
+.popover-store-item-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+.popover-store-item-detail {
+    font-size: 0.65rem;
+    color: var(--ter);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.popover-store-item-price {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cafe);
+    flex-shrink: 0;
+}
 /* ══════════════════════════════════════════════════════
    Responsive
    ══════════════════════════════════════════════════════ */
@@ -536,6 +806,21 @@ body {
     .hero h1 { font-size: 1.5rem; }
     .kpis-row { grid-template-columns: 1fr; }
     .insight-card { min-width: 0; }
+    .popover-overlay {
+        align-items: flex-end;
+    }
+
+    .popover-panel {
+        width: 100%;
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: var(--r) var(--r) 0 0;
+        transform: translateY(100%);
+    }
+
+    .popover-overlay.visible .popover-panel {
+        transform: translateY(0);
+    }
 }
 
 /* ══════════════════════════════════════════════════════

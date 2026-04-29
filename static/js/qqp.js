@@ -8,6 +8,8 @@ var estadoSel  = '';
 var munSel     = '';
 var selecciones = {};
 var itemActivo  = null;
+var opcionFija  = {};   // { "Leche": { precio:20, marca:"Lala", cadena:"Ley", tienda:"..." }, ... }
+var _insightsData = null; // Cache para popovers
 
 // ── Paleta ─────────────────────────────────────────────
 var C = {
@@ -204,7 +206,21 @@ function mejorOp(item, pres) {
     if (!DATA || !DATA.items[item]) return null;
     var p = DATA.items[item].presentaciones[pres];
     if (!p || !p.opciones || !p.opciones.length) return null;
-    return p.opciones[0];
+
+    // Si el usuario fijó manualmente una opción para este item
+    // Y la presentación coincide con la seleccionada, usarla
+    if (opcionFija[item] && selecciones[item] === pres) {
+        // Verificar que la opción fija sigue existiendo en las opciones
+        var fija = opcionFija[item];
+        var existe = p.opciones.some(function(op) {
+            return op.cadena === fija.cadena && op.marca === fija.marca && op.precio === fija.precio;
+        });
+        if (existe) return fija;
+        // Si ya no existe (cambió algo), limpiar
+        delete opcionFija[item];
+    }
+
+    return p.opciones[0]; // default: más barato
 }
 
 // ═══════════════════════════════════════════════════════
@@ -284,53 +300,301 @@ function renderInsights() {
     ctr.innerHTML = '';
 
     var info = calcInsights();
+    _insightsData = info; // Guardar para popovers
 
-    // Card 1: Ahorro comprando en varias tiendas
+    // Card 1: Ahorro
     if (info.mejorCadena && info.ahorro > 0) {
-        var card1 = document.createElement('div');
-        card1.className = 'insight-card';
-        var pct = ((info.ahorro / info.mejorCadenaTotal) * 100).toFixed(0);
-        card1.innerHTML =
-            '<span class="insight-ico">💰</span>' +
-            '<div class="insight-body">' +
-                '<div class="insight-title">Ahorras $' + info.ahorro.toFixed(0) + ' (' + pct + '%) comprando en ' + info.nTiendas + ' tiendas</div>' +
-                '<div class="insight-desc">Tu canasta óptima cuesta <strong>$' + info.totalMulti.toFixed(0) + '</strong> en ' + info.nTiendas +
-                ' tiendas distintas. Si prefieres ir a una sola, <strong>' + esc(info.mejorCadena) + '</strong> te sale en $' + info.mejorCadenaTotal.toFixed(0) +
-                ' (' + info.mejorCadenaN + '/' + Object.keys(selecciones).length + ' productos).</div>' +
-            '</div>';
+        var card1 = crearInsightCard('ahorro',
+            '💰',
+            'Ahorras $' + info.ahorro.toFixed(0) + ' (' + ((info.ahorro / info.mejorCadenaTotal) * 100).toFixed(0) + '%) comprando en ' + info.nTiendas + ' tiendas',
+            'Tu canasta óptima cuesta <strong>$' + info.totalMulti.toFixed(0) + '</strong> en ' + info.nTiendas +
+            ' tiendas. En una sola, <strong>' + esc(info.mejorCadena) + '</strong> te sale en $' + info.mejorCadenaTotal.toFixed(0) +
+            '. <span class="insight-link">¿Cómo se calcula?</span>'
+        );
         ctr.appendChild(card1);
     }
 
-    // Card 2: Mayor variación de precio
+    // Card 2: Mayor variación
     if (info.maxVar.item) {
-        var card2 = document.createElement('div');
-        card2.className = 'insight-card';
-        card2.innerHTML =
-            '<span class="insight-ico">📊</span>' +
-            '<div class="insight-body">' +
-                '<div class="insight-title">' + esc(info.maxVar.item) + ' tiene la mayor variación de precio</div>' +
-                '<div class="insight-desc">Va de <strong>$' + info.maxVar.min.toFixed(0) + '</strong> a <strong>$' + info.maxVar.max.toFixed(0) +
-                '</strong> — una diferencia de $' + info.maxVar.diff.toFixed(0) + '. Aquí es donde más conviene comparar.</div>' +
-            '</div>';
+        var card2 = crearInsightCard('variacion',
+            '📊',
+            esc(info.maxVar.item) + ' tiene la mayor variación de precio',
+            'Va de <strong>$' + info.maxVar.min.toFixed(0) + '</strong> a <strong>$' + info.maxVar.max.toFixed(0) +
+            '</strong> — diferencia de $' + info.maxVar.diff.toFixed(0) +
+            '. <span class="insight-link">Ver detalle por tienda</span>'
+        );
         ctr.appendChild(card2);
     }
 
-    // Card 3: Resumen de tiendas necesarias
+    // Card 3: Tiendas necesarias
     if (info.nTiendas > 0) {
-        var tiendaLines = Object.keys(info.tiendasUsadas)
-            .sort(function(a, b) { return info.tiendasUsadas[b] - info.tiendasUsadas[a]; })
-            .map(function(c) { return esc(c) + ' (' + info.tiendasUsadas[c] + ')'; })
-            .join(', ');
-        var card3 = document.createElement('div');
-        card3.className = 'insight-card';
-        card3.innerHTML =
-            '<span class="insight-ico">🏪</span>' +
-            '<div class="insight-body">' +
-                '<div class="insight-title">Tu canasta óptima requiere ' + info.nTiendas + ' tienda' + (info.nTiendas > 1 ? 's' : '') + '</div>' +
-                '<div class="insight-desc">' + tiendaLines + '</div>' +
-            '</div>';
+        var card3 = crearInsightCard('tiendas',
+            '🏪',
+            'Tu canasta óptima requiere ' + info.nTiendas + ' tienda' + (info.nTiendas > 1 ? 's' : ''),
+            Object.keys(info.tiendasUsadas)
+                .sort(function(a, b) { return info.tiendasUsadas[b] - info.tiendasUsadas[a]; })
+                .map(function(c) { return esc(c) + ' (' + info.tiendasUsadas[c] + ')'; })
+                .join(', ') +
+            '. <span class="insight-link">Ver productos por tienda</span>'
+        );
         ctr.appendChild(card3);
     }
+}
+
+function crearInsightCard(tipo, ico, titulo, desc) {
+    var card = document.createElement('div');
+    card.className = 'insight-card';
+    card.style.cursor = 'pointer';
+
+    var icoSpan = document.createElement('span');
+    icoSpan.className = 'insight-ico';
+    icoSpan.textContent = ico;
+
+    var body = document.createElement('div');
+    body.className = 'insight-body';
+
+    var titleDiv = document.createElement('div');
+    titleDiv.className = 'insight-title';
+    titleDiv.textContent = titulo;
+
+    var descDiv = document.createElement('div');
+    descDiv.className = 'insight-desc';
+    descDiv.innerHTML = desc;
+
+    body.appendChild(titleDiv);
+    body.appendChild(descDiv);
+    card.appendChild(icoSpan);
+    card.appendChild(body);
+
+    card.addEventListener('click', function(e) {
+        e.stopPropagation();
+        abrirPopover(tipo, card);
+    });
+
+    return card;
+}
+
+// ═══════════════════════════════════════════════════════
+//  POPOVERS — Paneles flotantes elegantes
+// ═══════════════════════════════════════════════════════
+var _popoverActivo = null;
+
+function abrirPopover(tipo, anchorEl) {
+    cerrarPopover(); // Cierra cualquier otro abierto
+
+    var contenido = buildPopoverContent(tipo);
+    if (!contenido) return;
+
+    // Overlay
+    var overlay = document.createElement('div');
+    overlay.className = 'popover-overlay';
+    overlay.addEventListener('click', cerrarPopover);
+
+    // Panel
+    var panel = document.createElement('div');
+    panel.className = 'popover-panel';
+
+    // Header con botón cerrar
+    var header = document.createElement('div');
+    header.className = 'popover-header';
+
+    var htitle = document.createElement('span');
+    htitle.className = 'popover-title';
+    htitle.textContent = contenido.titulo;
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'popover-close';
+    closeBtn.textContent = '×';
+    closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        cerrarPopover();
+    });
+
+    header.appendChild(htitle);
+    header.appendChild(closeBtn);
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'popover-body';
+    body.innerHTML = contenido.html;
+
+    panel.appendChild(header);
+    panel.appendChild(body);
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+
+    // Animar entrada
+    requestAnimationFrame(function() {
+        overlay.classList.add('visible');
+    });
+
+    _popoverActivo = overlay;
+}
+
+function cerrarPopover() {
+    if (!_popoverActivo) return;
+    _popoverActivo.classList.remove('visible');
+    var ref = _popoverActivo;
+    setTimeout(function() {
+        if (ref.parentNode) ref.parentNode.removeChild(ref);
+    }, 250);
+    _popoverActivo = null;
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarPopover();
+});
+
+function buildPopoverContent(tipo) {
+    var info = _insightsData;
+    if (!info) return null;
+
+    if (tipo === 'ahorro') {
+        return {
+            titulo: '¿Cómo calculamos el ahorro?',
+            html: buildAhorroHTML(info),
+        };
+    }
+    if (tipo === 'variacion') {
+        return {
+            titulo: '¿Qué significa esta variación?',
+            html: buildVariacionHTML(info),
+        };
+    }
+    if (tipo === 'tiendas') {
+        return {
+            titulo: 'Tu canasta por tienda',
+            html: buildTiendasHTML(info),
+        };
+    }
+    return null;
+}
+
+function buildAhorroHTML(info) {
+    var h = '<p class="popover-text">Buscamos el precio más bajo de cada producto sin importar la tienda. ';
+    h += 'Tu canasta cuesta <strong>$' + info.totalMulti.toFixed(0) + '</strong> comprando en <strong>' + info.nTiendas + ' tiendas</strong> distintas.</p>';
+
+    if (info.mejorCadena) {
+        h += '<p class="popover-text">Si prefieres ir a una sola tienda, <strong>' + esc(info.mejorCadena) + '</strong> ';
+        h += 'es la mejor opción a <strong>$' + info.mejorCadenaTotal.toFixed(0) + '</strong> ';
+        h += '(cubre ' + info.mejorCadenaN + ' de ' + Object.keys(selecciones).length + ' categorías).</p>';
+    }
+
+    h += '<div class="popover-divider"></div>';
+    h += '<p class="popover-label">Desglose por categoría:</p>';
+    h += '<div class="popover-table">';
+
+    Object.keys(selecciones).forEach(function(item) {
+        var op = mejorOp(item, selecciones[item]);
+        if (op) {
+            h += '<div class="popover-row">';
+            h += '<span class="popover-row-name">' + esc(item) + '</span>';
+            h += '<span class="popover-row-detail">' + esc(op.marca) + ' · ' + esc(op.cadena) + '</span>';
+            h += '<span class="popover-row-price">$' + op.precio.toFixed(2) + '</span>';
+            h += '</div>';
+        }
+    });
+
+    h += '</div>';
+    return h;
+}
+
+function buildVariacionHTML(info) {
+    var mv = info.maxVar;
+    if (!mv.item) return '<p>Sin datos de variación.</p>';
+
+    var pres = selecciones[mv.item];
+    var iData = DATA.items[mv.item];
+    if (!iData || !iData.presentaciones[pres]) return '<p>Sin datos.</p>';
+
+    var ops = iData.presentaciones[pres].opciones;
+
+    var h = '<p class="popover-text"><strong>' + esc(mv.item) + '</strong> (' + esc(pres) + ') es el producto donde ';
+    h += 'el precio cambia más entre tiendas. Si comparas antes de comprar, puedes ahorrar hasta ';
+    h += '<strong>$' + mv.diff.toFixed(0) + '</strong> en un solo producto.</p>';
+
+    h += '<div class="popover-divider"></div>';
+    h += '<p class="popover-label">Precios por tienda:</p>';
+    h += '<div class="popover-table">';
+
+    // Agrupar por cadena (precio más bajo por cadena)
+    var porCad = {};
+    ops.forEach(function(op) {
+        if (!porCad[op.cadena] || op.precio < porCad[op.cadena].precio) {
+            porCad[op.cadena] = op;
+        }
+    });
+
+    var sorted = Object.keys(porCad).sort(function(a, b) {
+        return porCad[a].precio - porCad[b].precio;
+    });
+
+    sorted.forEach(function(c, i) {
+        var op = porCad[c];
+        var clase = i === 0 ? 'popover-row best' : (i === sorted.length - 1 ? 'popover-row worst' : 'popover-row');
+        h += '<div class="' + clase + '">';
+        h += '<span class="popover-row-name">' + esc(c) + '</span>';
+        h += '<span class="popover-row-detail">' + esc(op.marca) + '</span>';
+        h += '<span class="popover-row-price">$' + op.precio.toFixed(2) + '</span>';
+        h += '</div>';
+    });
+
+    h += '</div>';
+
+    if (sorted.length >= 2) {
+        h += '<p class="popover-tip">💡 Comprar en <strong>' + esc(sorted[0]) + '</strong> en vez de <strong>' + esc(sorted[sorted.length - 1]);
+        h += '</strong> te ahorra $' + mv.diff.toFixed(0) + ' solo en ' + esc(mv.item).toLowerCase() + '.</p>';
+    }
+
+    return h;
+}
+
+function buildTiendasHTML(info) {
+    // Agrupar productos por tienda
+    var porTienda = {};
+    Object.keys(selecciones).forEach(function(item) {
+        var op = mejorOp(item, selecciones[item]);
+        if (!op) return;
+        if (!porTienda[op.cadena]) porTienda[op.cadena] = [];
+        porTienda[op.cadena].push({
+            item: item,
+            pres: selecciones[item],
+            marca: op.marca,
+            precio: op.precio,
+        });
+    });
+
+    var h = '<p class="popover-text">Para obtener el mejor precio en cada producto, necesitas visitar <strong>';
+    h += Object.keys(porTienda).length + ' tienda' + (Object.keys(porTienda).length > 1 ? 's' : '') + '</strong>:</p>';
+
+    // Ordenar tiendas por cantidad de productos (desc)
+    var tiendas = Object.keys(porTienda).sort(function(a, b) {
+        return porTienda[b].length - porTienda[a].length;
+    });
+
+    tiendas.forEach(function(cadena) {
+        var prods = porTienda[cadena];
+        var subtotal = prods.reduce(function(s, p) { return s + p.precio; }, 0);
+
+        h += '<div class="popover-store-group">';
+        h += '<div class="popover-store-head">';
+        h += '<span class="popover-store-name">🏪 ' + esc(cadena) + ' (' + prods.length + ')</span>';
+        h += '<span class="popover-store-subtotal">$' + subtotal.toFixed(0) + '</span>';
+        h += '</div>';
+
+        prods.forEach(function(p) {
+            h += '<div class="popover-store-item">';
+            h += '<span class="popover-store-item-name">' + esc(p.item) + '</span>';
+            h += '<span class="popover-store-item-detail">' + esc(trun(p.pres, 25)) + ' · ' + esc(p.marca) + '</span>';
+            h += '<span class="popover-store-item-price">$' + p.precio.toFixed(2) + '</span>';
+            h += '</div>';
+        });
+
+        h += '</div>';
+    });
+
+    return h;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -441,6 +705,21 @@ function toggleItem(item) {
 
 function cambiarPresentacion(item, pres) {
     selecciones[item] = pres;
+    // Limpiar selección manual al cambiar presentación
+    delete opcionFija[item];
+    renderTodo();
+}
+
+function seleccionarOpcion(item, opcion) {
+    // Toggle: si ya está seleccionada la misma, deseleccionar
+    if (opcionFija[item] &&
+        opcionFija[item].cadena === opcion.cadena &&
+        opcionFija[item].marca === opcion.marca &&
+        opcionFija[item].precio === opcion.precio) {
+        delete opcionFija[item];
+    } else {
+        opcionFija[item] = opcion;
+    }
     renderTodo();
 }
 
@@ -473,7 +752,7 @@ function renderResumen() {
 
         var detDiv = document.createElement('div');
         detDiv.className = 'rs-item-detalle';
-        detDiv.textContent = trun(pres, 28) + (op ? ' · ' + op.cadena : '');
+        detDiv.textContent = trun(pres, 22) + (op ? ' · ' + op.marca + ' · ' + op.cadena : '');
 
         infoDiv.appendChild(nameDiv);
         infoDiv.appendChild(detDiv);
@@ -484,6 +763,17 @@ function renderResumen() {
 
         div.appendChild(infoDiv);
         div.appendChild(priceDiv);
+                div.appendChild(infoDiv);
+        div.appendChild(priceDiv);
+
+        if (opcionFija[item]) {
+            var manualSpan = document.createElement('div');
+            manualSpan.className = 'rs-item-manual';
+            manualSpan.textContent = '✓ selección manual';
+            infoDiv.appendChild(manualSpan);
+        }
+
+        list.appendChild(div);
         list.appendChild(div);
     });
 
@@ -527,40 +817,45 @@ function renderRanking() {
     }
 
     var n = lista.length;
-    var cols = degradadoPurpura(n).reverse();
+    var cols = degradadoPurpura(n);
 
     var trace = {
-        type: 'bar', orientation: 'h',
-        x: lista.map(function(d){ return d.total; }),
-        y: lista.map(function(d){ return d.cadena; }),
+        type: 'bar',
+        orientation: 'v',
+        x: lista.map(function(d) { return d.cadena; }),
+        y: lista.map(function(d) { return d.total; }),
         marker: { color: cols, line: { width: 0 } },
-        hovertemplate: '<b>%{y}</b><br>Canasta: $%{x:,.0f}<br>(%{customdata})<extra></extra>',
-        customdata: lista.map(function(d){ return d.n + '/' + nTotal + ' categorías'; }),
+        hovertemplate: '<b>%{x}</b><br>Canasta: $%{y:,.0f}<br>(%{customdata})<extra></extra>',
+        customdata: lista.map(function(d) { return d.n + '/' + nTotal + ' categorías'; }),
+        text: lista.map(function(d) { return '$' + d.total.toFixed(0) + '\n(' + d.n + '/' + nTotal + ')'; }),
+        textposition: 'outside',
+        textfont: {
+            size: lista.map(function(d, i) { return i === 0 ? 13 : 11; }),
+            color: lista.map(function(d, i) { return i === 0 ? C.negro : C.sec; }),
+        },
+        cliponaxis: false,
     };
 
-    // FIX: Annotations with coverage info and more offset
-    var annots = lista.map(function(d, i) {
-        return {
-            x: d.total, y: d.cadena,
-            text: '$' + d.total.toFixed(0) + '  (' + d.n + '/' + nTotal + ')',
-            showarrow: false, xanchor: 'left', xshift: 12,
-            font: { size: i === 0 ? 13 : 11, color: i === 0 ? C.negro : C.sec, weight: i === 0 ? 700 : 400 },
-        };
-    });
-
     var layout = mL({
-        height: Math.max(220, n * 56 + 60),
-        margin: { l: 140, r: 90, t: 10, b: 10 },
-        // FIX: No x-axis (annotations already show prices)
-        xaxis: { showgrid: false, showticklabels: false, zeroline: false, visible: false },
-        yaxis: { autorange: 'reversed', tickfont: { size: 12, color: C.negro }, automargin: true },
-        annotations: annots,
+        height: 300,
+        margin: { l: 15, r: 15, t: 40, b: 90 },
+        xaxis: {
+            tickfont: { size: 11, color: C.negro },
+            tickangle: n > 3 ? -25 : 0,
+            showgrid: false,
+            showline: false,
+        },
+        yaxis: {
+            showgrid: false,
+            showticklabels: false,
+            zeroline: false,
+            visible: false,
+        },
         bargap: 0.35,
     });
 
     Plotly.newPlot('chart-ranking', [trace], layout, PLOTLY_CFG);
 }
-
 // ═══════════════════════════════════════════════════════
 //  GRÁFICA: Dumbbell
 //  FIX: Removed x-axis, increased spacing
@@ -715,55 +1010,85 @@ function renderComparativo() {
     card.style.display = 'block';
 
     var ops = iData.presentaciones[presSel].opciones;
-    var porCad = {};
+
+    // Construir combos cadena+marca únicos, precio más bajo por combo
+    var comboMap = {};
     ops.forEach(function(op) {
-        if (!porCad[op.cadena] || op.precio < porCad[op.cadena].precio) porCad[op.cadena] = op;
+        var key = op.cadena + '|||' + op.marca;
+        if (!comboMap[key] || op.precio < comboMap[key].precio) {
+            comboMap[key] = { cadena: op.cadena, marca: op.marca, precio: op.precio, tienda: op.tienda };
+        }
     });
 
-    var datos = Object.keys(porCad)
-        .map(function(c) { return { cadena: c, precio: porCad[c].precio, marca: porCad[c].marca }; })
+    var combos = Object.keys(comboMap)
+        .map(function(k) { return comboMap[k]; })
         .sort(function(a, b) { return a.precio - b.precio; });
 
-    if (!datos.length) { card.style.display = 'none'; return; }
+    if (!combos.length) { card.style.display = 'none'; return; }
 
-    var n = datos.length;
-    var pMin = datos[0].precio;
-    var cols = datos.map(function(d, i) { return i === 0 ? C.primario : C.crema; });
+    var n = combos.length;
+    var pMin = combos[0].precio;
+    var opActual = mejorOp(itemActivo, presSel);
+
+    // Determinar cuál está seleccionado
+    var cols = combos.map(function(d) {
+        if (opActual && d.cadena === opActual.cadena && d.marca === opActual.marca && d.precio === opActual.precio) {
+            return C.primario;
+        }
+        return C.crema;
+    });
+
+    var yLabels = combos.map(function(d) {
+        return d.cadena + ' · ' + trun(d.marca, 20);
+    });
 
     var trace = {
         type: 'bar', orientation: 'h',
-        x: datos.map(function(d){ return d.precio; }),
-        y: datos.map(function(d){ return d.cadena; }),
+        x: combos.map(function(d) { return d.precio; }),
+        y: yLabels,
         marker: { color: cols, line: { width: 0 } },
-        hovertemplate: '<b>%{y}</b><br>$%{x:,.2f}<extra></extra>',
+        hovertemplate: combos.map(function(d) {
+            return '<b>' + esc(d.cadena) + '</b><br>Marca: ' + esc(d.marca) + '<br>$' + d.precio.toFixed(2) + '<extra></extra>';
+        }),
     };
 
-    // FIX: xshift instead of text padding
-    var annots = datos.map(function(d, i) {
+    var annots = combos.map(function(d, i) {
         var diff = d.precio - pMin;
+        var esSel = opActual && d.cadena === opActual.cadena && d.marca === opActual.marca && d.precio === opActual.precio;
         var t = '$' + d.precio.toFixed(2);
         if (diff > 0) t += '  (+$' + diff.toFixed(2) + ')';
+        if (esSel) t += '  ✓';
         return {
-            x: d.precio, y: d.cadena, text: t,
+            x: d.precio, y: yLabels[i], text: t,
             showarrow: false, xanchor: 'left', xshift: 12,
-            font: { size: 11, color: i === 0 ? C.primario : C.sec },
+            font: { size: 11, color: esSel ? C.primario : C.sec },
         };
     });
 
     var layout = mL({
-        // FIX: More height per bar (50px vs 44px)
-        height: Math.max(200, n * 50 + 60),
-        margin: { l: 180, r: 130, t: 10, b: 10 },
-        // FIX: No x-axis
+        height: Math.max(220, n * 44 + 70),
+        margin: { l: 200, r: 130, t: 10, b: 10 },
         xaxis: { showgrid: false, showticklabels: false, zeroline: false, visible: false },
-        yaxis: { autorange: 'reversed', showgrid: false, tickfont: { size: 12, color: C.negro }, automargin: true },
+        yaxis: { autorange: 'reversed', showgrid: false, tickfont: { size: 10, color: C.negro }, automargin: true },
         annotations: annots,
-        bargap: 0.35,
+        bargap: 0.3,
     });
 
     Plotly.newPlot('chart-comparativo', [trace], layout, PLOTLY_CFG);
-    txt('chart-comp-title', itemActivo + ' · ' + trun(presSel, 40));
-    txt('chart-comp-sub', 'Comparativo por cadena');
+
+    // Click handler: seleccionar opción
+    var plotEl = el('chart-comparativo');
+    plotEl.removeAllListeners && plotEl.removeAllListeners('plotly_click');
+    plotEl.on('plotly_click', function(eventData) {
+        if (!eventData.points || !eventData.points.length) return;
+        var idx = eventData.points[0].pointIndex;
+        if (idx >= 0 && idx < combos.length) {
+            seleccionarOpcion(itemActivo, combos[idx]);
+        }
+    });
+
+    txt('chart-comp-title', itemActivo + ' · ' + trun(presSel, 35));
+    txt('chart-comp-sub', 'Comparativo por cadena y marca · Haz clic para seleccionar');
 }
 
 // ═══════════════════════════════════════════════════════
