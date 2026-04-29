@@ -153,6 +153,85 @@ class QQPRepository(BaseRepository[PrecioQQP]):
                 catalogo.setdefault(estado, []).append(municipio)
 
             return catalogo
+        
+    def obtener_tiendas_canasta(self, estado: str, municipio: str) -> list[dict]:
+        """
+        Devuelve tiendas únicas con sus productos de canasta básica
+        y coordenadas para el mapa.
+        """
+        from sina.config.canasta import todos_los_productos, producto_a_item
+
+        productos = todos_los_productos()
+
+        with self.Session() as session:
+            stmt = (
+                select(self.model)
+                .where(
+                    self.model.estado == estado,
+                    self.model.municipio == municipio,
+                    self.model.producto.in_(productos),
+                )
+            )
+            rows = session.execute(stmt).scalars().all()
+
+            tiendas_map: dict[str, dict] = {}
+
+            for r in rows:
+                # Saltar registros sin coordenadas
+                if not r.latitud or not r.longitud:
+                    continue
+                if not r.nombre_comercial:
+                    continue
+
+                try:
+                    lat = float(r.latitud)
+                    lng = float(r.longitud)
+                except (ValueError, TypeError):
+                    continue
+
+                # Saltar coordenadas inválidas
+                if lat == 0 and lng == 0:
+                    continue
+
+                key = r.nombre_comercial.strip()
+                item = producto_a_item(r.producto)
+                if item is None:
+                    continue
+
+                if key not in tiendas_map:
+                    tiendas_map[key] = {
+                        "nombre":    r.nombre_comercial,
+                        "cadena":    r.cadena_comercial,
+                        "direccion": r.direccion or "",
+                        "lat":       lat,
+                        "lng":       lng,
+                        "items":     {},
+                    }
+
+                # Guardar precio más bajo por item en esta tienda
+                existing = tiendas_map[key]["items"].get(item)
+                precio = float(r.precio) if r.precio else 0
+                if existing is None or precio < existing["precio"]:
+                    tiendas_map[key]["items"][item] = {
+                        "precio": precio,
+                        "marca":  r.marca or "",
+                        "presentacion": r.presentacion or "",
+                    }
+
+            # Convertir a lista
+            resultado = []
+            for t in tiendas_map.values():
+                resultado.append({
+                    "nombre":    t["nombre"],
+                    "cadena":    t["cadena"],
+                    "direccion": t["direccion"],
+                    "lat":       t["lat"],
+                    "lng":       t["lng"],
+                    "n_items":   len(t["items"]),
+                    "items":     t["items"],
+                })
+
+            return resultado
 
 class GasolinaRepository(BaseRepository[PrecioGasolina]):
     model = PrecioGasolina

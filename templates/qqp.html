@@ -6,6 +6,12 @@
     <title>Canasta Básica · QQP Profeco</title>
     <link rel="stylesheet" href="../static/css/qqp.css"/>
     <script src="https://cdn.plot.ly/plotly-2.35.0.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 </head>
 <body>
 
@@ -171,7 +177,24 @@
             </div>
 
         </div>
-
+        <div class="map-section" id="map-section" style="display:none">
+            <div class="map-card">
+                <div class="map-header">
+                    <div class="map-header-text">
+                        <span class="map-title">📍 Tiendas en tu zona</span>
+                        <span class="map-sub" id="map-sub">Ubicaciones con datos de canasta básica</span>
+                    </div>
+                    <div class="map-filters" id="map-filters"></div>
+                </div>
+                <div id="leaflet-map" class="map-container"></div>
+                <div class="map-footer">
+                    <span class="map-legend-dot map-legend-dot--active"></span>
+                    <span class="map-legend-label">Tamaño = productos disponibles</span>
+                    <span class="map-legend-spacer">·</span>
+                    <span class="map-legend-label">Clic en marcador para ver detalle</span>
+                </div>
+            </div>
+        </div>
         <div class="footer">Fuente: Profeco — Quién es Quién en los Precios (QQP) · México</div>
 
     </div>

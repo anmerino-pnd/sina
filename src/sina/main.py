@@ -335,7 +335,7 @@ async def qqp_catalogo():
 
 @app.get("/api/v1/qqp/canasta")
 async def qqp_canasta(estado: str, municipio: str):
-    """Canasta básica estructurada para un estado-municipio."""
+    """Canasta básica estructurada para un estado-municipio, con tiendas para mapa."""
     repo = QQPRepository(db_url=DB_URL)
     registros = repo.obtener_canasta(estado, municipio)
 
@@ -347,12 +347,17 @@ async def qqp_canasta(estado: str, municipio: str):
                 "costo_canasta_minima": 0, "n_cadenas": 0,
                 "n_items": 0, "n_productos_total": 0,
             },
+            "tiendas": [],
             "error": "No se encontraron datos para este municipio.",
         }
 
     data = estructurar_canasta(registros)
     data["estado"] = estado
     data["municipio"] = municipio
+
+    # Agregar tiendas con coordenadas para el mapa
+    data["tiendas"] = repo.obtener_tiendas_canasta(estado, municipio)
+
     return data
 
 # ============================================================

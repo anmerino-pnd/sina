@@ -10,6 +10,9 @@ var selecciones = {};
 var itemActivo  = null;
 var opcionFija  = {};   // { "Leche": { precio:20, marca:"Lala", cadena:"Ley", tienda:"..." }, ... }
 var _insightsData = null; // Cache para popovers
+var _leafletMap = null;     // Instancia de Leaflet
+var _markersLayer = null;   // LayerGroup de marcadores
+var _cadenasFiltro = {};    // { cadena: true/false } para filtros
 
 // ── Paleta ─────────────────────────────────────────────
 var C = {
@@ -152,6 +155,14 @@ async function cargarCanasta() {
         DATA = json;
         selecciones = {};
         itemActivo = null;
+        opcionFija = {};
+        _cadenasFiltro = {};
+        // Destruir mapa anterior si existe
+        if (_leafletMap) {
+            _leafletMap.remove();
+            _leafletMap = null;
+            _markersLayer = null;
+        }
         var items = Object.keys(DATA.items);
         items.forEach(function(item) { selecciones[item] = DATA.items[item].default_presentacion; });
         if (items.length) itemActivo = items[0];
@@ -179,6 +190,7 @@ function renderTodo() {
     renderDetalle();
     renderComparativo();
     renderInsights();
+    renderMapa();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1089,6 +1101,189 @@ function renderComparativo() {
 
     txt('chart-comp-title', itemActivo + ' · ' + trun(presSel, 35));
     txt('chart-comp-sub', 'Comparativo por cadena y marca · Haz clic para seleccionar');
+}
+
+// ═══════════════════════════════════════════════════════
+//  MAPA — Leaflet con ubicaciones de tiendas
+// ═══════════════════════════════════════════════════════
+var MAP_COLORS = [
+    '#3D264E', '#7E5E96', '#C5B075', '#493B31',
+    '#5E4172', '#9E7EBA', '#8B7355', '#BEA0D4',
+    '#6B5E53', '#D8C4E6'
+];
+
+function renderMapa() {
+    var section = el('map-section');
+    if (!DATA || !DATA.tiendas || !DATA.tiendas.length) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+
+    var tiendas = DATA.tiendas;
+
+    // Extraer cadenas únicas
+    var cadenasSet = {};
+    tiendas.forEach(function(t) { cadenasSet[t.cadena] = true; });
+    var cadenasArr = Object.keys(cadenasSet).sort();
+
+    // Asignar colores
+    var cadenaColor = {};
+    cadenasArr.forEach(function(c, i) {
+        cadenaColor[c] = MAP_COLORS[i % MAP_COLORS.length];
+    });
+
+    // Inicializar filtros (todos activos por defecto)
+    if (Object.keys(_cadenasFiltro).length === 0) {
+        cadenasArr.forEach(function(c) { _cadenasFiltro[c] = true; });
+    }
+
+    // Render filtros
+    renderMapFilters(cadenasArr, cadenaColor);
+
+    // Calcular centro del mapa
+    var lats = tiendas.map(function(t) { return t.lat; });
+    var lngs = tiendas.map(function(t) { return t.lng; });
+    var centerLat = lats.reduce(function(a, b) { return a + b; }, 0) / lats.length;
+    var centerLng = lngs.reduce(function(a, b) { return a + b; }, 0) / lngs.length;
+
+    // Inicializar mapa si no existe
+    if (!_leafletMap) {
+        _leafletMap = L.map('leaflet-map', {
+            scrollWheelZoom: false,
+            zoomControl: true,
+        }).setView([centerLat, centerLng], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 18,
+        }).addTo(_leafletMap);
+
+        _markersLayer = L.layerGroup().addTo(_leafletMap);
+
+        // Fix: Leaflet needs a size recalc after container becomes visible
+        setTimeout(function() {
+            _leafletMap.invalidateSize();
+            _leafletMap.setView([centerLat, centerLng], 13);
+        }, 300);
+    } else {
+        _leafletMap.setView([centerLat, centerLng], 13);
+    }
+
+    // Actualizar marcadores
+    actualizarMarcadores(tiendas, cadenaColor);
+
+    // Actualizar subtítulo
+    var nVisible = tiendas.filter(function(t) { return _cadenasFiltro[t.cadena]; }).length;
+    txt('map-sub', nVisible + ' tiendas con datos de canasta básica en ' + cap(munSel));
+}
+
+function renderMapFilters(cadenas, colores) {
+    var ctr = el('map-filters');
+    ctr.innerHTML = '';
+
+    cadenas.forEach(function(cadena) {
+        var btn = document.createElement('button');
+        btn.className = 'map-filter-btn' + (_cadenasFiltro[cadena] ? ' active' : '');
+
+        var dot = document.createElement('span');
+        dot.className = 'map-filter-dot';
+        dot.style.background = colores[cadena];
+
+        var name = document.createElement('span');
+        name.textContent = cadena;
+
+        var count = document.createElement('span');
+        count.className = 'map-filter-count';
+        var n = DATA.tiendas.filter(function(t) { return t.cadena === cadena; }).length;
+        count.textContent = '(' + n + ')';
+
+        btn.appendChild(dot);
+        btn.appendChild(name);
+        btn.appendChild(count);
+
+        btn.addEventListener('click', function() {
+            _cadenasFiltro[cadena] = !_cadenasFiltro[cadena];
+            btn.classList.toggle('active');
+            actualizarMarcadores(DATA.tiendas, colores);
+
+            // Actualizar subtítulo
+            var nVis = DATA.tiendas.filter(function(t) { return _cadenasFiltro[t.cadena]; }).length;
+            txt('map-sub', nVis + ' tiendas con datos de canasta básica en ' + cap(munSel));
+        });
+
+        ctr.appendChild(btn);
+    });
+}
+
+function actualizarMarcadores(tiendas, colores) {
+    if (!_markersLayer) return;
+    _markersLayer.clearLayers();
+
+    var nTotal = Object.keys(CANASTA_BASICA_ITEMS || selecciones).length || 14;
+
+    tiendas.forEach(function(t) {
+        // Respetar filtros
+        if (!_cadenasFiltro[t.cadena]) return;
+
+        var color = colores[t.cadena] || C.primario;
+
+        // Radio proporcional a cobertura (min 6, max 16)
+        var cobertura = t.n_items / nTotal;
+        var radius = 6 + cobertura * 10;
+
+        var marker = L.circleMarker([t.lat, t.lng], {
+            radius: radius,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 0.9,
+            fillOpacity: 0.75,
+        });
+
+        marker.bindPopup(buildMapPopup(t, nTotal), {
+            maxWidth: 300,
+            className: 'map-custom-popup',
+        });
+
+        _markersLayer.addLayer(marker);
+    });
+}
+
+function buildMapPopup(tienda, nTotal) {
+    var h = '<div class="map-popup">';
+    h += '<div class="map-popup-name">' + esc(tienda.nombre) + '</div>';
+    h += '<div class="map-popup-chain">' + esc(tienda.cadena) + '</div>';
+
+    if (tienda.direccion) {
+        h += '<div class="map-popup-address">' + esc(tienda.direccion) + '</div>';
+    }
+
+    h += '<div class="map-popup-divider"></div>';
+    h += '<div class="map-popup-label">Productos disponibles (' + tienda.n_items + '/' + nTotal + ')</div>';
+    h += '<div class="map-popup-items">';
+
+    // Ordenar items por nombre
+    var itemNames = Object.keys(tienda.items).sort();
+    itemNames.forEach(function(item) {
+        var info = tienda.items[item];
+        h += '<div class="map-popup-item">';
+        h += '<span class="map-popup-item-name">' + esc(item) + '</span>';
+        h += '<span class="map-popup-item-price">$' + info.precio.toFixed(2) + '</span>';
+        h += '</div>';
+    });
+
+    h += '</div>';
+
+    // Barra de cobertura
+    var pct = Math.round((tienda.n_items / nTotal) * 100);
+    h += '<div class="map-popup-coverage">';
+    h += pct + '% de la canasta básica disponible';
+    h += '</div>';
+
+    h += '</div>';
+    return h;
 }
 
 // ═══════════════════════════════════════════════════════
