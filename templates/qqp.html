@@ -38,22 +38,32 @@
 
 <div class="wrap">
 
+    <!-- ══════════════════════════════════════════════
+         Pantalla: Bienvenida
+         ══════════════════════════════════════════════ -->
     <div class="screen-welcome" id="sc-welcome">
         <div class="ico">🛒</div>
         <h2>Selecciona tu municipio</h2>
         <p>Elige estado y municipio para comparar precios de la canasta básica en las tiendas de tu zona.</p>
     </div>
 
+    <!-- ══════════════════════════════════════════════
+         Pantalla: Sin datos
+         ══════════════════════════════════════════════ -->
     <div class="screen-empty" id="sc-empty">
         <div class="ico">📭</div>
         <h2>Sin datos disponibles</h2>
         <p id="empty-txt">No encontramos datos de canasta básica para este municipio.</p>
     </div>
 
+    <!-- ══════════════════════════════════════════════
+         Dashboard principal
+         ══════════════════════════════════════════════ -->
     <div class="dashboard" id="dashboard">
 
         <div class="sec-label" id="sec-label">—</div>
 
+        <!-- ── KPIs ── -->
         <div class="kpis-row">
             <div class="kpi-card destacado">
                 <div class="kpi-v" id="kpi-canasta">--</div>
@@ -69,10 +79,15 @@
             </div>
         </div>
 
-        <!-- Grid: sidebar | charts | resumen+ranking -->
+        <!-- ── Insights row (populated by JS) ── -->
+        <div class="insights-row" id="insights-row"></div>
+
+        <!-- ══════════════════════════════════════════
+             Grid: sidebar | charts | resumen+ranking
+             ══════════════════════════════════════════ -->
         <div class="dash-grid">
 
-            <!-- IZQUIERDA: categorías -->
+            <!-- ── IZQUIERDA: Categorías ── -->
             <div class="col-sidebar">
                 <div class="sidebar-card">
                     <div class="sidebar-head">
@@ -83,8 +98,10 @@
                 </div>
             </div>
 
-            <!-- CENTRO: gráficas (scrolleable) -->
+            <!-- ── CENTRO: Gráficas ── -->
             <div class="col-charts">
+
+                <!-- Dumbbell: rango de precios -->
                 <div class="chart-card">
                     <div class="chart-head">
                         <span class="chart-title">Rango de precios por producto</span>
@@ -93,14 +110,23 @@
                     <div id="chart-dumbbell" class="chart-container"></div>
                 </div>
 
+                <!-- Detalle: barras por presentación del item activo -->
                 <div class="chart-card" id="card-detalle" style="display:none">
                     <div class="chart-head">
                         <span class="chart-title" id="chart-detalle-title">Detalle</span>
                         <span class="chart-sub" id="chart-detalle-sub"></span>
                     </div>
-                    <div id="chart-detalle" class="chart-container"></div>
+                    <!-- FIX: Renamed from chart-detalle to chart-detalle-plot
+                         to avoid ID collision with card-detalle wrapper.
+                         The old code had id="chart-detalle" on BOTH the card
+                         and the plot container — getElementById would always
+                         return the first one (the card), so Plotly was trying
+                         to render inside the card wrapper instead of the
+                         actual plot div. -->
+                    <div id="chart-detalle-plot" class="chart-container"></div>
                 </div>
 
+                <!-- Comparativo: barras por cadena del item+presentación activo -->
                 <div class="chart-card" id="card-comparativo" style="display:none">
                     <div class="chart-head">
                         <span class="chart-title" id="chart-comp-title">Comparativo</span>
@@ -108,29 +134,39 @@
                     </div>
                     <div id="chart-comparativo" class="chart-container"></div>
                 </div>
+
             </div>
 
-            <!-- DERECHA: ranking + tu canasta -->
+            <!-- ── DERECHA: Ranking + Tu canasta ── -->
             <div class="col-resumen">
-                <!-- Ranking de cadenas -->
-                <div class="chart-card">
-                    <div class="chart-head">
-                        <span class="chart-title" id="chart-ranking-title">¿Dónde sale más barata?</span>
-                    </div>
-                    <div id="chart-ranking" class="chart-container"></div>
-                </div>
+                <!-- FIX: Inner wrapper handles sticky + scroll.
+                     The column itself stretches to full grid row height
+                     (no align-items:start on grid), giving this wrapper
+                     room to stick as the page scrolls. -->
+                <div class="col-resumen-inner">
 
-                <!-- Tu canasta -->
-                <div class="resumen-card" id="resumen-card">
-                    <div class="resumen-head">
-                        <span class="resumen-title">🧾 Tu canasta</span>
+                    <!-- Ranking de cadenas -->
+                    <div class="chart-card">
+                        <div class="chart-head">
+                            <span class="chart-title">¿Dónde sale más barata?</span>
+                            <span class="chart-sub">Suma de precios más bajos por cadena</span>
+                        </div>
+                        <div id="chart-ranking" class="chart-container"></div>
                     </div>
-                    <div class="resumen-list" id="resumen-list"></div>
-                    <div class="resumen-total">
-                        <span>Total</span>
-                        <span class="resumen-total-val" id="resumen-total">\$0</span>
+
+                    <!-- Tu canasta / ticket -->
+                    <div class="resumen-card" id="resumen-card">
+                        <div class="resumen-head">
+                            <span class="resumen-title">🧾 Tu canasta</span>
+                        </div>
+                        <div class="resumen-list" id="resumen-list"></div>
+                        <div class="resumen-total">
+                            <span>Total</span>
+                            <span class="resumen-total-val" id="resumen-total">\$0</span>
+                        </div>
+                        <div class="resumen-footer" id="resumen-footer"></div>
                     </div>
-                    <div class="resumen-footer" id="resumen-footer"></div>
+
                 </div>
             </div>
 
