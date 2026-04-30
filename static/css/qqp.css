@@ -754,15 +754,10 @@ body {
     color: var(--cafe);
     flex-shrink: 0;
 }
-
 /* ══════════════════════════════════════════════════════
-   MAPA — Ubicación de tiendas
+   MAPA — Ubicación de tiendas (inline en col-charts)
    ══════════════════════════════════════════════════════ */
-.map-section {
-    margin-top: 18px;
-}
-
-.map-card {
+.map-card-inline {
     background: var(--white);
     border-radius: var(--r);
     box-shadow: var(--sh);
@@ -855,18 +850,18 @@ body {
 
 /* ── Contenedor del mapa ── */
 .map-container {
-    height: 420px;
+    height: 380px;
     width: 100%;
 }
 
-/* Override Leaflet popup styles */
-.map-card .leaflet-popup-content-wrapper {
+/* ── Override Leaflet popup styles ── */
+.map-card-inline .leaflet-popup-content-wrapper {
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(21, 17, 12, 0.12);
     padding: 0;
 }
 
-.map-card .leaflet-popup-content {
+.map-card-inline .leaflet-popup-content {
     margin: 0;
     min-width: 220px;
     max-width: 300px;
@@ -965,10 +960,6 @@ body {
     background: var(--accent);
 }
 
-.map-legend-dot--active {
-    background: var(--accent);
-}
-
 .map-legend-label {
     font-size: 0.65rem;
     color: var(--ter);
@@ -978,7 +969,6 @@ body {
     color: var(--border);
     font-size: 0.7rem;
 }
-
 /* ══════════════════════════════════════════════════════
    Responsive
    ══════════════════════════════════════════════════════ */
@@ -1023,7 +1013,7 @@ body {
         min-width: 0;
     }
 
-    .map-container { height: 350px; }
+    .map-container { height: 320px; }
 
     .map-header {
         flex-direction: column;
@@ -1037,6 +1027,7 @@ body {
     .hero h1 { font-size: 1.5rem; }
     .kpis-row { grid-template-columns: 1fr; }
     .insight-card { min-width: 0; }
+
     .popover-overlay {
         align-items: flex-end;
     }
@@ -1052,7 +1043,8 @@ body {
     .popover-overlay.visible .popover-panel {
         transform: translateY(0);
     }
-    .map-container { height: 280px; }
+
+    .map-container { height: 260px; }
 
     .map-filters {
         gap: 4px;
@@ -1063,7 +1055,6 @@ body {
         font-size: 0.65rem;
     }
 }
-
 /* ══════════════════════════════════════════════════════
    Scrollbars
    ══════════════════════════════════════════════════════ */

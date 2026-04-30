@@ -186,8 +186,6 @@ function renderTodo() {
     renderSidebar();
     renderResumen();
     renderRanking();
-    renderDumbbell();
-    renderDetalle();
     renderComparativo();
     renderInsights();
     renderMapa();
@@ -711,7 +709,6 @@ function toggleItem(item) {
     if (itemActivo === item) return;
     itemActivo = item;
     renderSidebar();
-    renderDetalle();
     renderComparativo();
 }
 
@@ -868,145 +865,6 @@ function renderRanking() {
 
     Plotly.newPlot('chart-ranking', [trace], layout, PLOTLY_CFG);
 }
-// ═══════════════════════════════════════════════════════
-//  GRÁFICA: Dumbbell
-//  FIX: Removed x-axis, increased spacing
-// ═══════════════════════════════════════════════════════
-function renderDumbbell() {
-    var items = Object.keys(selecciones);
-    var datos = [];
-
-    items.forEach(function(item) {
-        var pres = selecciones[item];
-        var iData = DATA.items[item];
-        if (!iData || !iData.presentaciones[pres]) return;
-        var ops = iData.presentaciones[pres].opciones;
-        if (!ops.length) return;
-        datos.push({
-            item: item,
-            min: ops[0].precio,
-            max: ops[ops.length - 1].precio,
-            cadMin: ops[0].cadena,
-            cadMax: ops[ops.length - 1].cadena,
-        });
-    });
-
-    datos.sort(function(a, b) { return b.min - a.min; });
-
-    var traces = [];
-    datos.forEach(function(d) {
-        // Line connecting min-max
-        traces.push({
-            type: 'scatter', x: [d.min, d.max], y: [d.item, d.item],
-            mode: 'lines', line: { color: C.border, width: 2 },
-            showlegend: false, hoverinfo: 'skip',
-        });
-        // Min dot
-        traces.push({
-            type: 'scatter', x: [d.min], y: [d.item],
-            mode: 'markers', marker: { color: C.primario, size: 10 },
-            showlegend: false,
-            hovertemplate: '<b>' + esc(d.item) + '</b><br>Más barato: $' + d.min.toFixed(2) + '<br>' + esc(d.cadMin) + '<extra></extra>',
-        });
-        // Max dot
-        traces.push({
-            type: 'scatter', x: [d.max], y: [d.item],
-            mode: 'markers', marker: { color: C.dorado, size: 10 },
-            showlegend: false,
-            hovertemplate: '<b>' + esc(d.item) + '</b><br>Más caro: $' + d.max.toFixed(2) + '<br>' + esc(d.cadMax) + '<extra></extra>',
-        });
-    });
-
-    // FIX: Annotations with more xshift for breathing room
-    var annots = [];
-    datos.forEach(function(d) {
-        annots.push({
-            x: d.min, y: d.item,
-            text: '$' + d.min.toFixed(0),
-            showarrow: false, xanchor: 'right', xshift: -14,
-            font: { size: 11, color: C.primario },
-        });
-        annots.push({
-            x: d.max, y: d.item,
-            text: '$' + d.max.toFixed(0),
-            showarrow: false, xanchor: 'left', xshift: 14,
-            font: { size: 11, color: C.dorado },
-        });
-    });
-
-    // Legend annotation
-    annots.push({
-        xref: 'paper', yref: 'paper', x: 0, y: 1.06,
-        text: '<span style="color:'+C.primario+'">●</span> Más barato  <span style="color:'+C.dorado+'">●</span> Más caro',
-        showarrow: false, font: { size: 11 },
-    });
-
-    var layout = mL({
-        // FIX: More height per item (48px vs 40px)
-        height: Math.max(350, datos.length * 48 + 70),
-        margin: { l: 150, r: 80, t: 35, b: 10 },
-        // FIX: No x-axis at all
-        xaxis: { showgrid: false, showticklabels: false, zeroline: false, visible: false },
-        yaxis: { showgrid: false, tickfont: { size: 12, color: C.negro } },
-        annotations: annots,
-    });
-
-    Plotly.newPlot('chart-dumbbell', traces, layout, PLOTLY_CFG);
-}
-
-// ═══════════════════════════════════════════════════════
-//  GRÁFICA: Detalle item
-//  FIX: Removed x-axis, more spacing
-// ═══════════════════════════════════════════════════════
-function renderDetalle() {
-    var card = el('card-detalle');
-    if (!itemActivo || !DATA.items[itemActivo]) { card.style.display = 'none'; return; }
-    card.style.display = 'block';
-
-    var iData = DATA.items[itemActivo];
-    var presKeys = Object.keys(iData.presentaciones);
-    var datos = presKeys.map(function(p) {
-        var ops = iData.presentaciones[p].opciones;
-        return { pres: p, precio: ops[0].precio, cadena: ops[0].cadena, nCad: contarCadenas(ops), esSel: p === selecciones[itemActivo] };
-    });
-    datos.sort(function(a, b) { return a.precio - b.precio; });
-
-    var cols = datos.map(function(d) { return d.esSel ? C.primario : C.crema; });
-    var n = datos.length;
-
-    var trace = {
-        type: 'bar', orientation: 'h',
-        x: datos.map(function(d){ return d.precio; }),
-        y: datos.map(function(d){ return d.pres; }),
-        marker: { color: cols, line: { width: 0 } },
-        hovertemplate: '<b>%{y}</b><br>Desde $%{x:,.2f}<extra></extra>',
-    };
-
-    // FIX: xshift instead of text padding, more offset
-    var annots = datos.map(function(d) {
-        return {
-            x: d.precio, y: d.pres,
-            text: '$' + d.precio.toFixed(0) + ' · ' + d.cadena + ' (' + d.nCad + ')',
-            showarrow: false, xanchor: 'left', xshift: 12,
-            font: { size: 10, color: d.esSel ? C.primario : C.sec },
-        };
-    });
-
-    var layout = mL({
-        // FIX: More height per bar (44px vs 38px)
-        height: Math.max(200, n * 44 + 60),
-        margin: { l: 230, r: 160, t: 10, b: 10 },
-        // FIX: No x-axis
-        xaxis: { showgrid: false, showticklabels: false, zeroline: false, visible: false },
-        yaxis: { autorange: 'reversed', showgrid: false, tickfont: { size: 10, color: C.negro }, automargin: true },
-        annotations: annots,
-        bargap: 0.3,
-    });
-
-    Plotly.newPlot('chart-detalle-plot', [trace], layout, PLOTLY_CFG);
-    txt('chart-detalle-title', itemActivo);
-    txt('chart-detalle-sub', cap(munSel) + ' · Precio más bajo por presentación');
-}
 
 // ═══════════════════════════════════════════════════════
 //  GRÁFICA: Comparativo por cadena
@@ -1123,9 +981,20 @@ function renderMapa() {
 
     var tiendas = DATA.tiendas;
 
+    // Filtrar tiendas con coordenadas válidas
+    var tiendasValidas = tiendas.filter(function(t) {
+        return t.lat && t.lng && t.lat !== 0 && t.lng !== 0 &&
+               Math.abs(t.lat) > 1 && Math.abs(t.lng) > 1;
+    });
+
+    if (!tiendasValidas.length) {
+        section.style.display = 'none';
+        return;
+    }
+
     // Extraer cadenas únicas
     var cadenasSet = {};
-    tiendas.forEach(function(t) { cadenasSet[t.cadena] = true; });
+    tiendasValidas.forEach(function(t) { cadenasSet[t.cadena] = true; });
     var cadenasArr = Object.keys(cadenasSet).sort();
 
     // Asignar colores
@@ -1134,49 +1003,89 @@ function renderMapa() {
         cadenaColor[c] = MAP_COLORS[i % MAP_COLORS.length];
     });
 
-    // Inicializar filtros (todos activos por defecto)
+    // Inicializar filtros
     if (Object.keys(_cadenasFiltro).length === 0) {
         cadenasArr.forEach(function(c) { _cadenasFiltro[c] = true; });
     }
 
-    // Render filtros
     renderMapFilters(cadenasArr, cadenaColor);
 
-    // Calcular centro del mapa
-    var lats = tiendas.map(function(t) { return t.lat; });
-    var lngs = tiendas.map(function(t) { return t.lng; });
-    var centerLat = lats.reduce(function(a, b) { return a + b; }, 0) / lats.length;
-    var centerLng = lngs.reduce(function(a, b) { return a + b; }, 0) / lngs.length;
+    // Calcular centro
+    var centerLat = tiendasValidas.reduce(function(s, t) { return s + t.lat; }, 0) / tiendasValidas.length;
+    var centerLng = tiendasValidas.reduce(function(s, t) { return s + t.lng; }, 0) / tiendasValidas.length;
 
-    // Inicializar mapa si no existe
+    // Inicializar mapa
     if (!_leafletMap) {
         _leafletMap = L.map('leaflet-map', {
-            scrollWheelZoom: false,
             zoomControl: true,
-        }).setView([centerLat, centerLng], 13);
+            scrollWheelZoom: false,
+            center: [centerLat, centerLng],
+            zoom: 13,
+        });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 18,
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19,
         }).addTo(_leafletMap);
 
         _markersLayer = L.layerGroup().addTo(_leafletMap);
 
-        // Fix: Leaflet needs a size recalc after container becomes visible
         setTimeout(function() {
             _leafletMap.invalidateSize();
-            _leafletMap.setView([centerLat, centerLng], 13);
-        }, 300);
+            // Fit bounds en vez de center fijo
+            var bounds = L.latLngBounds(tiendasValidas.map(function(t) { return [t.lat, t.lng]; }));
+            _leafletMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+        }, 400);
     } else {
-        _leafletMap.setView([centerLat, centerLng], 13);
+        _leafletMap.invalidateSize();
+        var bounds = L.latLngBounds(tiendasValidas.map(function(t) { return [t.lat, t.lng]; }));
+        _leafletMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
     }
 
-    // Actualizar marcadores
-    actualizarMarcadores(tiendas, cadenaColor);
+    actualizarMarcadores(tiendasValidas, cadenaColor);
 
-    // Actualizar subtítulo
-    var nVisible = tiendas.filter(function(t) { return _cadenasFiltro[t.cadena]; }).length;
+    var nVisible = tiendasValidas.filter(function(t) { return _cadenasFiltro[t.cadena]; }).length;
     txt('map-sub', nVisible + ' tiendas con datos de canasta básica en ' + cap(munSel));
+}
+
+function actualizarMarcadores(tiendas, colores) {
+    if (!_markersLayer) return;
+    _markersLayer.clearLayers();
+
+    var nTotal = Object.keys(selecciones).length || 14;
+
+    tiendas.forEach(function(t) {
+        if (!_cadenasFiltro[t.cadena]) return;
+
+        var color = colores[t.cadena] || C.primario;
+        var cobertura = t.n_items / nTotal;
+        var radius = 7 + cobertura * 11;
+
+        var marker = L.circleMarker([t.lat, t.lng], {
+            radius: radius,
+            fillColor: color,
+            color: '#ffffff',
+            weight: 2.5,
+            opacity: 1,
+            fillOpacity: 0.8,
+        });
+
+        marker.bindPopup(buildMapPopup(t, nTotal), {
+            maxWidth: 300,
+            minWidth: 220,
+        });
+
+        // Hover: resaltar
+        marker.on('mouseover', function() {
+            this.setStyle({ weight: 3.5, fillOpacity: 1 });
+        });
+        marker.on('mouseout', function() {
+            this.setStyle({ weight: 2.5, fillOpacity: 0.8 });
+        });
+
+        _markersLayer.addLayer(marker);
+    });
 }
 
 function renderMapFilters(cadenas, colores) {
@@ -1191,63 +1100,36 @@ function renderMapFilters(cadenas, colores) {
         dot.className = 'map-filter-dot';
         dot.style.background = colores[cadena];
 
-        var name = document.createElement('span');
-        name.textContent = cadena;
+        var nameSpan = document.createElement('span');
+        nameSpan.textContent = cadena;
 
-        var count = document.createElement('span');
-        count.className = 'map-filter-count';
-        var n = DATA.tiendas.filter(function(t) { return t.cadena === cadena; }).length;
-        count.textContent = '(' + n + ')';
+        var countSpan = document.createElement('span');
+        countSpan.className = 'map-filter-count';
+        var n = DATA.tiendas.filter(function(t) {
+            return t.cadena === cadena && t.lat && t.lng && t.lat !== 0 && t.lng !== 0;
+        }).length;
+        countSpan.textContent = '(' + n + ')';
 
         btn.appendChild(dot);
-        btn.appendChild(name);
-        btn.appendChild(count);
+        btn.appendChild(nameSpan);
+        btn.appendChild(countSpan);
 
         btn.addEventListener('click', function() {
             _cadenasFiltro[cadena] = !_cadenasFiltro[cadena];
             btn.classList.toggle('active');
-            actualizarMarcadores(DATA.tiendas, colores);
 
-            // Actualizar subtítulo
-            var nVis = DATA.tiendas.filter(function(t) { return _cadenasFiltro[t.cadena]; }).length;
+            var tiendasValidas = DATA.tiendas.filter(function(t) {
+                return t.lat && t.lng && t.lat !== 0 && t.lng !== 0 &&
+                       Math.abs(t.lat) > 1 && Math.abs(t.lng) > 1;
+            });
+
+            actualizarMarcadores(tiendasValidas, colores);
+
+            var nVis = tiendasValidas.filter(function(t) { return _cadenasFiltro[t.cadena]; }).length;
             txt('map-sub', nVis + ' tiendas con datos de canasta básica en ' + cap(munSel));
         });
 
         ctr.appendChild(btn);
-    });
-}
-
-function actualizarMarcadores(tiendas, colores) {
-    if (!_markersLayer) return;
-    _markersLayer.clearLayers();
-
-    var nTotal = Object.keys(CANASTA_BASICA_ITEMS || selecciones).length || 14;
-
-    tiendas.forEach(function(t) {
-        // Respetar filtros
-        if (!_cadenasFiltro[t.cadena]) return;
-
-        var color = colores[t.cadena] || C.primario;
-
-        // Radio proporcional a cobertura (min 6, max 16)
-        var cobertura = t.n_items / nTotal;
-        var radius = 6 + cobertura * 10;
-
-        var marker = L.circleMarker([t.lat, t.lng], {
-            radius: radius,
-            fillColor: color,
-            color: '#fff',
-            weight: 2,
-            opacity: 0.9,
-            fillOpacity: 0.75,
-        });
-
-        marker.bindPopup(buildMapPopup(t, nTotal), {
-            maxWidth: 300,
-            className: 'map-custom-popup',
-        });
-
-        _markersLayer.addLayer(marker);
     });
 }
 

@@ -104,41 +104,34 @@
                 </div>
             </div>
 
-            <!-- ── CENTRO: Gráficas ── -->
+            <!-- ── CENTRO: Comparativo + Mapa ── -->
             <div class="col-charts">
 
-                <!-- Dumbbell: rango de precios -->
-                <div class="chart-card">
-                    <div class="chart-head">
-                        <span class="chart-title">Rango de precios por producto</span>
-                        <span class="chart-sub">Presentación seleccionada de cada categoría</span>
-                    </div>
-                    <div id="chart-dumbbell" class="chart-container"></div>
-                </div>
-
-                <!-- Detalle: barras por presentación del item activo -->
-                <div class="chart-card" id="card-detalle" style="display:none">
-                    <div class="chart-head">
-                        <span class="chart-title" id="chart-detalle-title">Detalle</span>
-                        <span class="chart-sub" id="chart-detalle-sub"></span>
-                    </div>
-                    <!-- FIX: Renamed from chart-detalle to chart-detalle-plot
-                         to avoid ID collision with card-detalle wrapper.
-                         The old code had id="chart-detalle" on BOTH the card
-                         and the plot container — getElementById would always
-                         return the first one (the card), so Plotly was trying
-                         to render inside the card wrapper instead of the
-                         actual plot div. -->
-                    <div id="chart-detalle-plot" class="chart-container"></div>
-                </div>
-
-                <!-- Comparativo: barras por cadena del item+presentación activo -->
+                <!-- Comparativo: cadena + marca del item activo -->
                 <div class="chart-card" id="card-comparativo" style="display:none">
                     <div class="chart-head">
                         <span class="chart-title" id="chart-comp-title">Comparativo</span>
                         <span class="chart-sub" id="chart-comp-sub"></span>
                     </div>
                     <div id="chart-comparativo" class="chart-container"></div>
+                </div>
+
+                <!-- Mapa: Ubicación de tiendas -->
+                <div class="map-card-inline" id="map-section" style="display:none">
+                    <div class="map-header">
+                        <div class="map-header-text">
+                            <span class="map-title">📍 Tiendas en tu zona</span>
+                            <span class="map-sub" id="map-sub">Ubicaciones con datos de canasta básica</span>
+                        </div>
+                        <div class="map-filters" id="map-filters"></div>
+                    </div>
+                    <div id="leaflet-map" class="map-container"></div>
+                    <div class="map-footer">
+                        <span class="map-legend-dot"></span>
+                        <span class="map-legend-label">Tamaño = productos disponibles</span>
+                        <span class="map-legend-spacer">·</span>
+                        <span class="map-legend-label">Clic en marcador para ver detalle</span>
+                    </div>
                 </div>
 
             </div>
@@ -176,24 +169,6 @@
                 </div>
             </div>
 
-        </div>
-        <div class="map-section" id="map-section" style="display:none">
-            <div class="map-card">
-                <div class="map-header">
-                    <div class="map-header-text">
-                        <span class="map-title">📍 Tiendas en tu zona</span>
-                        <span class="map-sub" id="map-sub">Ubicaciones con datos de canasta básica</span>
-                    </div>
-                    <div class="map-filters" id="map-filters"></div>
-                </div>
-                <div id="leaflet-map" class="map-container"></div>
-                <div class="map-footer">
-                    <span class="map-legend-dot map-legend-dot--active"></span>
-                    <span class="map-legend-label">Tamaño = productos disponibles</span>
-                    <span class="map-legend-spacer">·</span>
-                    <span class="map-legend-label">Clic en marcador para ver detalle</span>
-                </div>
-            </div>
         </div>
         <div class="footer">Fuente: Profeco — Quién es Quién en los Precios (QQP) · México</div>
 
