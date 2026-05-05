@@ -92,18 +92,20 @@ def _parsear_localidades_json(content: bytes) -> list[dict]:
 def fetch_localidades(entidad_id: int, municipio_id_str: str) -> list[dict]:
     url = cne_localidades_url
     params = {
-        "entidadFederativaId": entidad_id,
-        "municipioId":         municipio_id_str,
+        "entidadFederativaId": f"{entidad_id:02d}",   # ← 1 → "01", 32 → "32"
+        "municipioId":         municipio_id_str,       # ya viene como "001"
     }
 
     try:
         resp = requests.get(url, params=params, timeout=15)
         resp.raise_for_status()
     except requests.RequestException as e:
-        logger.error(f"Error al pedir localidades (entidad={entidad_id}, mun={municipio_id_str}): {e}")
+        logger.error(
+            f"Error al pedir localidades "
+            f"(entidad={entidad_id:02d}, mun={municipio_id_str}): {e}"
+        )
         return []
 
-    # ← JSON, no XML
     return _parsear_localidades_json(resp.content)
 
 

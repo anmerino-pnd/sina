@@ -1,7 +1,7 @@
 # src/sina/db/models.py
 from sqlalchemy import (
     Column, Integer, String, Float, 
-    DateTime, ForeignKey, UniqueConstraint
+    DateTime, ForeignKey, UniqueConstraint, Index
 )
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timedelta, timezone
@@ -33,6 +33,9 @@ class PrecioQQP(Base):
 # sina/db/models.py
 class PrecioGasolina(Base):
     __tablename__ = "gasolineras"
+    __table_args__ = (
+        Index("ix_gas_estado_mun", "estado", "municipio"),
+    )
 
     numero    = Column(String, primary_key=True)  # PL/11257/EXP/ES/2015
     estado    = Column(String, nullable=False)
@@ -105,6 +108,11 @@ class Municipio(Base):
 class Localidad(Base):
     """Catálogo de localidades por municipio (CNE)."""
     __tablename__ = "cne_localidades"
+    __table_args__ = (
+        UniqueConstraint("localidad_id", "municipio_id", "entidad_id",
+                         name="uq_localidad_municipio"),
+        Index("ix_loc_ent_mun", "entidad_id", "municipio_id"),
+    )
 
     # ── PK interna ─────────────────────────────────────────────
     id = Column(Integer, primary_key=True, autoincrement=True)

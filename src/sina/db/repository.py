@@ -1,52 +1,62 @@
-# src/sina/db/repository.py
 from typing import Generic, TypeVar
 from contextlib import contextmanager
 from typing import cast as typing_cast
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from sqlalchemy import create_engine, insert, delete, select
-from sina.db.models import  (
+from sqlalchemy import create_engine, insert, delete, select, event, distinct
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sina.db.models import (
     Base, PrecioQQP, PrecioGasolina,
-    EntidadFederativa, Municipio, Localidad, GasLPPrecio  
+    EntidadFederativa, Municipio, Localidad, GasLPPrecio,
 )
 from sina.config.credentials import DB_URL
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 T = TypeVar("T", bound=DeclarativeBase)
 
+# ── Engine ÚNICO compartido por toda la app ─────────────────
+_engine = create_engine(
+    DB_URL,
+    connect_args={"timeout": 30} if DB_URL.startswith("sqlite") else {},
+    pool_pre_ping=True,
+)
+if DB_URL.startswith("sqlite"):
+    @event.listens_for(_engine, "connect")
+    def _set_sqlite_pragmas(dbapi_conn, _):
+        cur = dbapi_conn.cursor()
+        cur.execute("PRAGMA journal_mode=WAL")        # lectores y escritor coexisten
+        cur.execute("PRAGMA synchronous=NORMAL")      # ~3x escritura, sigue siendo seguro
+        cur.execute("PRAGMA busy_timeout=30000")      # 30s reintentos
+        cur.execute("PRAGMA cache_size=-64000")       # 64 MB de cache
+        cur.execute("PRAGMA temp_store=MEMORY")       # tablas temp en RAM
+        cur.execute("PRAGMA foreign_keys=ON")
+        cur.close()
+
+Base.metadata.create_all(_engine)
+_SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False)
+
 
 class BaseRepository(Generic[T]):
-    """Repositorio genérico reutilizable para cualquier modelo SQLAlchemy."""
-
-    model: type[T] 
+    """Repositorio genérico — todos comparten el mismo engine."""
+    model: type[T]
 
     def __init__(self, db_url: str = DB_URL):
-        self.engine = create_engine(db_url)
-        Base.metadata.create_all(self.engine)
-        self.Session = sessionmaker(bind=self.engine)
+        # Mantenemos la firma por compatibilidad pero usamos el engine global
+        self.engine = _engine
+        self.Session = _SessionFactory
 
     def guardar_en_bulk(self, lista_datos: list[dict]) -> None:
         if not lista_datos:
-            print("No hay datos para insertar.")
             return
-
-        try:
-            with self.engine.begin() as conn:
-                conn.execute(insert(self.model), lista_datos)
-            print(f"[{self.model.__tablename__}] {len(lista_datos):,} registros guardados.")
-        except Exception as e:
-            print(f"[{self.model.__tablename__}] Error al guardar: {e}")
-            raise
+        with self.engine.begin() as conn:
+            conn.execute(insert(self.model), lista_datos)
 
     def contar(self) -> int:
-        """Cuenta los registros en la tabla."""
         with self.Session() as session:
             return session.query(self.model).count()
 
     def borrar_todo(self) -> None:
-        """Borra todos los registros de la tabla. Úsalo con cuidado."""
         with self.engine.begin() as conn:
             conn.execute(delete(self.model))
-        print(f"[{self.model.__tablename__}] Tabla vaciada.")
 
 
 class QQPRepository(BaseRepository[PrecioQQP]):
@@ -258,58 +268,75 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                 }
                 for r in rows
             ]
+
     def upsert_ubicaciones(self, registros: list[dict]):
-        """
-        Fase 1: Inserta ubicaciones. Si el numero ya existe, actualiza lat/lng.
-        """
-        with self.Session() as session:
-            for r in registros:
-                stmt = sqlite_insert(self.model).values(
-                    numero    = r["permiso"],
-                    estado    = r["estado"],
-                    municipio = r["municipio"],
-                    latitud   = r["latitud"],
-                    longitud  = r["longitud"],
-                ).on_conflict_do_update(
-                    index_elements=["numero"],
-                    set_={
-                        "latitud" : r["latitud"],
-                        "longitud": r["longitud"],
-                    }
-                )
-                session.execute(stmt)
-            session.commit()
+        if not registros:
+            return
+        rows = [
+            {
+                "numero":    r["permiso"],
+                "estado":    r["estado"],
+                "municipio": r["municipio"],
+                "latitud":   r["latitud"],
+                "longitud":  r["longitud"],
+            }
+            for r in registros
+        ]
+        base = sqlite_insert(self.model)
+        stmt = base.values(rows).on_conflict_do_update(
+            index_elements=["numero"],
+            set_={
+                "latitud":  base.excluded.latitud,
+                "longitud": base.excluded.longitud,
+            },
+        )
+        with self.engine.begin() as conn:
+            conn.execute(stmt)
 
     def upsert_precios(self, registros: list[dict]):
+        if not registros:
+            return
+        rows = [
+            {
+                "numero":         r["numero"],
+                "estado":         r["estado"],
+                "municipio":      r["municipio"],
+                "nombre":         r["nombre"],
+                "direccion":      r["direccion"],
+                "magna":          r["magna"],
+                "premium":        r["premium"],
+                "diesel":         r["diesel"],
+                "fecha_registro": r["fecha_registro"],
+            }
+            for r in registros
+        ]
+        base = sqlite_insert(self.model)
+        stmt = base.values(rows).on_conflict_do_update(
+            index_elements=["numero"],
+            set_={
+                "nombre":         base.excluded.nombre,
+                "direccion":      base.excluded.direccion,
+                "magna":          base.excluded.magna,
+                "premium":        base.excluded.premium,
+                "diesel":         base.excluded.diesel,
+                "fecha_registro": base.excluded.fecha_registro,
+            },
+        )
+        with self.engine.begin() as conn:
+            conn.execute(stmt)
+
+    def municipios_con_coordenadas(self) -> set[tuple[str, str]]:
         """
-        Fase 2: Actualiza precios. Respeta latitud/longitud ya existentes.
+        UNA query — todos los (estado, municipio) que ya tienen lat/lng.
+        Reemplaza N llamadas a municipio_ya_scrapeado().
         """
         with self.Session() as session:
-            for r in registros:
-                stmt = sqlite_insert(self.model).values(
-                    numero         = r["numero"],
-                    estado         = r["estado"],
-                    municipio      = r["municipio"],
-                    nombre         = r["nombre"],
-                    direccion      = r["direccion"],
-                    magna          = r["magna"],
-                    premium        = r["premium"],
-                    diesel         = r["diesel"],
-                    fecha_registro = r["fecha_registro"],
-                ).on_conflict_do_update(
-                    index_elements=["numero"],
-                    set_={
-                        "nombre"        : r["nombre"],
-                        "direccion"     : r["direccion"],
-                        "magna"         : r["magna"],
-                        "premium"       : r["premium"],
-                        "diesel"        : r["diesel"],
-                        "fecha_registro": r["fecha_registro"],
-                        # ✅ latitud y longitud NO están aquí → se preservan
-                    }
-                )
-                session.execute(stmt)
-            session.commit()
+            rows = session.execute(
+                select(self.model.estado, self.model.municipio)
+                .where(self.model.latitud.is_not(None))
+                .distinct()
+            ).all()
+        return {(e, m) for e, m in rows}
 
     def necesita_actualizacion(self, estado: str, municipio: str) -> bool:
         """
@@ -426,26 +453,22 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
             ]
 
     def upsert_precios_gas_lp(self, registros: list[dict]):
-        """
-        Inserta o actualiza precios de Gas LP.
-        Si ya existe (mismo permiso + tipo + capacidad + localidad), actualiza precio y fecha.
-        """
-        with self.Session() as session:
-            for r in registros:
-                stmt = sqlite_insert(self.model).values(**r).on_conflict_do_update(
-                    index_elements=[
-                        "entidad_id", "municipio_id", "localidad_id",
-                        "numero_permiso", "tipo", "capacidad_recipiente"
-                    ],
-                    set_={
-                        "precio":           r["precio"],
-                        "marca_comercial":  r["marca_comercial"],
-                        "fecha_extraccion": r["fecha_extraccion"],
-                    }
-                )
-                session.execute(stmt)
-            session.commit()
-            print(f"[gas_lp_precios] {len(registros):,} registros actualizados.")
+        if not registros:
+            return
+        base = sqlite_insert(self.model)
+        stmt = base.values(registros).on_conflict_do_update(
+            index_elements=[
+                "entidad_id", "municipio_id", "localidad_id",
+                "numero_permiso", "tipo", "capacidad_recipiente",
+            ],
+            set_={
+                "precio":           base.excluded.precio,
+                "marca_comercial":  base.excluded.marca_comercial,
+                "fecha_extraccion": base.excluded.fecha_extraccion,
+            },
+        )
+        with self.engine.begin() as conn:
+            conn.execute(stmt)
 
     def necesita_actualizacion(self, entidad_id: int, municipio_id: str, localidad_id: int, dias: int = 7) -> bool:
         """
@@ -475,13 +498,10 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
 # ── Helper para obtener session (mantén compatibilidad) ────────
 @contextmanager
 def get_session():
-    from sina.config.paths import DB
-    engine = create_engine(f"sqlite:///{DB}/sina_data.db")
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session = _SessionFactory()
     try:
         yield session
+        session.commit()
     except Exception:
         session.rollback()
         raise
