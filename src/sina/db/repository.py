@@ -1,8 +1,15 @@
 from typing import Generic, TypeVar
 from contextlib import contextmanager
 from typing import cast as typing_cast
+from datetime import datetime, timezone
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from sqlalchemy import create_engine, insert, delete, select, event, distinct
+from sqlalchemy import (
+    create_engine, 
+    insert, 
+    delete, 
+    select, 
+    event,
+    update)
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import (
     Base, PrecioQQP, PrecioGasolina,
@@ -539,13 +546,15 @@ class CatalogoRepository(BaseRepository[CatalogoConfig]):
     def actualizar_ultima_extraccion(self, id: int) -> None:
         """Actualiza la fecha de última extracción de una ruta."""
         with self.engine.begin() as conn:
-            conn.execute(
-                select(self.model)
+            stmt = (
+                update(self.model)
                 .where(self.model.id == id)
-                .update(
-                    {self.model.ultima_extraccion: datetime.now(timezone.utc)}
+                .values(
+                    ultima_extraccion=datetime.now(timezone.utc)
                 )
             )
+
+            conn.execute(stmt)
 
 # ── Helper para obtener session (mantén compatibilidad) ────────
 @contextmanager
