@@ -188,14 +188,14 @@ class QQPRepository(BaseRepository[PrecioQQP]):
 
             for r in rows:
                 # Saltar registros sin coordenadas
-                if not r.latitud or not r.longitud:
+                if not r.latitud or not r.longitud: # type: ignore
                     continue
-                if not r.nombre_comercial:
+                if not r.nombre_comercial: # type: ignore
                     continue
 
                 try:
-                    lat = float(r.latitud)
-                    lng = float(r.longitud)
+                    lat = float(r.latitud) # type: ignore
+                    lng = float(r.longitud) # type: ignore
                 except (ValueError, TypeError):
                     continue
 
@@ -204,7 +204,7 @@ class QQPRepository(BaseRepository[PrecioQQP]):
                     continue
 
                 key = r.nombre_comercial.strip()
-                item = producto_a_item(r.producto)
+                item = producto_a_item(r.producto) # type: ignore
                 if item is None:
                     continue
 
@@ -220,7 +220,7 @@ class QQPRepository(BaseRepository[PrecioQQP]):
 
                 # Guardar precio más bajo por item en esta tienda
                 existing = tiendas_map[key]["items"].get(item)
-                precio = float(r.precio) if r.precio else 0
+                precio = float(r.precio) if r.precio else 0 # type: ignore
                 if existing is None or precio < existing["precio"]:
                     tiendas_map[key]["items"][item] = {
                         "precio": precio,

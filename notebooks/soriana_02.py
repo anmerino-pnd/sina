@@ -60,7 +60,7 @@ def scrape_soriana_total(categoria_objetivo="Todo"):
                         precio = None
                         if precio_input.count() > 0:
                             try:
-                                precio = float(precio_input.get_attribute("value"))
+                                precio = float(precio_input.get_attribute("value")) # type: ignore
                             except (ValueError, TypeError):
                                 pass
 

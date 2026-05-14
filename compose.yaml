@@ -1,0 +1,17 @@
+# Ejecutar con: podman-compose up -d
+services:
+  postgres_vector:
+    image: pgvector/pgvector:pg16
+    container_name: sina_db
+    environment:
+      POSTGRES_USER: sina_admin
+      POSTGRES_PASSWORD: sina_password
+      POSTGRES_DB: sina_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - sina_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  sina_pgdata:

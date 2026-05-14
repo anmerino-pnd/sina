@@ -1,12 +1,13 @@
 # src/sina/db/models.py
 from sqlalchemy import (
-    Column, Integer, String, Float, 
-    DateTime, ForeignKey, UniqueConstraint, Index
+    DateTime, ForeignKey, UniqueConstraint, Index,
+    Column, Integer, String, Float
 )
-from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime, timedelta, timezone
-from typing import cast
+from sqlalchemy.orm import declarative_base, relationship, mapped_column
 from sina.config.timezone import get_mexico_now, to_mexico_tz
+from datetime import datetime, timedelta, timezone
+from pgvector.sqlalchemy import Vector
+from typing import cast
 
 Base = declarative_base()
 
@@ -29,6 +30,34 @@ class PrecioQQP(Base):
     municipio = Column(String, nullable=False)
     latitud = Column(Float, nullable=True)
     longitud = Column(Float, nullable=True)
+    
+
+class Supermercado(Base):
+    __tablename__ = 'supermercados'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    producto = Column(String, nullable=False)
+    precio = Column(Float, nullable=False)
+    pid = Column(Integer, nullable=False, unique=True)
+    tienda = Column(String, default="Soriana")
+    departamento = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    subcategoria = Column(String, nullable=True)
+    embedding = mapped_column(Vector(), nullable=True)
+    fecha_actualizacion = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_supermercado_pid", "pid"),
+        Index("ix_supermercado_departamento", "departamento"),
+        Index("ix_supermercado_categoria", "categoria"),
+    )
+
+    def __repr__(self):
+        return (
+            f"<Supermercado(id={self.id}, producto='{self.producto}', "
+            f"precio={self.precio}, tienda='{self.tienda}', "
+            f"departamento='{self.departamento}', categoria='{self.categoria}')>"
+            )
 
 # sina/db/models.py
 class PrecioGasolina(Base):
