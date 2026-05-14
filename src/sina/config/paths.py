@@ -27,6 +27,7 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 
 CLASSES = BASE_DIR / "src" / "sina" / "config" / "classes.json"
+SORIANA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "soriana_config.json"
 
 for path in [
     DB,
@@ -40,4 +41,6 @@ for path in [
     path.mkdir(parents=True, exist_ok=True)
 
 CATALOGO_MUNICIPIOS_PATH = GAS_DATA / "catalogo_municipios.json"
+CLASES_JSON_PATH = CLASSES
+SORIANA_CONFIG_PATH = SORIANA_CONFIG
 

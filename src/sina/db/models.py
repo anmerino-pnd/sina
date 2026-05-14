@@ -1,7 +1,7 @@
 # src/sina/db/models.py
 from sqlalchemy import (
     DateTime, ForeignKey, UniqueConstraint, Index,
-    Column, Integer, String, Float
+    Column, Integer, String, Float, Boolean
 )
 from sqlalchemy.orm import declarative_base, relationship, mapped_column
 from sina.config.timezone import get_mexico_now, to_mexico_tz

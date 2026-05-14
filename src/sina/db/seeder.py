@@ -138,7 +138,7 @@ def seed_catalogos(session: Session) -> dict:
                 url_path = datos_cat.get("url_path", "")
                 prioridad = datos_cat.get("prioridad", 1)
 
-                # Buscar o crear registro
+             # Buscar o crear registro
                 registro = session.query(CatalogoConfig).filter(
                     CatalogoConfig.tienda == tienda,
                     CatalogoConfig.departamento == departamento,
@@ -164,7 +164,7 @@ def seed_catalogos(session: Session) -> dict:
 
     session.commit()
 
-   logger.info(
+    logger.info(
         f"Seeder catalogos completado — "
         f"Tiendas: {len(tiendas_insertadas)} | "
         f"Rutas: {rutas_insertadas}"
@@ -189,8 +189,8 @@ if __name__ == "__main__":
     with get_session() as session:
         # Seed catalogs de municipios primero
         resultado_municipios = seed_catalogo_municipios(session)
-        print(f"\n✅ Seeder municipios: {resultado_municipios}")
+        print(f"\n[OK] Seeder municipios: {resultado_municipios}")
         
         # Luego seed catalogos de Soriana
         resultado_catalogos = seed_catalogos(session)
-        print(f"\n✅ Seeder catalogos Soriana: {resultado_catalogos}")
+        print(f"\n[OK] Seeder catalogos Soriana: {resultado_catalogos}")
