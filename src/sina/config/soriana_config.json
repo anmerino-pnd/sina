@@ -1,0 +1,80 @@
+﻿{
+    "Soriana": {
+        "vinos-licores-y-cervezas": {
+            "destilados-y-licores": {
+                "url_path": "/vinos-licores-y-cervezas/destilados-y-licores/",
+                "prioridad": 1
+            },
+            "vinos": {
+                "url_path": "/vinos-licores-y-cervezas/vinos/",
+                "prioridad": 2
+            },
+            "cervezas": {
+                "url_path": "/vinos-licores-y-cervezas/cervezas/",
+                "prioridad": 3
+            },
+            "coolers": {
+                "url_path": "/vinos-licores-y-cervezas/coolers/",
+                "prioridad": 4
+            },
+            "mezcladores": {
+                "url_path": "/vinos-licores-y-cervezas/mezcladores/",
+                "prioridad": 5
+            },
+            "sidras": {
+                "url_path": "/vinos-licores-y-cervezas/sidras/",
+                "prioridad": 6
+            }
+        },
+        "despensa": {
+            "Arroz": {
+                "url_path": "/despensa/arroz-frijol-y-semillas/arroz/",
+                "prioridad": 1
+            },
+            "Frijol": {
+                "url_path": "/despensa/arroz-frijol-y-semillas/frijol/",
+                "prioridad": 2
+            },
+            "Leguminosas": {
+                "url_path": "/despensa/arroz-frijol-y-semillas/leguminosas/",
+                "prioridad": 3
+            },
+            "Semillas": {
+                "url_path": "/despensa/arroz-frijol-y-semillas/semillas/",
+                "prioridad": 4
+            }
+        },
+        "frutas-y-verduras": {
+            "Frutas": {
+                "url_path": "/frutas-verduras/frutas/",
+                "prioridad": 1
+            },
+            "Verduras": {
+                "url_path": "/frutas-verduras/verduras/",
+                "prioridad": 2
+            },
+            "Legumbres": {
+                "url_path": "/frutas-verduras/legumbres/",
+                "prioridad": 3
+            }
+        },
+        "lacteos-y-huevo": {
+            "Lácteos": {
+                "url_path": "/lacteos-huevo/lacteos/",
+                "prioridad": 1
+            },
+            "Huevos": {
+                "url_path": "/lacteos-huevo/huevos/",
+                "prioridad": 2
+            },
+            "Yogures": {
+                "url_path": "/lacteos-huevo/yogures/",
+                "prioridad": 3
+            },
+            "Leches": {
+                "url_path": "/lacteos-huevo/leches/",
+                "prioridad": 4
+            }
+        }
+    }
+}

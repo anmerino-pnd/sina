@@ -3,9 +3,13 @@
 import json
 import logging
 from pathlib import Path
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from sina.db.models import EntidadFederativa, Municipio
-from sina.config.paths import CATALOGO_MUNICIPIOS_PATH
+from sina.db.models import (
+    EntidadFederativa, Municipio,
+    CatalogoConfig,
+)
+from sina.config.paths import CATALOGO_MUNICIPIOS_PATH, CLASES_JSON_PATH, SORIANA_CONFIG_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +91,91 @@ def seed_catalogo_municipios(session: Session) -> dict:
     }
 
 
+def seed_catalogos(session: Session) -> dict:
+    """
+    Lee src/sina/config/soriana_config.json y puebla catalogos_config.
+    
+    Estructura esperada del JSON:
+    {
+        "Soriana": {
+            "vinos-licores-y-cervezas": {
+                "destilados-y-licores": {
+                    "url_path": "/vinos-licores-y-cervezas/destilados-y-licores/",
+                    "prioridad": 1
+                },
+                "vinos": {
+                    "url_path": "/vinos-licores-y-cervezas/vinos/",
+                    "prioridad": 2
+                }
+            },
+            "despensa": {
+                "Arroz": {
+                    "url_path": "/despensa/arroz-frijol-y-semillas/arroz/",
+                    "prioridad": 1
+                }
+            }
+        }
+    }
+    
+    Returns:
+        {"tiendas": int, "rutas": int} — registros insertados
+    """
+    with open(SORIANA_CONFIG_PATH, "r", encoding="utf-8") as f:
+        datos: dict = json.load(f)
+
+    tiendas_insertadas = set()
+    rutas_insertadas = 0
+
+    for tienda, datos_tienda in datos.items():
+        if tienda != "Soriana":
+            logger.warning(f"Saltando tienda no configurada: {tienda}")
+            continue
+
+        tiendas_insertadas.add(tienda)
+
+        for departamento, datos_depto in datos_tienda.items():
+            for categoria, datos_cat in datos_depto.items():
+                url_path = datos_cat.get("url_path", "")
+                prioridad = datos_cat.get("prioridad", 1)
+
+                # Buscar o crear registro
+                registro = session.query(CatalogoConfig).filter(
+                    CatalogoConfig.tienda == tienda,
+                    CatalogoConfig.departamento == departamento,
+                    CatalogoConfig.categoria == categoria,
+                    CatalogoConfig.url_path == url_path
+                ).first()
+
+                if registro is None:
+                    catalogo = CatalogoConfig(
+                        tienda=tienda,
+                        departamento=departamento,
+                        categoria=categoria,
+                        url_path=url_path,
+                        prioridad=prioridad,
+                        activo=True,
+                        fecha_registro=datetime.now(timezone.utc)
+                    )
+                    session.add(catalogo)
+                    rutas_insertadas += 1
+                    logger.debug(f"  + Ruta: {departamento} > {categoria} => {url_path}")
+                else:
+                    logger.debug(f"  ~ Ruta ya existe: {departamento} > {categoria}")
+
+    session.commit()
+
+   logger.info(
+        f"Seeder catalogos completado — "
+        f"Tiendas: {len(tiendas_insertadas)} | "
+        f"Rutas: {rutas_insertadas}"
+    )
+
+    return {
+        "tiendas": len(tiendas_insertadas),
+        "rutas": rutas_insertadas,
+    }
+
+
 if __name__ == "__main__":
     """Permite ejecutar directamente: python -m sina.db.seeder"""
     import logging
@@ -98,5 +187,10 @@ if __name__ == "__main__":
     )
 
     with get_session() as session:
-        resultado = seed_catalogo_municipios(session)
-        print(f"\n✅ Seeder finalizado: {resultado}")
+        # Seed catalogs de municipios primero
+        resultado_municipios = seed_catalogo_municipios(session)
+        print(f"\n✅ Seeder municipios: {resultado_municipios}")
+        
+        # Luego seed catalogos de Soriana
+        resultado_catalogos = seed_catalogos(session)
+        print(f"\n✅ Seeder catalogos Soriana: {resultado_catalogos}")

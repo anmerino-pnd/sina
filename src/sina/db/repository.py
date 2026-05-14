@@ -7,6 +7,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import (
     Base, PrecioQQP, PrecioGasolina,
     EntidadFederativa, Municipio, Localidad, GasLPPrecio,
+    CatalogoConfig,
 )
 from sina.config.credentials import DB_URL
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -494,6 +495,57 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
                 return True  # No hay datos
             
             return not ultimo.esta_vigente()  # True si expiró
+
+# ── Repositorio para Catálogo de Rutas Soriana ─────────────────
+class CatalogoRepository(BaseRepository[CatalogoConfig]):
+    model = CatalogoConfig
+
+    def obtener_rutas_activas(self) -> list[dict]:
+        """Obtiene todas las rutas activas de Soriana ordenadas por prioridad."""
+        with self.Session() as session:
+            stmt = select(self.model).where(
+                self.model.activo == True
+            ).order_by(self.model.prioridad.asc())
+            rows = session.execute(stmt).scalars().all()
+            return [
+                {
+                    "id": r.id,
+                    "tienda": r.tienda,
+                    "departamento": r.departamento,
+                    "categoria": r.categoria,
+                    "url_path": r.url_path,
+                    "prioridad": r.prioridad,
+                    "ultima_extraccion": r.ultima_extraccion,
+                }
+                for r in rows
+            ]
+
+    def obtener_ruta_por_id(self, id: int) -> dict | None:
+        """Obtiene una ruta específica por ID."""
+        with self.Session() as session:
+            row = session.query(self.model).filter(
+                self.model.id == id,
+                self.model.activo == True
+            ).first()
+            return dict(row) if row else None
+
+    def contar_rutas_activas(self) -> int:
+        """Contador de rutas activas."""
+        with self.Session() as session:
+            return session.query(self.model).filter(
+                self.model.activo == True
+            ).count()
+
+    def actualizar_ultima_extraccion(self, id: int) -> None:
+        """Actualiza la fecha de última extracción de una ruta."""
+        with self.engine.begin() as conn:
+            conn.execute(
+                select(self.model)
+                .where(self.model.id == id)
+                .update(
+                    {self.model.ultima_extraccion: datetime.now(timezone.utc)}
+                )
+            )
 
 # ── Helper para obtener session (mantén compatibilidad) ────────
 @contextmanager

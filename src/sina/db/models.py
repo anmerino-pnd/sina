@@ -30,6 +30,39 @@ class PrecioQQP(Base):
     municipio = Column(String, nullable=False)
     latitud = Column(Float, nullable=True)
     longitud = Column(Float, nullable=True)
+
+
+class CatalogoConfig(Base):
+    """
+    Configura las rutas activas de Soriana.
+    Cada registro define una URL completa que el scraper debe visitar.
+    """
+    __tablename__ = "catalogos_config"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tienda = Column(String, nullable=False, default="Soriana")
+    departamento = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    url_path = Column(String, nullable=False)  # Ej: "/despensa/arroz-frijol-y-semillas/arroz/"
+    activo = Column(Boolean, default=True)
+    prioridad = Column(Integer, default=1)
+    ultima_extraccion = Column(DateTime(timezone=True), nullable=True)
+    fecha_registro = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        UniqueConstraint("tienda", "departamento", "categoria", "url_path", name="uq_catalogo"),
+        Index("ix_catalogo_activo", "activo"),
+        Index("ix_catalogo_prioridad", "prioridad"),
+    )
+
+    def __repr__(self):
+        return (
+            f"<CatalogoConfig id={self.id} "
+            f"tienda='{self.tienda}' "
+            f"departamento='{self.departamento}' "
+            f"categoria='{self.categoria}' "
+            f"url_path='{self.url_path}'>"
+        )
     
 
 class Supermercado(Base):
