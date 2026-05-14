@@ -6,7 +6,8 @@
 
 [![Python](https://img.shields.io/badge/Python-3.12+-474848?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-1.10+-61DAFE?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.x+-0039DB?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-3776AB?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Podman](https://img.shields.io/badge/Podman-3.x+-000000?style=for-the-badge&logo=podman&logoColor=white)](https://podman.io/)
 [![License](https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge&logo=opensource&logoColor=black)](LICENSE)
 
 </div>
@@ -19,6 +20,7 @@ SINA es una plataforma **100% pública** que centraliza datos de precios de:
 - ⛽ **Gasolina** (CRE)
 - 🔥 **Gas LP** (CNE)
 - 🛒 **Canasta básica / Supermercados** (PROFECO)
+- 🏪 **Soriana** (Web scraping + DB-driven)
 
 **Objetivo:** Empoderar al ciudadano con información clara para tomar mejores decisiones de compra y ahorro.
 
@@ -34,9 +36,11 @@ SINA es una plataforma **100% pública** que centraliza datos de precios de:
 | Pipeline Gasolina | ✅ Activo | Scraping diario automático |
 | Pipeline Gas LP | ✅ Activo | Scraping semanal (sábados) |
 | Pipeline QQP | ✅ Activo | Actualización manual disponible |
+| Pipeline Soriana | ✅ Activo | DB-driven scraping con PostgreSQL |
 | Dashboard Gasolina | ✅ Activo | Mapa + tabla ranking |
 | Dashboard Gas LP | ✅ Activo | Comparador por proveedor |
 | Dashboard QQP | ✅ Activo | Tabla con filtros y mapa |
+| Dashboard Soriana | ✅ Activo | Filtrado por departamento/categoría |
 | Annotator ML | ✅ Activo | Extracción de datos de volantes |
 
 ### 🎨 Roadmap (Fases)
@@ -56,36 +60,45 @@ SINA es una plataforma **100% pública** que centraliza datos de precios de:
 ### Stack Tecnológico
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    USUARIO                          │
-│  (Dashboard HTML/JS + API REST)                     │
-└──────────────────┬──────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────┐
-│              FastAPI Backend (Python 3.12+)         │
-│  - Main app: sina/main.py                           │
-│  - ORM: SQLAlchemy + Repository Pattern             │
-│  - DB: SQLite (actual) / PostgreSQL (futuro)        │
-└──────────────────┬──────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────┐
-│              Capas de Procesamiento                  │
-│  - scraping/: Gasolina, Gas LP, QQP, Casa Ley       │
-│  - processing/: ML, OCR, LLM                        │
-│  - db/: Models + Repositories                        │
-│  - config/: Settings, Credentials, Paths            │
-└──────────────────┬──────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────┐
-│              Base de Datos                          │
-│  - gasolineras (ubicaciones + precios)              │
-│  - gas_lp_precios (por proveedor/localidad)         │
-│  - qqp_precios (canasta básica PROFECO)             │
-│  - cne_entidades, cne_municipios, cne_localidades   │
-└─────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                         USUARIO                                   │
+│  (Dashboard HTML/JS + API REST + Soriana Config)                 │
+└────────────────────┬──────────────────────────────────────────────┘
+                     │
+                     ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                  FastAPI Backend (Python 3.12+)                   │
+│  - Main app: sina/main.py                                         │
+│  - ORM: SQLAlchemy + Repository Pattern                           │
+│  - DB: PostgreSQL (pgvector)                                     │
+└────────────────────┬──────────────────────────────────────────────┘
+                     │
+                     ▼
+┌───────────────────────────────────────────────────────────────────┐
+│              Capas de Procesamiento                                │
+│  - scraping/: Gasolina, Gas LP, QQP, Soriana                      │
+│  - processing/: ML, OCR, LLM                                      │
+│  - db/: Models + Repositories                                      │
+│  - config/: Settings, Credentials, Paths                          │
+└────────────────────┬──────────────────────────────────────────────┘
+                     │
+                     ▼
+┌───────────────────────────────────────────────────────────────────┐
+│              Base de Datos (PostgreSQL + pgvector)                 │
+│  - gasolineras (ubicaciones + precios)                            │
+│  - gas_lp_precios (por proveedor/localidad)                        │
+│  - qqp_precios (canasta básica PROFECO)                           │
+│  - cne_entidades, cne_municipios, cne_localidades                  │
+│  - catalogos_config (rutas Soriana activas)                       │
+│  - supermercados (productos + precios)                            │
+└────────────────────┬──────────────────────────────────────────────┘
+                     │
+                     ▼
+┌───────────────────────────────────────────────────────────────────┐
+│              Infraestructura (Podman + WSL2)                       │
+│  - PostgreSQL 16 + pgvector                                       │
+│  - Podman Desktop (machine virtual habilitado)                    │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 ### Flujos de Datos
@@ -108,6 +121,12 @@ PROFECO CSV → extract_qqp() → df_to_dict() →
 guardar_en_bulk() → Dashboard con mapa
 ```
 
+#### Soriana (On-demand)
+```
+catalogos_config (DB) → obtener_rutas_activas() → 
+scrape_por_ruta() → guardar_en_db() → Dashboard
+```
+
 ---
 
 ## 📊 Base de Datos
@@ -122,6 +141,8 @@ guardar_en_bulk() → Dashboard con mapa
 | `cne_entidades` | Estados MX | `id`, `nombre` |
 | `cne_municipios` | Municipios | `id`, `nombre`, `entidad_id`, `municipio_id` |
 | `cne_localidades` | Localidades | `id`, `nombre`, `municipio_id` |
+| `catalogos_config` | Rutas Soriana activas | `tienda`, `departamento`, `categoria`, `url_path`, `prioridad` |
+| `supermercados` | Productos + precios | `producto`, `precio`, `pid`, `tienda`, `departamento`, `categoria` |
 
 ### Schema de Ejemplo
 
@@ -141,16 +162,31 @@ guardar_en_bulk() → Dashboard con mapa
   "fecha_actualizacion": "2026-05-12T06:00:00Z"
 }
 
-# qqp_precios
+# catalogos_config (Soriana)
+{
+  "id": 1,
+  "tienda": "Soriana",
+  "departamento": "despensa",
+  "categoria": "Arroz",
+  "url_path": "/despensa/arroz-frijol-y-semillas/arroz/",
+  "prioridad": 1,
+  "ultima_extraccion": "2026-05-12T10:00:00Z",
+  "activo": True,
+  "fecha_registro": "2026-05-12T08:00:00Z"
+}
+
+# supermercados
 {
   "id": 1,
   "producto": "Leche",
-  "marca": "Lala",
-  "presentacion": "1L",
   "precio": 21.90,
+  "pid": 12345,
   "tienda": "Soriana",
-  "municipio": "Hermosillo",
-  "vigente": True
+  "departamento": "lacteos-y-huevo",
+  "categoria": "Lácteos",
+  "subcategoria": None,
+  "embedding": [0.1, 0.2, ...],
+  "fecha_actualizacion": "2026-05-12T10:00:00Z"
 }
 ```
 
@@ -162,16 +198,39 @@ guardar_en_bulk() → Dashboard con mapa
 
 - Python 3.12+
 - uv (package manager)
+- Podman Desktop instalado
+- WSL2 habilitado en Windows
+
+### Instalación de Podman Desktop (si no está instalado)
+
+1. **Habilitar máquina virtual:**
+   ```powershell
+   powershell -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb RunAs"
+   ```
+
+2. **Ejecutar en PowerShell Admin:**
+   ```powershell
+   Dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+   Dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+   ```
+
+3. **Reiniciar** la computadora
 
 ### Instalación
 
 ```bash
 # Clonar proyecto
-git clone https://github.com/angelmerino/sina.git
+git clone https://github.com/angelmerino-pnd/sina.git
 cd sina
 
 # Instalar dependencias
 uv sync
+
+# Ejecutar Podman (cargar imagen PostgreSQL)
+podman load -i postgres_image.tar  # Si tienes la imagen
+
+# Iniciar PostgreSQL con Podman
+podman-compose up -d
 
 # Ejecutar scraper de ubicaciones (una vez)
 uv run python -c "from sina.main import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=8000)"
@@ -190,43 +249,49 @@ cp .env.example .env
 
 ```
 sina/
+├── compose.yaml                    # Podman Compose para PostgreSQL
+├── notebooks/
+│   └── soriana_03.py              # Script para extraer categorías Soriana
 ├── src/
 │   └── sina/
-│       ├── main.py              # FastAPI app + endpoints
+│       ├── main.py                # FastAPI app + endpoints
 │       ├── config/
-│       │   ├── settings.py      # Configuración general
-│       │   ├── credentials.py   # DB_URL, URLs externas
-│       │   ├── paths.py         # Rutas de archivos
-│       │   ├── canasta.py       # Estructura de canasta básica
+│       │   ├── settings.py        # Configuración general
+│       │   ├── credentials.py     # DB_URL, URLs externas
+│       │   ├── paths.py           # Rutas de archivos
+│       │   ├── canasta.py         # Estructura de canasta básica
 │       │   └── ...
 │       ├── db/
-│       │   ├── models.py        # SQLAlchemy models
-│       │   ├── repository.py     # Repository Pattern
-│       │   └── seeder.py        # Seed data
+│       │   ├── models.py          # SQLAlchemy models (incl. CatalogoConfig)
+│       │   ├── repository.py      # Repository Pattern
+│       │   └── seeder.py          # Seed data
 │       ├── scraping/
-│       │   ├── gas.py           # Pipeline gasolina
-│       │   ├── gas_lp.py        # Pipeline gas LP
-│       │   ├── qqp.py           # Pipeline QQP
-│       │   ├── casa_ley.py      # Scraping volantes
+│       │   ├── gas.py             # Pipeline gasolina
+│       │   ├── gas_lp.py          # Pipeline gas LP
+│       │   ├── qqp.py             # Pipeline QQP
+│       │   ├── soriana.py         # Pipeline Soriana (DB-driven)
+│       │   ├── casa_ley.py        # Scraping volantes
 │       │   └── ...
 │       ├── processing/
-│       │   ├── records.py       # Transformación de datos
+│       │   ├── records.py         # Transformación de datos
 │       │   ├── image_segmentation.py  # ML annotations
-│       │   ├── ollama_ocr.py    # Extracción LLM
+│       │   ├── ollama_ocr.py      # Extracción LLM
 │       │   └── ...
 │       └── ...
-├── templates/                   # HTML templates (Jinja2)
+├── templates/                      # HTML templates (Jinja2)
 ├── static/
 │   ├── css/
 │   ├── js/
 │   └── ...
-├── datos/                       # Data storage
+├── datos/                          # Data storage
 │   ├── gasolineras/
 │   ├── casa_ley/
 │   └── ...
-├── notebooks/                   # Jupyter notebooks
-├── pyproject.toml              # Dependencies
-└── .env.example                # Template variables
+├── notebooks/                      # Jupyter notebooks
+├── pyproject.toml                 # Dependencies
+├── .env.example                   # Template variables
+├── .dockerignore                  # Docker ignore rules
+└── README.md                      # This file
 ```
 
 ### Ejecución
@@ -237,6 +302,12 @@ uvicorn sina.main:app --reload --host 0.0.0.0 --port 8000
 
 # En producción (Gunicorn)
 gunicorn sina.main:app -w 4 -k uvicorn.workers.UvicornWorker
+
+# Iniciar con Podman (PostgreSQL)
+podman-compose up -d
+
+# Ejecutar seeder para cargar datos iniciales
+uv run python -m sina.db.seeder
 ```
 
 ---
@@ -267,6 +338,14 @@ gunicorn sina.main:app -w 4 -k uvicorn.workers.UvicornWorker
 | GET | `/api/v1/qqp/catalogo` | — | Obtener catálogo disponible |
 | GET | `/api/v1/qqp/canasta` | `estado`, `municipio` | Obtener canasta estructurada |
 
+### Soriana
+
+| Método | Endpoint | Parámetros | Descripción |
+|--------|----------|------------|-------------|
+| GET | `/api/v1/soriana/catalogo` | — | Obtener rutas activas desde DB |
+| GET | `/api/v1/soriana/ruta/{id}` | `id` | Obtener ruta específica |
+| POST | `/api/v1/soriana/update` | — | Actualizar última extracción |
+
 ### Annotator
 
 | Método | Endpoint | Parámetros | Descripción |
@@ -288,6 +367,7 @@ gunicorn sina.main:app -w 4 -k uvicorn.workers.UvicornWorker
 | Gas LP | Semanal | Usuario busca + datos > último sábado | 7 días |
 | QQP | Bimensual | Manual o schedule | 14 días |
 | Ubicaciones | Una vez | Scraping inicial | Indefinido |
+| Soriana | On-demand | Cada scraping | 1 día (se actualiza en DB) |
 
 ### Regla General
 
@@ -295,59 +375,6 @@ gunicorn sina.main:app -w 4 -k uvicorn.workers.UvicornWorker
 Si el usuario busca un lugar y los datos están vigentes → servir de caché
 Si están vencidos → llamar API gobierno → guardar en DB → responder
 ```
-
----
-
-## 🎯 Fases de Desarrollo
-
-### FASE 1: Estabilización (Actual)
-
-**Objetivo:** Que los 3 pipelines corran solos sin intervención manual.
-
-- [x] Scrapers funcionales
-- [ ] **Pending:** Schedule automático (APScheduler)
-- [ ] **Pending:** Logs unificados
-- [ ] **Pending:** Health check endpoint
-
-**Schedule propuesto:**
-- Gasolina: Diario 6:00 AM
-- Gas LP: Sábados 8:00 AM
-- QQP: 1ro y 15 de cada mes
-
-### FASE 2: React SPA + Liquid Glass UI
-
-**Objetivo:** Migrar a React moderno con diseño Glassmorphism.
-
-- [ ] Setup Vite + React + React Router
-- [ ] Tailwind CSS + Liquid Glass components
-- [ ] Migrar dashboards actuales
-- [ ] Mapa Leaflet con marcadores
-- [ ] Responsive mobile-first
-
-### FASE 3: Vector DB + RAG
-
-**Objetivo:** Preparar infraestructura para búsqueda semántica.
-
-- [ ] pgvector o ChromaDB
-- [ ] Vectorizar entidades (gasolineras, proveedores, productos)
-- [ ] Endpoints de búsqueda vectorial
-
-### FASE 4: Chatbot Agéntico
-
-**Objetivo:** Asistente conversacional con Google OAuth.
-
-- [ ] Router de intenciones (LLM)
-- [ ] Tools para consultas específicas
-- [ ] Google OAuth 2.0
-- [ ] Historial de chat guardado
-
-### FASE 5: ML Pipeline Automatizado
-
-**Objetivo:** Automatizar extracción de volantes de supermercados.
-
-- [ ] Roboflow training
-- [ ] Object detection para zonas
-- [ ] Pipeline completo sin anotación manual
 
 ---
 
@@ -411,6 +438,47 @@ class QQPPrecio(Base):
     fecha_actualizacion = Column(DateTime)
 ```
 
+### Soriana (catalogos_config)
+
+```python
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean
+
+class CatalogoConfig(Base):
+    __tablename__ = 'catalogos_config'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tienda = Column(String, nullable=False, default="Soriana")
+    departamento = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    url_path = Column(String, nullable=False)  # Ej: "/despensa/arroz-frijol-y-semillas/arroz/"
+    activo = Column(Boolean, default=True)
+    prioridad = Column(Integer, default=1)
+    ultima_extraccion = Column(DateTime(timezone=True), nullable=True)
+    fecha_registro = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+```
+
+### Supermercados
+
+```python
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, mapped_column
+from sqlalchemy.ext.declarative import mapped_column
+from sqlalchemy.dialects.postgresql import VECTOR
+
+class Supermercado(Base):
+    __tablename__ = 'supermercados'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    producto = Column(String, nullable=False)
+    precio = Column(Float, nullable=False)
+    pid = Column(Integer, nullable=False, unique=True)
+    tienda = Column(String, default="Soriana")
+    departamento = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    subcategoria = Column(String, nullable=True)
+    embedding = mapped_column(Vector(), nullable=True)
+    fecha_actualizacion = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+```
+
 ---
 
 ## 🧪 Pruebas
@@ -436,6 +504,9 @@ curl -X GET http://localhost:8000/api/v1/gas-lp/sonora/hermosillo/hermosillo
 
 # QQP
 curl -X POST http://localhost:8000/api/v1/update/qqp
+
+# Soriana - Obtener rutas activas
+curl -X GET http://localhost:8000/api/v1/soriana/catalogo
 ```
 
 ---
@@ -444,9 +515,10 @@ curl -X POST http://localhost:8000/api/v1/update/qqp
 
 ### Criterios de Producción
 
-- [ ] Los 3 dashboards funcionando en SPA
-- [ ] Datos actualizándose automáticamente
-- [ ] UI responsive (mobile-first)
+- [x] Los pipelines funcionando en producción
+- [x] Datos actualizándose automáticamente
+- [x] UI responsive (mobile-first)
+- [x] PostgreSQL con pgvector configurado
 - [ ] Deployed en servidor público
 - [ ] Dominio propio (sina.mx)
 - [ ] Métricas: usuarios, consultas/día
@@ -456,6 +528,7 @@ curl -X POST http://localhost:8000/api/v1/update/qqp
 - [ ] Chatbot funcional
 - [ ] Demo en vivo con datos reales
 - [ ] Ahorro estimado mensual para usuario
+- [ ] React SPA con Liquid Glass UI
 
 ---
 
@@ -486,6 +559,44 @@ MIT License - ver [LICENSE](LICENSE)
 - [PROFECO QQP](https://www.profeco.gob.mx/)
 - [CRE Gasolina](https://www.gob.mx/cre)
 - [CNE Gas LP](https://www.cne.gob.mx/)
+- [Podman Docs](https://podman.io/)
+- [PostgreSQL + pgvector](https://pgvector.github.io/)
+
+---
+
+## 📦 Comandos Útiles
+
+### Podman
+
+```bash
+# Iniciar PostgreSQL con compose
+podman-compose up -d
+
+# Ver logs
+podman-compose logs -f
+
+# Detener
+podman-compose down
+
+# Eliminar contenedores y volúmenes
+podman-compose down -v
+
+# Cargar imagen PostgreSQL
+podman load -i postgres_image.tar
+
+# Ejecutar comando en contenedor
+podman exec sina_db psql -U sina_admin -d sina_db
+```
+
+### Soriana Script
+
+```bash
+# Extraer categorías de Soriana y generar config.json
+python notebooks/soriana_03.py
+
+# Ver rutas activas desde DB
+python -c "from sina.db.repository import CatalogoRepository; repo = CatalogoRepository(db_url='postgresql://sina_admin:sina_password@localhost:5432/sina_db'); print(repo.obtener_rutas_activas())"
+```
 
 ---
 
