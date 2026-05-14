@@ -8,13 +8,13 @@ from sqlalchemy import select
 import traceback
 import json
 
-from sina.processing.image_segmentation import (
+from sina.annotator.image_segmentation import (
     process_annotations,
     AnnotationPayload,
     ExtractPayload,
     FlyerPayload,
 )
-from sina.processing.records import df_to_dict
+from sina.annotator.records import df_to_dict
 from sina.scraping.casa_ley import download_flyer
 from sina.scraping.qqp import (
     extract_qqp, 
