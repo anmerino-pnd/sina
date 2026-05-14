@@ -36,7 +36,7 @@ def get_db_url() -> str:
         return url
 
     db_path = DB / "sina_data.db"
-    print(f"🗄️  Usando SQLite local: {db_path}")
+    print(f"Usando SQLite local: {db_path}")
     return f"sqlite:///{db_path}"
 
 DB_URL: str = get_db_url()

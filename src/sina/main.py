@@ -434,3 +434,8 @@ def get_annotator_status(supermarket: str, city: str, date: str):
         "has_json"    : (base_dir / "flyer_data.json").exists(),
         "has_recortes": recortes_dir.exists() and any(recortes_dir.iterdir()),
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
