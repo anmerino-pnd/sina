@@ -1,80 +1,722 @@
 {
-    "Soriana": {
-        "vinos-licores-y-cervezas": {
-            "destilados-y-licores": {
-                "url_path": "/vinos-licores-y-cervezas/destilados-y-licores/",
-                "prioridad": 1
-            },
-            "vinos": {
-                "url_path": "/vinos-licores-y-cervezas/vinos/",
-                "prioridad": 2
-            },
-            "cervezas": {
-                "url_path": "/vinos-licores-y-cervezas/cervezas/",
-                "prioridad": 3
-            },
-            "coolers": {
-                "url_path": "/vinos-licores-y-cervezas/coolers/",
-                "prioridad": 4
-            },
-            "mezcladores": {
-                "url_path": "/vinos-licores-y-cervezas/mezcladores/",
-                "prioridad": 5
-            },
-            "sidras": {
-                "url_path": "/vinos-licores-y-cervezas/sidras/",
-                "prioridad": 6
-            }
+    "vinos-licores-y-cervezas": {
+        "destilados-y-licores": {
+            "url_path": "/vinos-licores-y-cervezas/destilados-y-licores/",
+            "nombre_visible": "Destilados y licores",
+            "prioridad": 1
         },
-        "despensa": {
-            "Arroz": {
-                "url_path": "/despensa/arroz-frijol-y-semillas/arroz/",
-                "prioridad": 1
-            },
-            "Frijol": {
-                "url_path": "/despensa/arroz-frijol-y-semillas/frijol/",
-                "prioridad": 2
-            },
-            "Leguminosas": {
-                "url_path": "/despensa/arroz-frijol-y-semillas/leguminosas/",
-                "prioridad": 3
-            },
-            "Semillas": {
-                "url_path": "/despensa/arroz-frijol-y-semillas/semillas/",
-                "prioridad": 4
-            }
+        "vinos": {
+            "url_path": "/vinos-licores-y-cervezas/vinos/",
+            "nombre_visible": "Vinos",
+            "prioridad": 2
         },
-        "frutas-y-verduras": {
-            "Frutas": {
-                "url_path": "/frutas-verduras/frutas/",
-                "prioridad": 1
-            },
-            "Verduras": {
-                "url_path": "/frutas-verduras/verduras/",
-                "prioridad": 2
-            },
-            "Legumbres": {
-                "url_path": "/frutas-verduras/legumbres/",
-                "prioridad": 3
-            }
+        "cerveza": {
+            "url_path": "/vinos-licores-y-cervezas/cerveza/",
+            "nombre_visible": "Cerveza",
+            "prioridad": 3
         },
-        "lacteos-y-huevo": {
-            "Lácteos": {
-                "url_path": "/lacteos-huevo/lacteos/",
-                "prioridad": 1
-            },
-            "Huevos": {
-                "url_path": "/lacteos-huevo/huevos/",
-                "prioridad": 2
-            },
-            "Yogures": {
-                "url_path": "/lacteos-huevo/yogures/",
-                "prioridad": 3
-            },
-            "Leches": {
-                "url_path": "/lacteos-huevo/leches/",
-                "prioridad": 4
-            }
+        "coolers": {
+            "url_path": "/vinos-licores-y-cervezas/coolers/",
+            "nombre_visible": "Coolers",
+            "prioridad": 4
+        },
+        "mezcladores": {
+            "url_path": "/vinos-licores-y-cervezas/mezcladores/",
+            "nombre_visible": "Mezcladores",
+            "prioridad": 5
+        },
+        "sidras": {
+            "url_path": "/vinos-licores-y-cervezas/sidras/",
+            "nombre_visible": "Sidras",
+            "prioridad": 6
+        }
+    },
+    "despensa": {
+        "alimentos-enlatados": {
+            "url_path": "/despensa/alimentos-enlatados/",
+            "nombre_visible": "Alimentos enlatados",
+            "prioridad": 7
+        },
+        "aderezos-salsas-y-vinagres": {
+            "url_path": "/despensa/aderezos-salsas-y-vinagres/",
+            "nombre_visible": "Aderezos, salsas y vinagres",
+            "prioridad": 8
+        },
+        "aceites-y-mantecas": {
+            "url_path": "/despensa/aceites-y-mantecas/",
+            "nombre_visible": "Aceites y mantecas",
+            "prioridad": 9
+        },
+        "cafe-te-y-chocolate": {
+            "url_path": "/despensa/cafe-te-y-chocolate/",
+            "nombre_visible": "Café, té y chocolate",
+            "prioridad": 10
+        },
+        "galletas": {
+            "url_path": "/despensa/galletas/",
+            "nombre_visible": "Galletas",
+            "prioridad": 11
+        },
+        "cereales-barras-y-avenas": {
+            "url_path": "/despensa/cereales-barras-y-avenas/",
+            "nombre_visible": "Cereales, barras y avenas",
+            "prioridad": 12
+        },
+        "dulces-y-chocolates": {
+            "url_path": "/despensa/dulces-y-chocolates/",
+            "nombre_visible": "Dulces y chocolates",
+            "prioridad": 13
+        },
+        "botanas-y-tostadas": {
+            "url_path": "/despensa/botanas-y-tostadas/",
+            "nombre_visible": "Botanas y tostadas",
+            "prioridad": 14
+        },
+        "harinas-y-reposteria": {
+            "url_path": "/despensa/harinas-y-reposteria/",
+            "nombre_visible": "Harinas y repostería",
+            "prioridad": 15
+        },
+        "cremas-sopas-y-pures": {
+            "url_path": "/despensa/cremas-sopas-y-pures/",
+            "nombre_visible": "Cremas, sopas y purés",
+            "prioridad": 16
+        },
+        "arroz-frijol-y-semillas": {
+            "url_path": "/despensa/arroz-frijol-y-semillas/",
+            "nombre_visible": "Arroz, frijol y semillas",
+            "prioridad": 17
+        },
+        "panes-y-pastelillos": {
+            "url_path": "/despensa/panes-y-pastelillos/",
+            "nombre_visible": "Panes y pastelillos",
+            "prioridad": 18
+        }
+    },
+    "frutas-y-verduras": {
+        "verduras": {
+            "url_path": "/frutas-y-verduras/verduras/",
+            "nombre_visible": "Verduras",
+            "prioridad": 19
+        },
+        "frutas": {
+            "url_path": "/frutas-y-verduras/frutas/",
+            "nombre_visible": "Frutas",
+            "prioridad": 20
+        },
+        "organicos": {
+            "url_path": "/frutas-y-verduras/organicos/",
+            "nombre_visible": "Orgánicos",
+            "prioridad": 21
+        },
+        "frutos-secos-y-productos-a-granel": {
+            "url_path": "/frutas-y-verduras/frutos-secos-y-productos-a-granel/",
+            "nombre_visible": "Frutos secos y productos a granel",
+            "prioridad": 22
+        }
+    },
+    "lacteos-y-huevo": {
+        "leche": {
+            "url_path": "/lacteos-y-huevo/leche/",
+            "nombre_visible": "Leche",
+            "prioridad": 23
+        },
+        "huevo": {
+            "url_path": "/lacteos-y-huevo/huevo/",
+            "nombre_visible": "Huevo",
+            "prioridad": 24
+        },
+        "yoghurts": {
+            "url_path": "/lacteos-y-huevo/yoghurts/",
+            "nombre_visible": "Yoghurts",
+            "prioridad": 25
+        },
+        "cremas-y-jocoques": {
+            "url_path": "/lacteos-y-huevo/cremas-y-jocoques/",
+            "nombre_visible": "Cremas y jocoques",
+            "prioridad": 26
+        },
+        "mantequilla-y-margarina": {
+            "url_path": "/lacteos-y-huevo/mantequilla-y-margarina/",
+            "nombre_visible": "Mantequilla y margarina",
+            "prioridad": 27
+        },
+        "gelatinas-y-postres": {
+            "url_path": "/lacteos-y-huevo/gelatinas-y-postres/",
+            "nombre_visible": "Gelatinas y postres",
+            "prioridad": 28
+        }
+    },
+    "carnes-pescados-y-mariscos": {
+        "res-y-ternera": {
+            "url_path": "/carnes-pescados-y-mariscos/res-y-ternera/",
+            "nombre_visible": "Res y ternera",
+            "prioridad": 29
+        },
+        "pollo-y-pavo": {
+            "url_path": "/carnes-pescados-y-mariscos/pollo-y-pavo/",
+            "nombre_visible": "Pollo y pavo",
+            "prioridad": 30
+        },
+        "pescados-y-mariscos": {
+            "url_path": "/carnes-pescados-y-mariscos/pescados-y-mariscos/",
+            "nombre_visible": "Pescados y mariscos",
+            "prioridad": 31
+        },
+        "cerdo": {
+            "url_path": "/carnes-pescados-y-mariscos/cerdo/",
+            "nombre_visible": "Cerdo",
+            "prioridad": 32
+        },
+        "especialidades": {
+            "url_path": "/carnes-pescados-y-mariscos/especialidades/",
+            "nombre_visible": "Especialidades",
+            "prioridad": 33
+        }
+    },
+    "panaderia-tortilleria-y-alimentos-preparados": {
+        "panaderia": {
+            "url_path": "/panaderia-tortilleria-y-alimentos-preparados/panaderia/",
+            "nombre_visible": "Panadería",
+            "prioridad": 34
+        },
+        "alimentos-preparados": {
+            "url_path": "/panaderia-tortilleria-y-alimentos-preparados/alimentos-preparados/",
+            "nombre_visible": "Alimentos preparados",
+            "prioridad": 35
+        },
+        "tortilleria": {
+            "url_path": "/panaderia-tortilleria-y-alimentos-preparados/tortilleria/",
+            "nombre_visible": "Tortillería",
+            "prioridad": 36
+        },
+        "pasteles-y-reposteria": {
+            "url_path": "/panaderia-tortilleria-y-alimentos-preparados/pasteles-y-reposteria/",
+            "nombre_visible": "Pasteles y repostería",
+            "prioridad": 37
+        }
+    },
+    "queso-salchichas-y-deli": {
+        "quesos": {
+            "url_path": "/queso-salchichas-y-deli/quesos/",
+            "nombre_visible": "Quesos",
+            "prioridad": 38
+        },
+        "salchichoneria": {
+            "url_path": "/queso-salchichas-y-deli/salchichoneria/",
+            "nombre_visible": "Salchichonería",
+            "prioridad": 39
+        },
+        "gourmet": {
+            "url_path": "/queso-salchichas-y-deli/gourmet/",
+            "nombre_visible": "Gourmet",
+            "prioridad": 40
+        }
+    },
+    "alimentos-congelados-y-refrigerados": {
+        "alimentos-congelados": {
+            "url_path": "/alimentos-congelados-y-refrigerados/alimentos-congelados/",
+            "nombre_visible": "Alimentos congelados",
+            "prioridad": 41
+        },
+        "helados-paletas-y-postres-congelados": {
+            "url_path": "/alimentos-congelados-y-refrigerados/helados-paletas-y-postres-congelados/",
+            "nombre_visible": "Helados, paletas y postres congelados",
+            "prioridad": 42
+        },
+        "frutas-y-verduras-congeladas": {
+            "url_path": "/alimentos-congelados-y-refrigerados/frutas-y-verduras-congeladas/",
+            "nombre_visible": "Frutas y verduras congeladas",
+            "prioridad": 43
+        },
+        "alimentos-refrigerados": {
+            "url_path": "/alimentos-congelados-y-refrigerados/alimentos-refrigerados/",
+            "nombre_visible": "Alimentos refrigerados",
+            "prioridad": 44
+        }
+    },
+    "jugos-y-bebidas": {
+        "refrescos": {
+            "url_path": "/jugos-y-bebidas/refrescos/",
+            "nombre_visible": "Refrescos",
+            "prioridad": 45
+        },
+        "jugos": {
+            "url_path": "/jugos-y-bebidas/jugos/",
+            "nombre_visible": "Jugos",
+            "prioridad": 46
+        },
+        "energetizantes-e-hidratantes": {
+            "url_path": "/jugos-y-bebidas/energetizantes-e-hidratantes/",
+            "nombre_visible": "Energetizantes e hidratantes",
+            "prioridad": 47
+        },
+        "agua": {
+            "url_path": "/jugos-y-bebidas/agua/",
+            "nombre_visible": "Agua",
+            "prioridad": 48
+        },
+        "bebidas-de-cafe-y-te": {
+            "url_path": "/jugos-y-bebidas/bebidas-de-cafe-y-te/",
+            "nombre_visible": "Bebidas de café y té",
+            "prioridad": 49
+        }
+    },
+    "limpieza-del-hogar": {
+        "limpiadores": {
+            "url_path": "/limpieza-del-hogar/limpiadores/",
+            "nombre_visible": "Limpiadores",
+            "prioridad": 50
+        },
+        "productos-de-papel-para-el-hogar": {
+            "url_path": "/limpieza-del-hogar/productos-de-papel-para-el-hogar/",
+            "nombre_visible": "Productos de papel para el hogar",
+            "prioridad": 51
+        },
+        "aromatizantes": {
+            "url_path": "/limpieza-del-hogar/aromatizantes/",
+            "nombre_visible": "Aromatizantes",
+            "prioridad": 52
+        },
+        "jarcieria": {
+            "url_path": "/limpieza-del-hogar/jarcieria/",
+            "nombre_visible": "Jarciería",
+            "prioridad": 53
+        },
+        "productos-desechables-para-el-hogar": {
+            "url_path": "/limpieza-del-hogar/productos-desechables-para-el-hogar/",
+            "nombre_visible": "Productos desechables para el hogar",
+            "prioridad": 54
+        }
+    },
+    "cuidado-personal-y-belleza": {
+        "cremas-corporales": {
+            "url_path": "/cuidado-personal-y-belleza/cremas-corporales/",
+            "nombre_visible": "Cremas corporales",
+            "prioridad": 55
+        },
+        "cremas-faciales-y-mascarillas": {
+            "url_path": "/cuidado-personal-y-belleza/cremas-faciales-y-mascarillas/",
+            "nombre_visible": "Cremas faciales y mascarillas",
+            "prioridad": 56
+        },
+        "cuidado-del-cabello": {
+            "url_path": "/cuidado-personal-y-belleza/cuidado-del-cabello/",
+            "nombre_visible": "Cuidado del cabello",
+            "prioridad": 57
+        },
+        "talcos-y-desodorantes": {
+            "url_path": "/cuidado-personal-y-belleza/talcos-y-desodorantes/",
+            "nombre_visible": "Talcos y desodorantes",
+            "prioridad": 58
+        },
+        "cuidado-bucal": {
+            "url_path": "/cuidado-personal-y-belleza/cuidado-bucal/",
+            "nombre_visible": "Cuidado bucal",
+            "prioridad": 59
+        },
+        "afeitado-y-depilacion": {
+            "url_path": "/cuidado-personal-y-belleza/afeitado-y-depilacion/",
+            "nombre_visible": "Afeitado y depilación",
+            "prioridad": 60
+        },
+        "jabones": {
+            "url_path": "/cuidado-personal-y-belleza/jabones/",
+            "nombre_visible": "Jabones",
+            "prioridad": 61
+        },
+        "proteccion-solar-y-repelentes": {
+            "url_path": "/cuidado-personal-y-belleza/proteccion-solar-y-repelentes/",
+            "nombre_visible": "Protección solar y repelentes",
+            "prioridad": 62
+        },
+        "cuidado-para-pies": {
+            "url_path": "/cuidado-personal-y-belleza/cuidado-para-pies/",
+            "nombre_visible": "Cuidado para pies",
+            "prioridad": 63
+        },
+        "maquillaje": {
+            "url_path": "/cuidado-personal-y-belleza/maquillaje/",
+            "nombre_visible": "Maquillaje",
+            "prioridad": 64
+        },
+        "cuidado-femenino": {
+            "url_path": "/cuidado-personal-y-belleza/cuidado-femenino/",
+            "nombre_visible": "Cuidado femenino",
+            "prioridad": 65
+        },
+        "accesorios-de-cuidado-personal-y-belleza": {
+            "url_path": "/cuidado-personal-y-belleza/accesorios-de-cuidado-personal-y-belleza/",
+            "nombre_visible": "Accesorios de cuidado personal y belleza",
+            "prioridad": 66
+        }
+    },
+    "bebes": {
+        "panales-y-toallitas": {
+            "url_path": "/bebes/panales-y-toallitas/",
+            "nombre_visible": "Pañales y toallitas",
+            "prioridad": 67
+        },
+        "perfumeria-e-higiene-de-bebes": {
+            "url_path": "/bebes/perfumeria-e-higiene-de-bebes/",
+            "nombre_visible": "Perfumeria e higiene de bebés",
+            "prioridad": 68
+        },
+        "nutricion-infantil": {
+            "url_path": "/bebes/nutricion-infantil/",
+            "nombre_visible": "Nutrición infantil",
+            "prioridad": 69
+        },
+        "accesorios-de-bebe": {
+            "url_path": "/bebes/accesorios-de-bebe/",
+            "nombre_visible": "Accesorios de bebé",
+            "prioridad": 70
+        }
+    },
+    "farmacia": {
+        "analgesicos": {
+            "url_path": "/farmacia/analgesicos/",
+            "nombre_visible": "Analgésicos",
+            "prioridad": 71
+        },
+        "gastrointenstinales": {
+            "url_path": "/farmacia/gastrointenstinales/",
+            "nombre_visible": "Gastrointenstinales",
+            "prioridad": 72
+        },
+        "incontinencia": {
+            "url_path": "/farmacia/incontinencia/",
+            "nombre_visible": "Incontinencia",
+            "prioridad": 73
+        },
+        "sueros-orales": {
+            "url_path": "/farmacia/sueros-orales/",
+            "nombre_visible": "Sueros orales",
+            "prioridad": 74
+        },
+        "salud-sexual": {
+            "url_path": "/farmacia/salud-sexual/",
+            "nombre_visible": "Salud sexual",
+            "prioridad": 75
+        },
+        "dermatologicos": {
+            "url_path": "/farmacia/dermatologicos/",
+            "nombre_visible": "Dermatológicos",
+            "prioridad": 76
+        },
+        "vitaminas-y-suplementos": {
+            "url_path": "/farmacia/vitaminas-y-suplementos/",
+            "nombre_visible": "Vitaminas y suplementos",
+            "prioridad": 77
+        },
+        "material-de-curacion": {
+            "url_path": "/farmacia/material-de-curacion/",
+            "nombre_visible": "Material de curación",
+            "prioridad": 78
+        },
+        "diabeticos": {
+            "url_path": "/farmacia/diabeticos/",
+            "nombre_visible": "Diabéticos",
+            "prioridad": 79
+        },
+        "medicamentos": {
+            "url_path": "/farmacia/medicamentos/",
+            "nombre_visible": "Medicamentos",
+            "prioridad": 80
+        },
+        "medicamento-generico": {
+            "url_path": "/farmacia/medicamento-generico/",
+            "nombre_visible": "Medicamento genérico",
+            "prioridad": 81
+        },
+        "antibioticos": {
+            "url_path": "/farmacia/antibioticos/",
+            "nombre_visible": "Antibióticos",
+            "prioridad": 82
+        }
+    },
+    "mascotas": {
+        "perros": {
+            "url_path": "/mascotas/perros/",
+            "nombre_visible": "Perros",
+            "prioridad": 83
+        },
+        "gatos": {
+            "url_path": "/mascotas/gatos/",
+            "nombre_visible": "Gatos",
+            "prioridad": 84
+        },
+        "peces-y-tortugas": {
+            "url_path": "/mascotas/peces-y-tortugas/",
+            "nombre_visible": "Peces y tortugas",
+            "prioridad": 85
+        },
+        "aves": {
+            "url_path": "/mascotas/aves/",
+            "nombre_visible": "Aves",
+            "prioridad": 86
+        },
+        "otras-mascotas": {
+            "url_path": "/mascotas/otras-mascotas/",
+            "nombre_visible": "Otras mascotas",
+            "prioridad": 87
+        }
+    },
+    "hogar-y-electrodomesticos": {
+        "blancos": {
+            "url_path": "/hogar-y-electrodomesticos/blancos/",
+            "nombre_visible": "Blancos",
+            "prioridad": 88
+        },
+        "mesa": {
+            "url_path": "/hogar-y-electrodomesticos/mesa/",
+            "nombre_visible": "Mesa",
+            "prioridad": 89
+        },
+        "cocina": {
+            "url_path": "/hogar-y-electrodomesticos/cocina/",
+            "nombre_visible": "Cocina",
+            "prioridad": 90
+        },
+        "linea-blanca": {
+            "url_path": "/hogar-y-electrodomesticos/linea-blanca/",
+            "nombre_visible": "Línea Blanca",
+            "prioridad": 91
+        },
+        "enseres-de-cocina": {
+            "url_path": "/hogar-y-electrodomesticos/enseres-de-cocina/",
+            "nombre_visible": "Enseres de Cocina",
+            "prioridad": 92
+        },
+        "muebles": {
+            "url_path": "/hogar-y-electrodomesticos/muebles/",
+            "nombre_visible": "Muebles",
+            "prioridad": 93
+        },
+        "enseres-del-hogar": {
+            "url_path": "/hogar-y-electrodomesticos/enseres-del-hogar/",
+            "nombre_visible": "Enseres del hogar",
+            "prioridad": 94
+        },
+        "asadores": {
+            "url_path": "/hogar-y-electrodomesticos/asadores/",
+            "nombre_visible": "Asadores",
+            "prioridad": 95
+        },
+        "organizacion-del-hogar": {
+            "url_path": "/hogar-y-electrodomesticos/organizacion-del-hogar/",
+            "nombre_visible": "Organización del hogar",
+            "prioridad": 96
+        }
+    },
+    "electronica": {
+        "tv-y-video": {
+            "url_path": "/electronica/tv-y-video/",
+            "nombre_visible": "Tv y video",
+            "prioridad": 97
+        },
+        "videojuegos": {
+            "url_path": "/electronica/videojuegos/",
+            "nombre_visible": "Videojuegos",
+            "prioridad": 98
+        },
+        "equipos-de-computo": {
+            "url_path": "/electronica/equipos-de-computo/",
+            "nombre_visible": "Equipos de cómputo",
+            "prioridad": 99
+        },
+        "audio": {
+            "url_path": "/electronica/audio/",
+            "nombre_visible": "Audio",
+            "prioridad": 100
+        },
+        "telefonos-celulares": {
+            "url_path": "/electronica/telefonos-celulares/",
+            "nombre_visible": "Teléfonos celulares",
+            "prioridad": 101
+        },
+        "accesorios-para-computadora": {
+            "url_path": "/electronica/accesorios-para-computadora/",
+            "nombre_visible": "Accesorios para computadora",
+            "prioridad": 102
+        },
+        "impresion": {
+            "url_path": "/electronica/impresion/",
+            "nombre_visible": "Impresión",
+            "prioridad": 103
+        },
+        "dispositivos-de-almacenamiento": {
+            "url_path": "/electronica/dispositivos-de-almacenamiento/",
+            "nombre_visible": "Dispositivos de almacenamiento",
+            "prioridad": 104
+        },
+        "smartwatch": {
+            "url_path": "/electronica/smartwatch/",
+            "nombre_visible": "Smartwatch",
+            "prioridad": 105
+        },
+        "hogar-inteligente": {
+            "url_path": "/electronica/hogar-inteligente/",
+            "nombre_visible": "Hogar inteligente",
+            "prioridad": 106
+        },
+        "redes": {
+            "url_path": "/electronica/redes/",
+            "nombre_visible": "Redes",
+            "prioridad": 107
+        }
+    },
+    "juguetes": {
+        "juguetes-para-todas-las-edades": {
+            "url_path": "/juguetes/juguetes-para-todas-las-edades/",
+            "nombre_visible": "Juguetes para todas las edades",
+            "prioridad": 108
+        },
+        "diversion-fuera-de-casa": {
+            "url_path": "/juguetes/diversion-fuera-de-casa/",
+            "nombre_visible": "Diversión fuera de casa",
+            "prioridad": 109
+        },
+        "pon-a-jugar-su-imaginacion": {
+            "url_path": "/juguetes/pon-a-jugar-su-imaginacion/",
+            "nombre_visible": "Pon a jugar su imaginación",
+            "prioridad": 110
+        },
+        "marcas-juguetes": {
+            "url_path": "/juguetes/marcas-juguetes/",
+            "nombre_visible": "Marcas juguetes",
+            "prioridad": 111
+        }
+    },
+    "moda-y-accesorios": {
+        "lentes": {
+            "url_path": "/moda-y-accesorios/lentes/",
+            "nombre_visible": "Lentes",
+            "prioridad": 112
+        },
+        "relojes": {
+            "url_path": "/moda-y-accesorios/relojes/",
+            "nombre_visible": "Relojes",
+            "prioridad": 113
+        },
+        "ropa-interior": {
+            "url_path": "/moda-y-accesorios/ropa-interior/",
+            "nombre_visible": "Ropa interior",
+            "prioridad": 114
+        },
+        "ropa-para-dama": {
+            "url_path": "/moda-y-accesorios/ropa-para-dama/",
+            "nombre_visible": "Ropa para dama",
+            "prioridad": 115
+        },
+        "ropa-para-caballero": {
+            "url_path": "/moda-y-accesorios/ropa-para-caballero/",
+            "nombre_visible": "Ropa para caballero",
+            "prioridad": 116
+        },
+        "ropa-para-nino": {
+            "url_path": "/moda-y-accesorios/ropa-para-nino/",
+            "nombre_visible": "Ropa para niño",
+            "prioridad": 117
+        },
+        "ropa-para-nina": {
+            "url_path": "/moda-y-accesorios/ropa-para-nina/",
+            "nombre_visible": "Ropa para niña",
+            "prioridad": 118
+        },
+        "ropa-de-bebe": {
+            "url_path": "/moda-y-accesorios/ropa-de-bebe/",
+            "nombre_visible": "Ropa de bebé",
+            "prioridad": 119
+        }
+    },
+    "deportes-y-motos": {
+        "motos": {
+            "url_path": "/deportes-y-motos/motos/",
+            "nombre_visible": "Motos",
+            "prioridad": 120
+        },
+        "fitness": {
+            "url_path": "/deportes-y-motos/fitness/",
+            "nombre_visible": "Fitness",
+            "prioridad": 121
+        },
+        "campismo": {
+            "url_path": "/deportes-y-motos/campismo/",
+            "nombre_visible": "Campismo",
+            "prioridad": 122
+        },
+        "ciclismo": {
+            "url_path": "/deportes-y-motos/ciclismo/",
+            "nombre_visible": "Ciclismo",
+            "prioridad": 123
+        },
+        "deportes-acuaticos": {
+            "url_path": "/deportes-y-motos/deportes-acuaticos/",
+            "nombre_visible": "Deportes acuáticos",
+            "prioridad": 124
+        },
+        "basquetbol": {
+            "url_path": "/deportes-y-motos/basquetbol/",
+            "nombre_visible": "Basquetbol",
+            "prioridad": 125
+        },
+        "mas-deportes": {
+            "url_path": "/deportes-y-motos/mas-deportes/",
+            "nombre_visible": "Más Deportes",
+            "prioridad": 126
+        },
+        "soccer": {
+            "url_path": "/deportes-y-motos/soccer/",
+            "nombre_visible": "Soccer",
+            "prioridad": 127
+        },
+        "deportes-correr": {
+            "url_path": "/deportes-y-motos/deportes-correr/",
+            "nombre_visible": "Deportes correr",
+            "prioridad": 128
+        }
+    },
+    "autos-y-ferreteria": {
+        "pintura": {
+            "url_path": "/autos-y-ferreteria/pintura/",
+            "nombre_visible": "Pintura",
+            "prioridad": 129
+        },
+        "herramientas": {
+            "url_path": "/autos-y-ferreteria/herramientas/",
+            "nombre_visible": "Herramientas",
+            "prioridad": 130
+        },
+        "electricidad": {
+            "url_path": "/autos-y-ferreteria/electricidad/",
+            "nombre_visible": "Electricidad",
+            "prioridad": 131
+        },
+        "ferreteria": {
+            "url_path": "/autos-y-ferreteria/ferreteria/",
+            "nombre_visible": "Ferretería",
+            "prioridad": 132
+        },
+        "iluminacion": {
+            "url_path": "/autos-y-ferreteria/iluminacion/",
+            "nombre_visible": "Iluminación",
+            "prioridad": 133
+        },
+        "plomeria": {
+            "url_path": "/autos-y-ferreteria/plomeria/",
+            "nombre_visible": "Plomería",
+            "prioridad": 134
+        },
+        "seguridad": {
+            "url_path": "/autos-y-ferreteria/seguridad/",
+            "nombre_visible": "Seguridad",
+            "prioridad": 135
+        },
+        "cajas-y-organizadores-de-herramienta": {
+            "url_path": "/autos-y-ferreteria/cajas-y-organizadores-de-herramienta/",
+            "nombre_visible": "Cajas y organizadores de herramienta",
+            "prioridad": 136
         }
     }
 }
