@@ -5,7 +5,7 @@ Consulta el catálogo de rutas y ejecuta extracciones basadas en esos datos.
 
 from typing import List, Dict, Any
 from sina.db.repository import CatalogoRepository
-from sina.scraping.helpers import scrape_soriana_page, guardar_productos_en_db, contar_productos
+from sina.scraping.helper_soriana import scrape_soriana_page, guardar_productos_en_db, contar_productos
 from sina.config.credentials import DB_URL
 from playwright.sync_api import sync_playwright
 

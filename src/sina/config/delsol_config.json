@@ -1,0 +1,570 @@
+{
+    "mujer-1": {
+        "Damas": {
+            "url_path": "/mujer-1/Damas",
+            "nombre_visible": "Damas",
+            "prioridad": 1
+        },
+        "Curvy": {
+            "url_path": "/mujer-1/Curvy",
+            "nombre_visible": "Curvy",
+            "prioridad": 2
+        },
+        "Teens": {
+            "url_path": "/mujer-1/Teens",
+            "nombre_visible": "Teens",
+            "prioridad": 3
+        },
+        "Accesorios-Dama": {
+            "url_path": "/mujer-1/Accesorios-Dama",
+            "nombre_visible": "Accesorios",
+            "prioridad": 4
+        },
+        "Zapatos-Mujer": {
+            "url_path": "/mujer-1/Zapatos-Mujer",
+            "nombre_visible": "Zapatos",
+            "prioridad": 5
+        },
+        "Interiores-y-Pijamas": {
+            "url_path": "/mujer-1/Interiores-y-Pijamas",
+            "nombre_visible": "Interiores y Pijamas",
+            "prioridad": 6
+        }
+    },
+    "Hombre": {
+        "Caballeros": {
+            "url_path": "/Hombre/Caballeros",
+            "nombre_visible": "Caballeros",
+            "prioridad": 7
+        },
+        "Chavos": {
+            "url_path": "/Hombre/Chavos",
+            "nombre_visible": "Chavos",
+            "prioridad": 8
+        },
+        "Tallas-Grandes": {
+            "url_path": "/Hombre/Tallas-Grandes",
+            "nombre_visible": "Tallas Grandes",
+            "prioridad": 9
+        },
+        "Accesorios-Hombre": {
+            "url_path": "/Hombre/Accesorios-Hombre",
+            "nombre_visible": "Accesorios",
+            "prioridad": 10
+        },
+        "Zapatos-Hombre": {
+            "url_path": "/Hombre/Zapatos-Hombre",
+            "nombre_visible": "Zapatos",
+            "prioridad": 11
+        },
+        "Interiores-y-Pijamas-Hombre": {
+            "url_path": "/Hombre/Interiores-y-Pijamas-Hombre",
+            "nombre_visible": "Interiores y Pijamas",
+            "prioridad": 12
+        }
+    },
+    "Infantiles": {
+        "Ropa-Bebes": {
+            "url_path": "/Infantiles/Ropa-Bebes",
+            "nombre_visible": "Bebés",
+            "prioridad": 13
+        },
+        "Ropa-Ninas": {
+            "url_path": "/Infantiles/Ropa-Ninas",
+            "nombre_visible": "Niñas",
+            "prioridad": 14
+        },
+        "Ropa-Ninos": {
+            "url_path": "/Infantiles/Ropa-Ninos",
+            "nombre_visible": "Niños",
+            "prioridad": 15
+        },
+        "Ropa-Escolar": {
+            "url_path": "/Infantiles/Ropa-Escolar",
+            "nombre_visible": "Escolar",
+            "prioridad": 16
+        },
+        "Accesorios-Bebes": {
+            "url_path": "/Infantiles/Accesorios-Bebes",
+            "nombre_visible": "Accesorios Bebés",
+            "prioridad": 17
+        },
+        "Zapatos-Bebes": {
+            "url_path": "/Infantiles/Zapatos-Bebes",
+            "nombre_visible": "Zapatos Bebés",
+            "prioridad": 18
+        },
+        "Accesorios-Ninas": {
+            "url_path": "/Infantiles/Accesorios-Ninas",
+            "nombre_visible": "Accesorios Niñas",
+            "prioridad": 19
+        },
+        "Zapatos-Ninas": {
+            "url_path": "/Infantiles/Zapatos-Ninas",
+            "nombre_visible": "Zapatos Niñas",
+            "prioridad": 20
+        },
+        "Accessorios-Ninos": {
+            "url_path": "/Infantiles/Accessorios-Ninos",
+            "nombre_visible": "Accesorios Niños",
+            "prioridad": 21
+        },
+        "Zapatos-Ninos": {
+            "url_path": "/Infantiles/Zapatos-Ninos",
+            "nombre_visible": "Zapatos Niños",
+            "prioridad": 22
+        }
+    },
+    "Belleza-y-Cuidado-Personal": {
+        "Fragancias": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Fragancias",
+            "nombre_visible": "Fragancias",
+            "prioridad": 23
+        },
+        "Rostro-50": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Rostro-50",
+            "nombre_visible": "Rostro",
+            "prioridad": 24
+        },
+        "Ojos-50": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Ojos-50",
+            "nombre_visible": "Ojos",
+            "prioridad": 25
+        },
+        "Higiene-Personal-Hombres": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Higiene-Personal-Hombres",
+            "nombre_visible": "Hombre",
+            "prioridad": 26
+        },
+        "labiales": {
+            "url_path": "/Belleza-y-Cuidado-Personal/labiales",
+            "nombre_visible": "Labios",
+            "prioridad": 27
+        },
+        "Cuidado-del-Cabello": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Cuidado-del-Cabello",
+            "nombre_visible": "Cuidado del Cabello",
+            "prioridad": 28
+        },
+        "Unas-50": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Unas-50",
+            "nombre_visible": "Uñas",
+            "prioridad": 29
+        },
+        "Cuidado-de-la-Piel": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Cuidado-de-la-Piel",
+            "nombre_visible": "Cuidado de la Piel",
+            "prioridad": 30
+        },
+        "Accesorios-Belleza-50": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Accesorios-Belleza-50",
+            "nombre_visible": "Accesorios",
+            "prioridad": 31
+        },
+        "Cuidado-Personal-Ella": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Cuidado-Personal-Ella",
+            "nombre_visible": "Cuidado Personal Ella",
+            "prioridad": 32
+        },
+        "Higiene-Personal": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Higiene-Personal",
+            "nombre_visible": "Higiene Personal",
+            "prioridad": 33
+        },
+        "Spa-y-Masajeadores": {
+            "url_path": "/Belleza-y-Cuidado-Personal/Spa-y-Masajeadores",
+            "nombre_visible": "Spa y Masajeadores",
+            "prioridad": 34
+        }
+    },
+    "Hogar": {
+        "Linea-Blanca": {
+            "url_path": "/Hogar/Linea-Blanca",
+            "nombre_visible": "Línea Blanca",
+            "prioridad": 35
+        },
+        "Electrodomesticos": {
+            "url_path": "/Hogar/Electrodomesticos",
+            "nombre_visible": "Electrodomésticos",
+            "prioridad": 36
+        },
+        "Cocina": {
+            "url_path": "/Hogar/Cocina",
+            "nombre_visible": "Cocina",
+            "prioridad": 37
+        },
+        "Blancos": {
+            "url_path": "/Hogar/Blancos",
+            "nombre_visible": "Blancos",
+            "prioridad": 38
+        },
+        "Comedor": {
+            "url_path": "/Hogar/Comedor",
+            "nombre_visible": "Comedor",
+            "prioridad": 39
+        },
+        "Bano": {
+            "url_path": "/Hogar/Bano",
+            "nombre_visible": "Baño",
+            "prioridad": 40
+        },
+        "Decoracion": {
+            "url_path": "/Hogar/Decoracion",
+            "nombre_visible": "Decoración",
+            "prioridad": 41
+        },
+        "Muebles": {
+            "url_path": "/Hogar/Muebles",
+            "nombre_visible": "Muebles",
+            "prioridad": 42
+        },
+        "Mascotas": {
+            "url_path": "/Hogar/Mascotas",
+            "nombre_visible": "Mascotas",
+            "prioridad": 43
+        },
+        "Equipaje": {
+            "url_path": "/Hogar/Equipaje",
+            "nombre_visible": "Equipaje",
+            "prioridad": 44
+        },
+        "Articulos-de-Limpieza": {
+            "url_path": "/Hogar/Articulos-de-Limpieza",
+            "nombre_visible": "Higiene del hogar",
+            "prioridad": 45
+        },
+        "Regalos": {
+            "url_path": "/Hogar/Regalos",
+            "nombre_visible": "Regalos",
+            "prioridad": 46
+        }
+    },
+    "Electronica": {
+        "Tv-y-Video": {
+            "url_path": "/Electronica/Tv-y-Video",
+            "nombre_visible": "Tv y Vídeo",
+            "prioridad": 47
+        },
+        "Audio": {
+            "url_path": "/Electronica/Audio",
+            "nombre_visible": "Audio",
+            "prioridad": 48
+        },
+        "computo-81": {
+            "url_path": "/Electronica/computo-81",
+            "nombre_visible": "Cómputo",
+            "prioridad": 49
+        },
+        "PC-Gaming": {
+            "url_path": "/Electronica/PC-Gaming",
+            "nombre_visible": "PC Gaming",
+            "prioridad": 50
+        },
+        "Automotriz": {
+            "url_path": "/Electronica/Automotriz",
+            "nombre_visible": "Automotriz",
+            "prioridad": 51
+        },
+        "Energia": {
+            "url_path": "/Electronica/Energia",
+            "nombre_visible": "Energía",
+            "prioridad": 52
+        },
+        "Hogar-Inteligente": {
+            "url_path": "/Electronica/Hogar-Inteligente",
+            "nombre_visible": "Hogar Inteligente",
+            "prioridad": 53
+        },
+        "Wearables": {
+            "url_path": "/Electronica/Wearables",
+            "nombre_visible": "Wearables",
+            "prioridad": 54
+        }
+    },
+    "Bebes": {
+        "bebes-33501--5": {
+            "url_path": "/Bebes/bebes-33501--5",
+            "nombre_visible": "Ropa Bebés",
+            "prioridad": 55
+        },
+        "Alimentacion-y-Lactancia": {
+            "url_path": "/Bebes/Alimentacion-y-Lactancia",
+            "nombre_visible": "Alimentación y Lactancia",
+            "prioridad": 56
+        },
+        "Jugueteria-Bebes": {
+            "url_path": "/Bebes/Jugueteria-Bebes",
+            "nombre_visible": "Juguetería",
+            "prioridad": 57
+        },
+        "Autoasientos-y-Portabebes": {
+            "url_path": "/Bebes/Autoasientos-y-Portabebes",
+            "nombre_visible": "Autoasientos y Portabebés",
+            "prioridad": 58
+        },
+        "Andaderas-y-Sillas": {
+            "url_path": "/Bebes/Andaderas-y-Sillas",
+            "nombre_visible": "Andaderas y Sillas",
+            "prioridad": 59
+        },
+        "Bano-e-Higiene": {
+            "url_path": "/Bebes/Bano-e-Higiene",
+            "nombre_visible": "Baño e Higiene",
+            "prioridad": 60
+        },
+        "Blancos-Bebs": {
+            "url_path": "/Bebes/Blancos-Bebs",
+            "nombre_visible": "Blancos",
+            "prioridad": 61
+        },
+        "Carriolas": {
+            "url_path": "/Bebes/Carriolas",
+            "nombre_visible": "Carriolas",
+            "prioridad": 62
+        },
+        "Muebles-Bebes": {
+            "url_path": "/Bebes/Muebles-Bebes",
+            "nombre_visible": "Muebles",
+            "prioridad": 63
+        }
+    },
+    "Deportivo": {
+        "Ropa-Deportiva-Mujer": {
+            "url_path": "/Deportivo/Ropa-Deportiva-Mujer",
+            "nombre_visible": "Mujer",
+            "prioridad": 64
+        },
+        "Ropa-Hombre-Deportiva": {
+            "url_path": "/Deportivo/Ropa-Hombre-Deportiva",
+            "nombre_visible": "Hombre",
+            "prioridad": 65
+        },
+        "Accesorios-Deportivos": {
+            "url_path": "/Deportivo/Accesorios-Deportivos",
+            "nombre_visible": "Accesorios",
+            "prioridad": 66
+        }
+    },
+    "Papeleria-Escolar-2": {
+        "cuadernos-libretas-carpetas-y-mas-2": {
+            "url_path": "/Papeleria-Escolar-2/cuadernos-libretas-carpetas-y-mas-2",
+            "nombre_visible": "Cuadernos, Libretas, Carpetas y Más",
+            "prioridad": 67
+        },
+        "articulos-de-oficina-2": {
+            "url_path": "/Papeleria-Escolar-2/articulos-de-oficina-2",
+            "nombre_visible": "Artículos De Oficina",
+            "prioridad": 68
+        },
+        "colores-y-crayones-2": {
+            "url_path": "/Papeleria-Escolar-2/colores-y-crayones-2",
+            "nombre_visible": "Colores y Crayones",
+            "prioridad": 69
+        },
+        "gomas-sacapuntas-pegamento-correctores-y-tijeras-35108--5": {
+            "url_path": "/Papeleria-Escolar-2/gomas-sacapuntas-pegamento-correctores-y-tijeras-35108--5",
+            "nombre_visible": "Gomas, Sacapuntas, Pegamento, Correctores y Tijeras",
+            "prioridad": 70
+        },
+        "lapices-y-plumas-2": {
+            "url_path": "/Papeleria-Escolar-2/lapices-y-plumas-2",
+            "nombre_visible": "Lapices y Plumas",
+            "prioridad": 71
+        },
+        "manualidades-35111--5": {
+            "url_path": "/Papeleria-Escolar-2/manualidades-35111--5",
+            "nombre_visible": "Manualidades",
+            "prioridad": 72
+        },
+        "mochilas-loncheras-y-lapiceras-2": {
+            "url_path": "/Papeleria-Escolar-2/mochilas-loncheras-y-lapiceras-2",
+            "nombre_visible": "Mochilas, Loncheras y Lapiceras",
+            "prioridad": 73
+        },
+        "marcadores-y-rotuladores-2": {
+            "url_path": "/Papeleria-Escolar-2/marcadores-y-rotuladores-2",
+            "nombre_visible": "Marcadores y Rotuladores",
+            "prioridad": 74
+        },
+        "plumones-y-marcatextos-2": {
+            "url_path": "/Papeleria-Escolar-2/plumones-y-marcatextos-2",
+            "nombre_visible": "Plumones y Marcatextos",
+            "prioridad": 75
+        },
+        "reglas-juegos-geometricos-calculadoras-y-matematicas-2": {
+            "url_path": "/Papeleria-Escolar-2/reglas-juegos-geometricos-calculadoras-y-matematicas-2",
+            "nombre_visible": "Reglas, Juegos Geométricos, Calculadoras y Mátematicas",
+            "prioridad": 76
+        },
+        "pinturas-pinceles-plastilinas-y-masas-2": {
+            "url_path": "/Papeleria-Escolar-2/pinturas-pinceles-plastilinas-y-masas-2",
+            "nombre_visible": "Pinturas, Pinceles, Plastilinas y Masas",
+            "prioridad": 77
+        },
+        "hojas-blancas-hojas-de-colores-cartulinas-y-papeles-35109--5": {
+            "url_path": "/Papeleria-Escolar-2/hojas-blancas-hojas-de-colores-cartulinas-y-papeles-35109--5",
+            "nombre_visible": "Hojas Blancas, Hojas de Colores, Cartulinas y Papeles",
+            "prioridad": 78
+        },
+        "diccionarios-libros-y-libros-para-colorear-35107--5": {
+            "url_path": "/Papeleria-Escolar-2/diccionarios-libros-y-libros-para-colorear-35107--5",
+            "nombre_visible": "Diccionarios, Libros y Libros Para Colorear",
+            "prioridad": 79
+        }
+    },
+    "Jugueteria": {
+        "Montables": {
+            "url_path": "/Jugueteria/Montables",
+            "nombre_visible": "Montables",
+            "prioridad": 80
+        },
+        "Juegos-Exterior": {
+            "url_path": "/Jugueteria/Juegos-Exterior",
+            "nombre_visible": "Juegos Exterior",
+            "prioridad": 81
+        },
+        "Munecas-y-Accesorios": {
+            "url_path": "/Jugueteria/Munecas-y-Accesorios",
+            "nombre_visible": "Muñecas y Accesorios",
+            "prioridad": 82
+        },
+        "Carros-y-Autopistas": {
+            "url_path": "/Jugueteria/Carros-y-Autopistas",
+            "nombre_visible": "Carros y Autopistas",
+            "prioridad": 83
+        },
+        "Lanzadores": {
+            "url_path": "/Jugueteria/Lanzadores",
+            "nombre_visible": "Lanzadores",
+            "prioridad": 84
+        },
+        "figuras-de-accion": {
+            "url_path": "/Jugueteria/figuras-de-accion",
+            "nombre_visible": "Figuras de Acción",
+            "prioridad": 85
+        },
+        "control-remoto-radio-control": {
+            "url_path": "/Jugueteria/control-remoto-radio-control",
+            "nombre_visible": "Control Remoto y Radio Control",
+            "prioridad": 86
+        },
+        "Bebes-y-Preescolar": {
+            "url_path": "/Jugueteria/Bebes-y-Preescolar",
+            "nombre_visible": "Bebés y Preescolar",
+            "prioridad": 87
+        },
+        "Bicicletas-y-Scooters": {
+            "url_path": "/Jugueteria/Bicicletas-y-Scooters",
+            "nombre_visible": "Bicicletas y Scooters",
+            "prioridad": 88
+        },
+        "consolas-videojuegos-36": {
+            "url_path": "/Jugueteria/consolas-videojuegos-36",
+            "nombre_visible": "Consolas de Videojuegos",
+            "prioridad": 89
+        },
+        "instrumentos-musicales-40": {
+            "url_path": "/Jugueteria/instrumentos-musicales-40",
+            "nombre_visible": "Instrumentos Musicales",
+            "prioridad": 90
+        },
+        "Accesorios-de-Belleza": {
+            "url_path": "/Jugueteria/Accesorios-de-Belleza",
+            "nombre_visible": "Accesorios de Belleza",
+            "prioridad": 91
+        },
+        "patines-patinetas-47": {
+            "url_path": "/Jugueteria/patines-patinetas-47",
+            "nombre_visible": "Patines y Patinetas",
+            "prioridad": 92
+        }
+    },
+    "Coleccionables-25": {
+        "figuras": {
+            "url_path": "/Coleccionables-25/figuras",
+            "nombre_visible": "Figuras",
+            "prioridad": 93
+        },
+        "rompecabezas-40001--5": {
+            "url_path": "/Coleccionables-25/rompecabezas-40001--5",
+            "nombre_visible": "Rompecabezas",
+            "prioridad": 94
+        },
+        "tazas-vasos-y-termos": {
+            "url_path": "/Coleccionables-25/tazas-vasos-y-termos",
+            "nombre_visible": "Tazas, Vasos y Termos",
+            "prioridad": 95
+        },
+        "editorial": {
+            "url_path": "/Coleccionables-25/editorial",
+            "nombre_visible": "Editorial",
+            "prioridad": 96
+        }
+    },
+    "Dulceria": {
+        "Confiteria": {
+            "url_path": "/Dulceria/Confiteria",
+            "nombre_visible": "Confitería",
+            "prioridad": 97
+        },
+        "Galletas": {
+            "url_path": "/Dulceria/Galletas",
+            "nombre_visible": "Galletas",
+            "prioridad": 98
+        },
+        "Chocolates": {
+            "url_path": "/Dulceria/Chocolates",
+            "nombre_visible": "Chocolates",
+            "prioridad": 99
+        }
+    },
+    "Farmacia": {
+        "Botiquin-y-Curacion": {
+            "url_path": "/Farmacia/Botiquin-y-Curacion",
+            "nombre_visible": "Botiquín y Curación",
+            "prioridad": 100
+        },
+        "Hidratacion": {
+            "url_path": "/Farmacia/Hidratacion",
+            "nombre_visible": "Hidratación",
+            "prioridad": 101
+        },
+        "Medicamentos": {
+            "url_path": "/Farmacia/Medicamentos",
+            "nombre_visible": "Medicamentos",
+            "prioridad": 102
+        },
+        "Proteccion-Antibacterial": {
+            "url_path": "/Farmacia/Proteccion-Antibacterial",
+            "nombre_visible": "Protección Antibacterial",
+            "prioridad": 103
+        },
+        "Cuidado-Personal-e-Higiene": {
+            "url_path": "/Farmacia/Cuidado-Personal-e-Higiene",
+            "nombre_visible": "Cuidado Personal e Higiene",
+            "prioridad": 104
+        },
+        "Incontinencia": {
+            "url_path": "/Farmacia/Incontinencia",
+            "nombre_visible": "Incontinencia",
+            "prioridad": 105
+        }
+    },
+    "Movilidad-Del-Sol": {
+        "motocicletas-y-motobicis-345": {
+            "url_path": "/Movilidad-Del-Sol/motocicletas-y-motobicis-345",
+            "nombre_visible": "Motocicletas y Scooters Eléctricos",
+            "prioridad": 106
+        },
+        "Bicicletas-345": {
+            "url_path": "/Movilidad-Del-Sol/Bicicletas-345",
+            "nombre_visible": "Bicicletas",
+            "prioridad": 107
+        },
+        "Accesorios-de-Motos": {
+            "url_path": "/Movilidad-Del-Sol/Accesorios-de-Motos",
+            "nombre_visible": "Accesorios de Motos",
+            "prioridad": 108
+        }
+    }
+}

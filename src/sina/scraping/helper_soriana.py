@@ -8,7 +8,7 @@ import time
 import random
 from datetime import datetime, timezone
 from typing import List, Dict, Any
-from sqlalchemy import create_engine, insert, select, distinct
+from sqlalchemy import create_engine, insert, select, distinct, delete
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import Supermercado
@@ -161,7 +161,7 @@ def detect_subcategories(page, category_name: str) -> List[str]:
     return None
 
 
-def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria_definida: str = None) -> List[Dict[str, Any]]:
+def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria_definida: str = "") -> List[Dict[str, Any]]:
     """
     Extrae productos de una sola página de Soriana.
     
