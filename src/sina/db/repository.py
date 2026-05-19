@@ -14,7 +14,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import (
     Base, PrecioQQP, PrecioGasolina,
     EntidadFederativa, Municipio, Localidad, GasLPPrecio,
-    CatalogoConfig,
+    CatalogoConfig, Supermercado,
 )
 from sina.config.credentials import DB_URL
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -504,14 +504,55 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
             return not ultimo.esta_vigente()  # True si expiró
 
 # ── Repositorio para Catálogo de Rutas Soriana ─────────────────
+class SupermercadoRepository(BaseRepository[Supermercado]):
+    model = Supermercado
+
+    def upsert_productos(self, productos: list[dict]) -> int:
+        """
+        Inserta o actualiza productos en la tabla Supermercado.
+        
+        Args:
+            productos: Lista de dicts con estructura:
+                {
+                    "producto": str,
+                    "precio": float,
+                    "pid": int,
+                    "tienda": str,
+                    "departamento": str,
+                    "categoria": str,
+                    "subcategoria": str,
+                    "fecha_actualizacion": datetime
+                }
+                
+        Returns:
+            int: Número de productos guardados/actualizados
+        """
+        if not productos:
+            return 0
+        
+        base = sqlite_insert(self.model)
+        stmt = base.values(productos).on_conflict_do_update(
+            index_elements=["pid"],
+            set_={
+                "producto": base.excluded.producto,
+                "precio": base.excluded.precio,
+                "fecha_actualizacion": base.excluded.fecha_actualizacion,
+            },
+        )
+        with self.engine.begin() as conn:
+            conn.execute(stmt)
+        return len(productos)
+
+
 class CatalogoRepository(BaseRepository[CatalogoConfig]):
     model = CatalogoConfig
 
-    def obtener_rutas_activas(self) -> list[dict]:
-        """Obtiene todas las rutas activas de Soriana ordenadas por prioridad."""
+    def obtener_rutas_activas(self, tienda: str = "Soriana") -> list[dict]:
+        """Obtiene todas las rutas activas ordenadas por prioridad."""
         with self.Session() as session:
             stmt = select(self.model).where(
-                self.model.activo == True
+                self.model.activo == True,
+                self.model.tienda == tienda
             ).order_by(self.model.prioridad.asc())
             rows = session.execute(stmt).scalars().all()
             return [

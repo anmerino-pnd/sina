@@ -8,73 +8,6 @@ import time
 import random
 from datetime import datetime, timezone
 from typing import List, Dict, Any
-from sqlalchemy import create_engine, insert, select, distinct, delete
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
-from sina.db.models import Supermercado
-from sina.config.credentials import DB_URL
-from datetime import datetime, timezone
-from datetime import datetime, timezone
-
-# Engine global para Soriana
-_soriana_engine = create_engine(
-    DB_URL,
-    connect_args={"timeout": 30} if DB_URL.startswith("sqlite") else {},
-    pool_pre_ping=True,
-)
-_soriana_session = sessionmaker(bind=_soriana_engine, expire_on_commit=False)
-
-
-def guardar_productos_en_db(productos: List[Dict[str, Any]]) -> int:
-    """
-    Guarda productos extraídos de Soriana en la tabla Supermercado.
-    
-    Args:
-        productos: Lista de dicts con estructura:
-            {
-                "producto": str,
-                "marca": str,
-                "presentacion": str,
-                "precio": float,
-                "tienda": str,
-                "categoria": str,
-                "subcategoria": str,
-                "departamento": str,
-                "pid_origen": str
-            }
-            
-    Returns:
-        int: Número de productos guardados/actualizados
-    """
-    if not productos:
-        return 0
-    
-    rows = []
-    for p in productos:
-        rows.append({
-            "producto": p.get("producto", ""),
-            "precio": float(p.get("precio", 0)),
-            "pid": int(p.get("pid_origen", 0)),
-            "tienda": p.get("tienda", "Soriana"),
-            "departamento": p.get("departamento", ""),
-            "categoria": p.get("categoria", ""),
-            "subcategoria": p.get("subcategoria"),
-            "fecha_actualizacion": datetime.now(timezone.utc),
-        })
-    
-    base = sqlite_insert(Supermercado)
-    stmt = base.values(rows).on_conflict_do_update(
-        index_elements=["pid"],
-        set_={
-            "producto": base.excluded.producto,
-            "precio": base.excluded.precio,
-            "fecha_actualizacion": base.excluded.fecha_actualizacion,
-        },
-    )
-    with _soriana_engine.begin() as conn:
-        conn.execute(stmt)
-    
-    return len(rows)
 
 
 def no_esta_duplicado(pid: str, lista_productos: List[Dict[str, Any]]) -> bool:
@@ -83,31 +16,6 @@ def no_esta_duplicado(pid: str, lista_productos: List[Dict[str, Any]]) -> bool:
         if producto["pid_origen"] == pid:
             return False
     return True
-
-
-def get_session() -> Any:
-    """Obtiene session de SQLAlchemy."""
-    session = _soriana_session()
-    try:
-        yield session
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
-
-def contar_productos() -> int:
-    """Contador total de productos en tabla Supermercado."""
-    with _soriana_session() as session:
-        return session.query(Supermercado).count()
-
-
-def borrar_productos() -> None:
-    """Borra todos los productos de la tabla Supermercado."""
-    with _soriana_engine.begin() as conn:
-        conn.execute(delete(Supermercado))
 
 
 # Funciones para scraping de categorías

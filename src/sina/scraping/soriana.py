@@ -4,9 +4,8 @@ Consulta el catálogo de rutas y ejecuta extracciones basadas en esos datos.
 """
 
 from typing import List, Dict, Any
-from sina.db.repository import CatalogoRepository
-from sina.scraping.helper_soriana import scrape_soriana_page, guardar_productos_en_db, contar_productos
-from sina.config.credentials import DB_URL
+from sina.db.repository import CatalogoRepository, SupermercadoRepository
+from sina.scraping.helper_soriana import scrape_soriana_page
 from playwright.sync_api import sync_playwright
 
 
@@ -19,8 +18,8 @@ def scrape_soriana() -> List[Dict[str, Any]]:
     print("🐝 Iniciando Spider Soriana...")
     
     # 1. Obtener rutas activas de DB
-    repo = CatalogoRepository()
-    rutas_activas = repo.obtener_rutas_activas()
+    repo_catalogo = CatalogoRepository(tienda="Soriana")
+    rutas_activas = repo_catalogo.obtener_rutas_activas()
     
     if not rutas_activas:
         print("❌ No hay rutas activas en el catálogo.")
@@ -55,13 +54,14 @@ def scrape_soriana() -> List[Dict[str, Any]]:
                     depto=route['departamento'],
                     categoria=route['categoria']
                 )
+                productos_extraidos.extend(productos)
                 
                 # 4. Guardar en DB
-                guardados = guardar_productos_en_db(productos)
-                productos_extraidos.extend(productos)
+                repo_sup = SupermercadoRepository()
+                repo_sup.upsert_productos(productos)
+                repo_catalogo.actualizar_ultima_extraccion(route['id'])
             
             print(f"\n✅ EXTRACCIÓN FINALIZADA: {len(productos_extraidos)} productos")
-            print(f"   Total en DB: {contar_productos()}")
             
         except Exception as e:
             print(f"❌ Error: {e}")

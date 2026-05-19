@@ -9,7 +9,7 @@ from sina.db.models import (
     EntidadFederativa, Municipio,
     CatalogoConfig,
 )
-from sina.config.paths import CATALOGO_MUNICIPIOS_PATH, CLASES_JSON_PATH, SORIANA_CONFIG_PATH
+from sina.config.paths import CATALOGO_MUNICIPIOS_PATH, CLASES_JSON_PATH, SORIANA_CONFIG_PATH, DELSOL_CONFIG_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,7 @@ def seed_catalogos(session: Session) -> dict:
                 url_path = datos_cat.get("url_path", "")
                 prioridad = datos_cat.get("prioridad", 1)
 
-             # Buscar o crear registro
+                # Buscar o crear registro
                 registro = session.query(CatalogoConfig).filter(
                     CatalogoConfig.tienda == tienda,
                     CatalogoConfig.departamento == departamento,
@@ -176,6 +176,83 @@ def seed_catalogos(session: Session) -> dict:
     }
 
 
+def seed_catalogo_delsol(session: Session) -> dict:
+    """
+    Lee src/sina/config/delsol_config.json y puebla catalogos_config.
+    
+    Estructura esperada del JSON:
+    {
+        "Del Sol": {
+            "Farmacia": {
+                "Cuidado-Personal-e-Higiene": {
+                    "url_path": "/Farmacia/Cuidado-Personal-e-Higiene/",
+                    "prioridad": 1
+                },
+                ...
+            },
+            ...
+        }
+    }
+    
+    Returns:
+        {"tiendas": int, "rutas": int} — registros insertados
+    """
+    with open(DELSOL_CONFIG_PATH, "r", encoding="utf-8") as f:
+        datos: dict = json.load(f)
+
+    tiendas_insertadas = set()
+    rutas_insertadas = 0
+
+    for tienda, datos_tienda in datos.items():
+        if tienda != "Del Sol":
+            logger.warning(f"Saltando tienda no configurada: {tienda}")
+            continue
+
+        tiendas_insertadas.add(tienda)
+
+        for departamento, datos_depto in datos_tienda.items():
+            for categoria, datos_cat in datos_depto.items():
+                url_path = datos_cat.get("url_path", "")
+                prioridad = datos_cat.get("prioridad", 1)
+
+                # Buscar o crear registro
+                registro = session.query(CatalogoConfig).filter(
+                    CatalogoConfig.tienda == tienda,
+                    CatalogoConfig.departamento == departamento,
+                    CatalogoConfig.categoria == categoria,
+                    CatalogoConfig.url_path == url_path
+                ).first()
+
+                if registro is None:
+                    catalogo = CatalogoConfig(
+                        tienda=tienda,
+                        departamento=departamento,
+                        categoria=categoria,
+                        url_path=url_path,
+                        prioridad=prioridad,
+                        activo=True,
+                        fecha_registro=datetime.now(timezone.utc)
+                    )
+                    session.add(catalogo)
+                    rutas_insertadas += 1
+                    logger.debug(f"  + Ruta: {departamento} > {categoria} => {url_path}")
+                else:
+                    logger.debug(f"  ~ Ruta ya existe: {departamento} > {categoria}")
+
+    session.commit()
+
+    logger.info(
+        f"Seeder catalogos Del Sol completado — "
+        f"Tiendas: {len(tiendas_insertadas)} | "
+        f"Rutas: {rutas_insertadas}"
+    )
+
+    return {
+        "tiendas": len(tiendas_insertadas),
+        "rutas": rutas_insertadas,
+    }
+
+
 if __name__ == "__main__":
     """Permite ejecutar directamente: python -m sina.db.seeder"""
     import logging
@@ -194,3 +271,7 @@ if __name__ == "__main__":
         # Luego seed catalogos de Soriana
         resultado_catalogos = seed_catalogos(session)
         print(f"\n[OK] Seeder catalogos Soriana: {resultado_catalogos}")
+        
+        # Finalmente seed catalogos de Del Sol (Woolworth)
+        resultado_delsol = seed_catalogo_delsol(session)
+        print(f"\n[OK] Seeder catalogos Del Sol: {resultado_delsol}")
