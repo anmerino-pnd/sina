@@ -15,19 +15,13 @@ from sina.annotator.image_segmentation import (
     FlyerPayload,
 )
 from sina.annotator.records import df_to_dict
-from sina.scraping.casa_ley import download_flyer
-from sina.scraping.qqp import (
-    extract_qqp, 
-    QQP_COLUMN_MAP, 
-    QQP_FLOAT_COLS, 
-    QQP_DATETIME_COLS
-    )
-from sina.scraping.gas import (
+from sina.scraping.supermercados.casaley_spider import download_flyer
+from sina.scraping.gobierno.cre_gasolina import (
     scrape_municipio,
     transform_gas_prices,
     get_precios_gasolina
 )
-from sina.scraping.gas_lp import get_precios_gas_lp, get_localidades_by_municipio
+from sina.scraping.gobierno.cne_gas_lp import get_precios_gas_lp, get_localidades_by_municipio
 from sina.config.credentials import DB_URL, casa_ley_url
 from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
@@ -39,7 +33,7 @@ from sina.config.paths import (
 from sina.config.canasta import (
     estructurar_canasta
 )
-from sina.db.repository import QQPRepository, GasolinaRepository, MunicipioRepository
+from sina.db.repository import GasolinaRepository, MunicipioRepository
 from sina.db.models import EntidadFederativa, Municipio, Localidad
 
 try:
@@ -121,10 +115,7 @@ async def view_gas_lp(request: Request):
         "catalogo": json.dumps(_catalogo_js, ensure_ascii=False),
     })
 
-@app.get("/sina/qqp", response_class=HTMLResponse)
-async def view_qqp(request: Request):
-    """UI de canasta básica — precios QQP Profeco."""
-    return templates.TemplateResponse("qqp.html", {"request": request})
+# Endpoint UI QQP removido (deprecado)
 
 # ============================================================
 #  API · GASOLINA
@@ -301,64 +292,9 @@ async def get_gas_lp_by_ids(entidad_id: int, municipio_id: str, localidad_id: in
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================
-#  API · QQP
+#  API · QQP (DEPRECATED)
 # ============================================================
-@app.post("/api/v1/update/qqp")
-async def update_qqp():
-    """
-    Descarga el CSV más reciente de QQP y reemplaza los datos en DB.
-    """
-    try:
-        repo      = QQPRepository(db_url=DB_URL)
-        df        = extract_qqp()
-        registros = df_to_dict(df, column_map=QQP_COLUMN_MAP, float_cols=QQP_FLOAT_COLS, datetime_cols=QQP_DATETIME_COLS)
-
-        repo.borrar_todo()
-        repo.guardar_en_bulk(registros)
-
-        return {
-            "status"     : "ok",
-            "insertados" : len(registros),
-            "total_en_db": repo.contar(),
-        }
-
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.get("/api/v1/qqp/catalogo")
-async def qqp_catalogo():
-    """Catálogo de estados/municipios con datos QQP de canasta básica."""
-    repo = QQPRepository(db_url=DB_URL)
-    return repo.obtener_catalogo_qqp()
-
-
-@app.get("/api/v1/qqp/canasta")
-async def qqp_canasta(estado: str, municipio: str):
-    """Canasta básica estructurada para un estado-municipio, con tiendas para mapa."""
-    repo = QQPRepository(db_url=DB_URL)
-    registros = repo.obtener_canasta(estado, municipio)
-
-    if not registros:
-        return {
-            "estado": estado, "municipio": municipio,
-            "items": {}, "cadenas": [],
-            "resumen": {
-                "costo_canasta_minima": 0, "n_cadenas": 0,
-                "n_items": 0, "n_productos_total": 0,
-            },
-            "tiendas": [],
-            "error": "No se encontraron datos para este municipio.",
-        }
-
-    data = estructurar_canasta(registros)
-    data["estado"] = estado
-    data["municipio"] = municipio
-
-    # Agregar tiendas con coordenadas para el mapa
-    data["tiendas"] = repo.obtener_tiendas_canasta(estado, municipio)
-
-    return data
+# Endpoints QQP removidos a favor del web scraping directo (Soriana, Del Sol, etc.)
 
 # ============================================================
 #  API · ANNOTATOR

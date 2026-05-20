@@ -1,53 +1,17 @@
-# sina/scraping/gas_lp.py
-"""
-Cliente para las APIs de la CNE relacionadas con Gas LP.
-
-APIs utilizadas:
-  - Catálogo: https://api-catalogo.cne.gob.mx/api/utiles/localidades
-  - Precios:  https://api-reportediario.cne.gob.mx/api/PlantaDistribucion/precio
-
-Uso típico:
-    # 1) Solo una vez — poblar localidades en la DB
-    from sina.scraping.gas_lp import seed_localidades_all
-    seed_localidades_all()
-
-    # 2) Obtener precios (ya con IDs)
-    from sina.scraping.gas_lp import fetch_precios
-    data = fetch_precios(localidad_id=289, entidad_id=26, municipio_id="030")
-"""
 import logging
 import requests
-from typing import cast
-from datetime import datetime, timezone
+import json
+from typing import cast, Dict, List, Any, Optional
+from datetime import datetime
 from sina.config.credentials import DB_URL
 from sina.db.repository import get_session, GasLPRepository
 from sina.db.models import Localidad, EntidadFederativa, Municipio
 from sina.config.credentials import cne_localidades_url, cne_precios_gas_lp_url
-from sina.config.timezone import get_mexico_now, to_mexico_tz
+from sina.config.timezone import get_mexico_now
 
 logger = logging.getLogger(__name__)
 
-# Reemplazar _parsear_localidades_xml por esto:
-
-def _parsear_localidades_json(content: bytes) -> list[dict]:
-    """
-    Parsea el JSON de respuesta de la API de localidades.
-
-    Estructura real:
-    [
-        {
-            "Id": 664,
-            "Nombre": "20 de Noviembre",
-            "EntidadFederativaId": "26",
-            "EntidadFederativa": {"EntidadFederativaId": "26", "Nombre": "Sonora"},
-            "MunicipioId": "030",
-            "Municipio": {"MunicipioId": "030", "Nombre": "Hermosillo", ...}
-        },
-        ...
-    ]
-    """
-    import json
-
+def _parsear_localidades_json(content: bytes) -> List[Dict[str, Any]]:
     try:
         data = json.loads(content)
     except json.JSONDecodeError as e:
@@ -58,26 +22,22 @@ def _parsear_localidades_json(content: bytes) -> list[dict]:
         logger.error(f"Se esperaba una lista, llegó: {type(data)}")
         return []
 
-    resultados = []
+    resultados: List[Dict[str, Any]] = []
 
     for item in data:
-        # ── ID ────────────────────────────────────────────────
         loc_id = item.get("Id")
 
         if loc_id is None:
             continue
 
-        # Asegurarnos que sea entero válido
         try:
             loc_id = int(loc_id)
         except (ValueError, TypeError):
             continue
 
-        # ── Nombre ───────────────────────────────────────────
         nombre = item.get("Nombre") or ""
         nombre = nombre.strip()
 
-        # Skip vacíos o "Ninguno" (incluyendo "Ninguno [Sergio Ruiz Montaño]")
         if not nombre or nombre.lower().startswith("ninguno"):
             logger.debug(f"  Skipping id={loc_id} nombre='{nombre}'")
             continue
@@ -89,11 +49,11 @@ def _parsear_localidades_json(content: bytes) -> list[dict]:
 
     return resultados
 
-def fetch_localidades(entidad_id: int, municipio_id_str: str) -> list[dict]:
+def fetch_localidades(entidad_id: int, municipio_id_str: str) -> List[Dict[str, Any]]:
     url = cne_localidades_url
     params = {
-        "entidadFederativaId": f"{entidad_id:02d}",   # ← 1 → "01", 32 → "32"
-        "municipioId":         municipio_id_str,       # ya viene como "001"
+        "entidadFederativaId": f"{entidad_id:02d}",
+        "municipioId":         municipio_id_str,
     }
 
     try:
@@ -109,11 +69,7 @@ def fetch_localidades(entidad_id: int, municipio_id_str: str) -> list[dict]:
     return _parsear_localidades_json(resp.content)
 
 
-def save_localidades_to_db(entidad_id: int, municipio_id_str: str) -> dict:
-    """
-    Obtiene localidades de la API CNE y las guarda en cne_localidades.
-    Idempotente — no duplica si ya existen.
-    """
+def save_localidades_to_db(entidad_id: int, municipio_id_str: str) -> Dict[str, int]:
     localidades = fetch_localidades(entidad_id, municipio_id_str)
 
     if not localidades:
@@ -121,8 +77,6 @@ def save_localidades_to_db(entidad_id: int, municipio_id_str: str) -> dict:
         return {"insertadas": 0, "skipped": 0, "total_api": 0}
 
     with get_session() as session:
-
-        # ── IDs ya existentes en DB (1 query) ──────────────────
         ids_existentes: set[int] = {
             row[0]
             for row in session.query(Localidad.localidad_id)
@@ -133,13 +87,12 @@ def save_localidades_to_db(entidad_id: int, municipio_id_str: str) -> dict:
             .all()
         }
 
-        # ── Solo las nuevas ────────────────────────────────────
         nuevas = [
             Localidad(
                 localidad_id  = loc["localidad_id"],
                 nombre        = loc["nombre"],
                 entidad_id    = entidad_id,
-                municipio_id = municipio_id_str,
+                municipio_id  = municipio_id_str,
             )
             for loc in localidades
             if loc["localidad_id"] not in ids_existentes
@@ -166,18 +119,7 @@ def save_localidades_to_db(entidad_id: int, municipio_id_str: str) -> dict:
 
     return resultado
 
-def get_localidades_by_municipio(entidad_id: int, municipio_id: str) -> list[dict]:
-    """
-    Devuelve lista de localidades para un municipio dado, desde la DB.
-    Ideal para poblar el dropdown de localidad en el frontend.
-
-    Returns:
-        [
-            {"id": 289, "nombre": "Hermosillo"},
-            {"id": 664, "nombre": "20 de Noviembre"},
-            ...
-        ]
-    """
+def get_localidades_by_municipio(entidad_id: int, municipio_id: str) -> List[Dict[str, Any]]:
     with get_session() as session:
         rows = (
             session.query(Localidad.localidad_id, Localidad.nombre)
@@ -195,30 +137,7 @@ def get_precios_gas_lp(
     estado:    str,
     municipio: str,
     localidad: str,
-) -> dict:
-    """
-    Devuelve precios de Gas LP para una localidad.
-    Implementa caché con DB — solo llama a la API si es necesario.
-
-    Args:
-        estado:    Nombre del estado    (ej. "Sonora")
-        municipio: Nombre del municipio (ej. "Hermosillo")
-        localidad: Nombre de localidad  (ej. "Hermosillo")
-
-    Returns:
-        {
-            "localidad":    str,
-            "municipio":    str,
-            "estado":       str,
-            "autotanques":  [{"numero_permiso", "marca_comercial", "precio"}, ...],
-            "recipientes":  [{"numero_permiso", "marca_comercial", "capacidad_recipiente", "precio"}, ...],
-            "fuente":       "cache" | "api",
-            "fecha_datos":  datetime,
-        }
-        None si no se encontró la localidad.
-    """
-
-    # ── 1. Buscar IDs en DB ────────────────────────────────────
+) -> Dict[str, Any]:
     loc = _buscar_localidad(estado, municipio, localidad)
 
     if loc is None:
@@ -241,7 +160,6 @@ def get_precios_gas_lp(
         f"(entidad={entidad_id}, mun={municipio_id}, loc={localidad_id})"
     )
 
-    # ── 2. Verificar caché en DB ───────────────────────────────
     repo = GasLPRepository(db_url=DB_URL)
 
     if not repo.necesita_actualizacion(entidad_id, municipio_id, localidad_id):
@@ -249,12 +167,10 @@ def get_precios_gas_lp(
         precios = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
         return _formatear_respuesta(precios, loc, fuente="cache")
 
-    # ── 3. Llamar a la API CNE ─────────────────────────────────
     logger.info(f"Cache miss / vencido — llamando a API CNE...")
     datos_api = _fetch_precios_api(localidad_id, entidad_id, municipio_id)
 
     if datos_api is None:
-        # API falló — si tenemos datos viejos, los devolvemos igual
         precios_viejos = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
         if precios_viejos:
             logger.warning("API falló, devolviendo datos viejos de DB")
@@ -267,24 +183,17 @@ def get_precios_gas_lp(
             "localidad": localidad,
         }
 
-    # ── 4. Transformar y guardar en DB ─────────────────────────
     entidad_nombre   = _get_entidad_nombre(entidad_id)
     municipio_nombre = _get_municipio_nombre(entidad_id, municipio_id)
     registros = _transformar_para_db(datos_api, loc, entidad_nombre, municipio_nombre)
     repo.upsert_precios_gas_lp(registros)
     logger.info(f"DB actualizada con {len(registros)} registros")
 
-    # ── 5. Leer de DB y devolver (consistencia) ────────────────
-    precios = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
-    return _formatear_respuesta(precios, loc, fuente="api")
+    precios_nuevos = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
+    return _formatear_respuesta(precios_nuevos, loc, fuente="api")
 
-def _buscar_localidad(estado: str, municipio: str, localidad: str) -> Localidad | None:
-    """
-    Busca la localidad en cne_localidades usando nombres.
-    Case-insensitive.
-    """
+def _buscar_localidad(estado: str, municipio: str, localidad: str) -> Optional[Localidad]:
     with get_session() as session:
-        # Buscar entidad por nombre
         entidad = (
             session.query(EntidadFederativa)
             .filter(EntidadFederativa.nombre.ilike(estado.strip()))
@@ -294,7 +203,6 @@ def _buscar_localidad(estado: str, municipio: str, localidad: str) -> Localidad 
             logger.warning(f"Estado no encontrado: '{estado}'")
             return None
 
-        # Buscar municipio
         mun = (
             session.query(Municipio)
             .filter(
@@ -307,7 +215,6 @@ def _buscar_localidad(estado: str, municipio: str, localidad: str) -> Localidad 
             logger.warning(f"Municipio no encontrado: '{municipio}' en '{estado}'")
             return None
 
-        # Buscar localidad
         loc = (
             session.query(Localidad)
             .filter(
@@ -322,7 +229,6 @@ def _buscar_localidad(estado: str, municipio: str, localidad: str) -> Localidad 
             logger.warning(f"Localidad no encontrada: '{localidad}' en '{municipio}'")
             return None
 
-        # Detach del session antes de cerrar
         session.expunge(loc)
         return loc
 
@@ -331,11 +237,7 @@ def _fetch_precios_api(
     localidad_id: int,
     entidad_id:   int,
     municipio_id: str,
-) -> dict | None:
-    """
-    Llama a la API de reporte diario de la CNE.
-    Regresa los datos parseados o None si hubo error.
-    """
+) -> Optional[Dict[str, Any]]:
     params = {
         "localidadId": localidad_id,
         "entidadId":   entidad_id,
@@ -360,21 +262,11 @@ def _fetch_precios_api(
     return data.get("Value", {})
 
 
-def _transformar_para_db(datos_api: dict, loc: Localidad,
-                         entidad_nombre: str, municipio_nombre: str) -> list[dict]:
-    """
-    Convierte el response de la API al formato de GasLPPrecio.
-
-    API response:
-    {
-        "AutoTanques": [{"Precio": 10.64, "NumeroPermiso": "LP/...", "MarcaComercial": "..."}, ...],
-        "Recipientes": [{"Precio": 19.71, "CapacidadRecipiente": 10, ...}, ...]
-    }
-    """
+def _transformar_para_db(datos_api: Dict[str, Any], loc: Localidad,
+                         entidad_nombre: str, municipio_nombre: str) -> List[Dict[str, Any]]:
     ahora    = get_mexico_now()
-    registros = []
+    registros: List[Dict[str, Any]] = []
 
-    # ── Autotanques ────────────────────────────────────────────
     for item in datos_api.get("AutoTanques", []) or []:
         precio = item.get("Precio")
         if precio is None:
@@ -395,7 +287,6 @@ def _transformar_para_db(datos_api: dict, loc: Localidad,
             "fecha_extraccion":      ahora,
         })
 
-    # ── Recipientes ────────────────────────────────────────────
     for item in datos_api.get("Recipientes", []) or []:
         precio    = item.get("Precio")
         capacidad = item.get("CapacidadRecipiente")
@@ -420,11 +311,7 @@ def _transformar_para_db(datos_api: dict, loc: Localidad,
     return registros
 
 
-def _formatear_respuesta(precios: list[dict], loc: Localidad, fuente: str) -> dict:
-    """
-    Separa autotanques y recipientes, ordena por precio,
-    y arma el dict final para la UI.
-    """
+def _formatear_respuesta(precios: List[Dict[str, Any]], loc: Localidad, fuente: str) -> Dict[str, Any]:
     autotanques = sorted(
         [p for p in precios if p["tipo"] == "autotanque"],
         key=lambda x: x["precio"]
@@ -442,31 +329,39 @@ def _formatear_respuesta(precios: list[dict], loc: Localidad, fuente: str) -> di
         "estado":      precios[0]["entidad_nombre"]   if precios else "",
         "autotanques": autotanques,
         "recipientes": recipientes,
-        "fuente":      fuente,       # "cache" | "api" | "cache_vencido"
+        "fuente":      fuente,
         "fecha_datos": fecha,
         "total":       len(precios),
     }
 
 
-# ── Cache de nombres para no hacer queries repetidas ──────────
-_cache_nombres: dict = {}
+_cache_nombres: Dict[str, str] = {}
 
 def _get_entidad_nombre(entidad_id: int) -> str:
     key = f"e_{entidad_id}"
+
     if key not in _cache_nombres:
         with get_session() as session:
             e = session.get(EntidadFederativa, entidad_id)
-            _cache_nombres[key] = e.nombre if e else str(entidad_id)
+            _cache_nombres[key] = str(e.nombre) if e else str(entidad_id)
+
     return _cache_nombres[key]
+
 
 def _get_municipio_nombre(entidad_id: int, municipio_id: str) -> str:
     key = f"m_{entidad_id}_{municipio_id}"
+
     if key not in _cache_nombres:
         with get_session() as session:
             m = (
                 session.query(Municipio)
-                .filter_by(entidad_id=entidad_id, municipio_id=municipio_id)
+                .filter_by(
+                    entidad_id=entidad_id,
+                    municipio_id=municipio_id
+                )
                 .first()
             )
-            _cache_nombres[key] = m.nombre if m else municipio_id
+
+            _cache_nombres[key] = str(m.nombre) if m else municipio_id
+
     return _cache_nombres[key]

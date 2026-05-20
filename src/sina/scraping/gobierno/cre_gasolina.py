@@ -4,9 +4,9 @@ import logging
 import requests
 import unicodedata
 import pandas as pd
-from typing import Any
+from typing import Any, Dict, List, Optional
 from bs4 import BeautifulSoup, Tag
-from datetime import datetime, timezone
+from datetime import datetime
 from sina.config.credentials import DB_URL
 from sina.db.repository import GasolinaRepository
 from sina.config.credentials import (
@@ -15,11 +15,11 @@ from sina.config.credentials import (
     gasolineras_ubi,
     HEADERS
 )
-from sina.config.timezone import get_mexico_now, to_mexico_tz
+from sina.config.timezone import get_mexico_now
 
 log = logging.getLogger(__name__)
 
-GAS_COLUMN_MAP = {
+GAS_COLUMN_MAP: Dict[str, str] = {
     "Numero":    "numero",
     "Nombre":    "nombre",
     "Direccion": "direccion",
@@ -30,12 +30,10 @@ GAS_COLUMN_MAP = {
     "Longitud":  "longitud",
 }
 
-GAS_FLOAT_COLS = ["diesel", "magna", "premium", "latitud", "longitud"]
+GAS_FLOAT_COLS: List[str] = ["diesel", "magna", "premium", "latitud", "longitud"]
 
 
-
-
-def _build_catalogo_js(mun_dict: dict) -> dict:
+def _build_catalogo_js(mun_dict: Dict[str, Any]) -> Dict[str, List[str]]:
     """
     Construye dos objetos para el frontend:
       - CATALOGO:         { estado: [municipio, ...] }
@@ -46,21 +44,21 @@ def _build_catalogo_js(mun_dict: dict) -> dict:
         for estado, info in mun_dict.items()
     }
 
-def extract_gas_prices(entidad_id: int, municipio_id: str) -> dict:
+def extract_gas_prices(entidad_id: int, municipio_id: str) -> Dict[str, Any]:
     """
     Los IDs ya vienen calculados desde el repositorio,
     no del JSON.
     """
-    params = {
+    params: Dict[str, Any] = {
         "entidadId"  : entidad_id,
         "municipioId": municipio_id,
     }
-    headers = {"User-Agent": "Mozilla/5.0", "Referer": cne_refer}
+    headers: Dict[str, str] = {"User-Agent": "Mozilla/5.0", "Referer": cne_refer}
     response = requests.get(gasolina_api_rest, params=params, headers=headers)
     return response.json()
 
 def transform_gas_prices(estado: str, municipio: str,
-                         entidad_id: int, municipio_id: str) -> list[dict]:
+                         entidad_id: int, municipio_id: str) -> List[Dict[str, Any]]:
     """
     Extrae precios de la API CRE y los transforma en registros
     listos para upsert_precios().
@@ -68,14 +66,17 @@ def transform_gas_prices(estado: str, municipio: str,
     Ya NO usa cache file — lat/lng viven en la DB.
     """
     data = extract_gas_prices(entidad_id, municipio_id)
-    df   = pd.DataFrame(data["Value"])
+    df   = pd.DataFrame(data.get("Value", []))
+    
+    if df.empty:
+        return []
 
     # ── Mapeo de subproductos ─────────────────────────────
     mapa_productos = {
         sp: (
-            "Premium" if "Premium"  in sp else
-            "Magna"   if "Regular"  in sp else
-            "Diesel"  if "Diésel"   in sp else
+            "Premium" if "Premium"  in str(sp) else
+            "Magna"   if "Regular"  in str(sp) else
+            "Diesel"  if "Diésel"   in str(sp) else
             "Otro"
         )
         for sp in df["SubProducto"].unique()
@@ -96,7 +97,7 @@ def transform_gas_prices(estado: str, municipio: str,
             df_pivot[col] = None
 
     # ── Construir registros para upsert_precios() ─────────
-    registros = [
+    registros: List[Dict[str, Any]] = [
         {
             "numero"        : row["Numero"],
             "estado"        : estado.lower(),
@@ -120,7 +121,7 @@ def _slugify(text: str) -> str:
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
 
-def _get_station_links(estado: str, municipio: str) -> list[str]:
+def _get_station_links(estado: str, municipio: str) -> List[str]:
     """
     Dado estado y municipio, va al listing page y extrae
     todos los links a páginas de detalle de cada estación.
@@ -143,7 +144,7 @@ def _get_station_links(estado: str, municipio: str) -> list[str]:
         return []
 
     soup  = BeautifulSoup(response.text, "html.parser")
-    links: list[str] = [
+    links: List[str] = [
         str(href)
         for a in soup.find_all("a", href=True)
         if isinstance(a, Tag)
@@ -154,7 +155,7 @@ def _get_station_links(estado: str, municipio: str) -> list[str]:
     log.info(f"  {municipio}: {len(links)} estaciones encontradas")
     return links
 
-def _scrape_station(url: str) -> dict | None:
+def _scrape_station(url: str) -> Optional[Dict[str, Any]]:
     try:
         response = requests.get(url, headers=HEADERS, timeout=15)
         response.raise_for_status()
@@ -165,19 +166,20 @@ def _scrape_station(url: str) -> dict | None:
     soup = BeautifulSoup(response.text, "html.parser")
 
     # ── Permiso ──────────────────────────────────────────────
-    permiso = None
+    permiso: Optional[str] = None
     for li in soup.find_all("li"):
         if not isinstance(li, Tag):          
             continue
         strong = li.find("strong")
         if not isinstance(strong, Tag):      
             continue
-        if strong.string and "Permiso" in strong.string:
+        if strong.string and "Permiso" in str(strong.string):
             permiso = li.get_text(strip=True).replace("Permiso:", "").strip()
             break
 
     # ── Coordenadas ──────────────────────────────────────────
-    lat, lng = None, None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     for script in soup.find_all("script"):
         if not isinstance(script, Tag):     
             continue
@@ -189,7 +191,7 @@ def _scrape_station(url: str) -> dict | None:
             lng = float(m.group(2))
             break
 
-    if not permiso or lat is None:
+    if not permiso or lat is None or lng is None:
         log.warning(f"Datos incompletos — permiso: {permiso}, lat: {lat} | {url}")
         return None
 
@@ -203,17 +205,10 @@ def scrape_municipio(
     estado   : str,
     municipio: str,
     delay    : float = 1.0,
-) -> list[dict[str, Any]]:
+) -> List[Dict[str, Any]]:
     """
-    Combina _get_station_links + scrape_detalle_estacion
+    Combina _get_station_links + _scrape_station
     para un municipio completo.
-
-    Returns:
-    [
-        {"permiso": "PL/11257/...", "latitud": 29.17, "longitud": -110.9,
-         "estado": "sonora", "municipio": "hermosillo"},
-        ...
-    ]
     """
     links = _get_station_links(estado, municipio)
 
@@ -221,7 +216,7 @@ def scrape_municipio(
         log.warning(f"Sin links para {estado}/{municipio}")
         return []
 
-    resultados: list[dict[str, Any]] = []   # ← mismo aquí
+    resultados: List[Dict[str, Any]] = []   # ← mismo aquí
     total      = len(links)
 
     for i, link in enumerate(links, 1):
@@ -244,12 +239,10 @@ def scrape_municipio(
     return resultados
 
 def get_precios_gasolina(estado: str, municipio: str,
-                         entidad_id: int, municipio_id: str) -> dict:
+                         entidad_id: int, municipio_id: str) -> Dict[str, Any]:
     """
     Caché on-demand 24h para precios de gasolina.
-    Espejo de get_precios_gas_lp().
     """
-
     repo = GasolinaRepository(db_url=DB_URL)
 
     # ── 1. Verificar caché ─────────────────────────────────────
@@ -258,20 +251,21 @@ def get_precios_gasolina(estado: str, municipio: str,
         registros = repo.obtener_por_municipio(estado, municipio)
         fecha_datos = registros[0].get("fecha_extraccion") if registros else None
         return {
-            "status"   : "ok",
-            "fuente"   : "cache",
+            "status"     : "ok",
+            "fuente"     : "cache",
             "fecha_datos": fecha_datos,
-            "estado"   : estado,
-            "municipio": municipio,
-            "total"    : len(registros),
-            "datos"    : registros,
+            "estado"     : estado,
+            "municipio"  : municipio,
+            "total"      : len(registros),
+            "datos"      : registros,
         }
 
     # ── 2. Llamar a CRE y actualizar DB ───────────────────────
     try:
         print(f"Actualizando precios de gasolina para {estado}/{municipio} desde API...")
         nuevos = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
-        repo.upsert_precios(nuevos)
+        if nuevos:
+            repo.upsert_precios(nuevos)
     except Exception as e:
         log.error(f"Error actualizando gasolina {estado}/{municipio}: {e}")
         # Si hay datos viejos, los devolvemos igual
@@ -279,13 +273,13 @@ def get_precios_gasolina(estado: str, municipio: str,
         if registros:
             fecha_datos = registros[0].get("fecha_extraccion") if registros else None
             return {
-                "status"   : "ok",
-                "fuente"   : "cache_vencido",
+                "status"     : "ok",
+                "fuente"     : "cache_vencido",
                 "fecha_datos": fecha_datos,
-                "estado"   : estado,
-                "municipio": municipio,
-                "total"    : len(registros),
-                "datos"    : registros,
+                "estado"     : estado,
+                "municipio"  : municipio,
+                "total"      : len(registros),
+                "datos"      : registros,
             }
         return {
             "status" : "error",
@@ -296,11 +290,11 @@ def get_precios_gasolina(estado: str, municipio: str,
     registros = repo.obtener_por_municipio(estado, municipio)
     fecha_datos = registros[0].get("fecha_extraccion") if registros else None
     return {
-        "status"   : "ok",
-        "fuente"   : "api",
+        "status"     : "ok",
+        "fuente"     : "api",
         "fecha_datos": fecha_datos,
-        "estado"   : estado,
-        "municipio": municipio,
-        "total"    : len(registros),
-        "datos"    : registros,
+        "estado"     : estado,
+        "municipio"  : municipio,
+        "total"      : len(registros),
+        "datos"      : registros,
     }

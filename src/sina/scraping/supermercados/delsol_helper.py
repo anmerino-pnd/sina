@@ -1,24 +1,11 @@
-"""
-Helpers para scraping de Del Sol (Woolworth)
-Funciones auxiliares para integrar scraping con base de datos PostgreSQL.
-"""
-
 from typing import List, Dict, Any
+from playwright.async_api import Page
 
-async def scrape_delsol_page(page, url: str, depto: str, categoria: str) -> List[Dict[str, Any]]:
+async def scrape_delsol_page(page: Page, url: str, depto: str, categoria: str) -> List[Dict[str, Any]]:
     """
     Extrae productos de una categoria de Del Sol, manejando la paginacion.
-    
-    Args:
-        page: Objeto Page de Playwright (ya instanciado y con stealth)
-        url: URL de la categoria
-        depto: Departamento
-        categoria: Categoria
-        
-    Returns:
-        Lista de productos extraidos
     """
-    productos = []
+    productos: List[Dict[str, Any]] = []
     
     print(f"  [+] Navegando a la categoria: {url}")
     await page.goto(url, wait_until="domcontentloaded", timeout=60000)
@@ -28,7 +15,7 @@ async def scrape_delsol_page(page, url: str, depto: str, categoria: str) -> List
         btn_cookies = page.locator("button:has-text('Aceptar'), button:has-text('Entendido')").first
         if await btn_cookies.is_visible(timeout=2000):
             await btn_cookies.click()
-    except:
+    except Exception:
         pass
 
     pagina_actual = 1
@@ -41,7 +28,7 @@ async def scrape_delsol_page(page, url: str, depto: str, categoria: str) -> List
             await page.evaluate(f"window.scrollTo(0, {i * 800});")
             await page.wait_for_timeout(600)
 
-        productos_pagina = await page.evaluate("""() => {
+        productos_pagina: List[Dict[str, Any]] = await page.evaluate("""() => {
             let cards = Array.from(document.querySelectorAll('div.product'));
             
             return cards.map(card => {
@@ -65,20 +52,19 @@ async def scrape_delsol_page(page, url: str, depto: str, categoria: str) -> List
             p['tienda'] = 'Del Sol'
             p['departamento'] = depto
             p['categoria'] = categoria
-            p['subcategoria'] = None # Del Sol no parece tener subcategorias en este nivel
+            p['subcategoria'] = None
             productos.append(p)
 
         print(f"  [+] Se extrajeron {len(productos_pagina)} productos.")
 
         siguiente_num = pagina_actual + 1
         
-        # Paginacion WebSphere
         next_url = await page.evaluate(f"""(num) => {{
             let btn = document.querySelector(`a[data-page-number="${{num}}"]`);
             return btn ? btn.href : null;
         }}""", siguiente_num)
 
-        if next_url:
+        if next_url and isinstance(next_url, str):
             print(f"  [->] Avanzando a la pagina {siguiente_num}...")
             await page.goto(next_url, wait_until="domcontentloaded", timeout=60000)
             await page.wait_for_timeout(4000)

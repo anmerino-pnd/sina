@@ -1,14 +1,7 @@
-"""
-Helpers para scraping de Soriana
-
-Funciones auxiliares para integrar scraping con base de datos PostgreSQL.
-"""
-
 import time
 import random
-from datetime import datetime, timezone
-from typing import List, Dict, Any
-
+from typing import List, Dict, Any, Optional
+from playwright.sync_api import Page
 
 def no_esta_duplicado(pid: str, lista_productos: List[Dict[str, Any]]) -> bool:
     """Verifica si un PID ya existe en la lista de productos extraídos."""
@@ -17,18 +10,9 @@ def no_esta_duplicado(pid: str, lista_productos: List[Dict[str, Any]]) -> bool:
             return False
     return True
 
-
-# Funciones para scraping de categorías
-def detect_subcategories(page, category_name: str) -> List[str]:
+def detect_subcategories(page: Page, category_name: str) -> Optional[List[str]]:
     """
     Detecta dinámicamente si una categoría tiene subcategorías activas.
-    
-    Args:
-        page: Objeto de Playwright
-        category_name: Nombre de la categoría actual
-        
-    Returns:
-        Lista de subcategorías activas, o None si no hay subcategorías
     """
     page.wait_for_timeout(2000)
     
@@ -37,7 +21,7 @@ def detect_subcategories(page, category_name: str) -> List[str]:
         buttons = subcategory_buttons.all()
         
         if len(buttons) > 0:
-            texts = []
+            texts: List[str] = []
             for btn in buttons:
                 text = btn.inner_text()
                 if text and len(text.strip()) > 0:
@@ -51,7 +35,7 @@ def detect_subcategories(page, category_name: str) -> List[str]:
                 "Lentejas", "Habas", "Soja", "Chícharo"
             ]
             
-            detected = []
+            detected: List[str] = []
             for text in texts:
                 text_lower = text.lower()
                 for subcat in possible_subcategories:
@@ -69,25 +53,14 @@ def detect_subcategories(page, category_name: str) -> List[str]:
     return None
 
 
-def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria_definida: str = "") -> List[Dict[str, Any]]:
+def scrape_soriana_page(page: Page, url: str, depto: str, categoria: str, subcategoria_definida: str = "") -> List[Dict[str, Any]]:
     """
     Extrae productos de una sola página de Soriana.
-    
-    Args:
-        page: Objeto de Playwright
-        url: URL de la página
-        depto: Departamento
-        categoria: Categoría
-        subcategoria_definida: Subcategoría (opcional)
-        
-    Returns:
-        Lista de productos extraídos
     """
-    productos = []
+    productos: List[Dict[str, Any]] = []
     
-    page.wait_for_timeout(random.uniform(2000, 3500))
+    page.wait_for_timeout(int(random.uniform(2000, 3500)))
     
-    # Detectar si hay subcategorías activas
     subcategorias_activas = detect_subcategories(page, categoria)
     
     if subcategorias_activas:
@@ -95,16 +68,15 @@ def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria
         
         for subcategoria in subcategorias_activas:
             print(f"\n  Procesando subcategoría: {subcategoria}")
-            subcat_url = url
             
             pagina_actual = 1
             
             while True:
                 print(f"\n  Extrayendo página {pagina_actual} de {subcategoria}...")
                 
-                for i in range(4):
+                for _ in range(4):
                     page.evaluate("window.scrollBy(0, 700);")
-                    page.wait_for_timeout(random.uniform(600, 1000))
+                    page.wait_for_timeout(int(random.uniform(600, 1000)))
                 
                 tarjetas = page.locator("div.list-item-product div.product").all()
                 extraidos_pagina = 0
@@ -119,11 +91,13 @@ def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria
                     precio = None
                     if precio_input.count() > 0:
                         try:
-                            precio = float(precio_input.get_attribute("value"))
+                            val = precio_input.get_attribute("value")
+                            if val:
+                                precio = float(val)
                         except (ValueError, TypeError):
                             pass
                     
-                    if precio and nombre != "Desconocido":
+                    if precio and nombre != "Desconocido" and pid:
                         if no_esta_duplicado(pid, productos):
                             producto = {
                                 "producto": nombre,
@@ -148,11 +122,11 @@ def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria
                 if boton_numero.is_visible():
                     print(f"    Pasando a la página {siguiente_num}...")
                     boton_numero.scroll_into_view_if_needed()
-                    page.wait_for_timeout(random.uniform(500, 1500))
+                    page.wait_for_timeout(int(random.uniform(500, 1500)))
                     
                     try:
                         boton_numero.click(force=True)
-                        page.wait_for_timeout(random.uniform(3000, 4500))
+                        page.wait_for_timeout(int(random.uniform(3000, 4500)))
                         pagina_actual += 1
                     except Exception as e:
                         print(f"    Error al clickear: {e}")
@@ -170,9 +144,9 @@ def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria
         while True:
             print(f"\nExtrayendo página {pagina_actual}...")
             
-            for i in range(4):
+            for _ in range(4):
                 page.evaluate("window.scrollBy(0, 700);")
-                page.wait_for_timeout(random.uniform(600, 1000))
+                page.wait_for_timeout(int(random.uniform(600, 1000)))
             
             tarjetas = page.locator("div.list-item-product div.product").all()
             extraidos_pagina = 0
@@ -187,11 +161,13 @@ def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria
                 precio = None
                 if precio_input.count() > 0:
                     try:
-                        precio = float(precio_input.get_attribute("value"))
+                        val = precio_input.get_attribute("value")
+                        if val:
+                            precio = float(val)
                     except (ValueError, TypeError):
                         pass
                 
-                if precio and nombre != "Desconocido":
+                if precio and nombre != "Desconocido" and pid:
                     if no_esta_duplicado(pid, productos):
                         producto = {
                             "producto": nombre,
@@ -216,11 +192,11 @@ def scrape_soriana_page(page, url: str, depto: str, categoria: str, subcategoria
             if boton_numero.is_visible():
                 print(f"   Pasando a la página {siguiente_num}...")
                 boton_numero.scroll_into_view_if_needed()
-                page.wait_for_timeout(random.uniform(500, 1500))
+                page.wait_for_timeout(int(random.uniform(500, 1500)))
                 
                 try:
                     boton_numero.click(force=True)
-                    page.wait_for_timeout(random.uniform(3000, 4500))
+                    page.wait_for_timeout(int(random.uniform(3000, 4500)))
                     pagina_actual += 1
                 except Exception as e:
                     print(f"   Error al clickear: {e}")

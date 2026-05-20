@@ -6,22 +6,25 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from sina.config.credentials import HEADERS
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from typing import Set, Dict, Any
 
-def extract_images(driver) -> set[str]:
+from sina.config.credentials import HEADERS
+from sina.scraping.supermercados.interfaces import BrowserConfig
+
+def extract_images(driver: WebDriver) -> Set[str]:
     """Extracts high-res image URLs from current page view."""
-    urls = set()
+    urls: Set[str] = set()
     soup = BeautifulSoup(driver.page_source, 'lxml')
     
     for img in soup.select('img.left, img.right'):
         src = img.get('src', '')
-        # ✅ Cast explícito o guard clause
         if not isinstance(src, str):
-            continue  # o src = str(src) si puede ser otro tipo
+            continue
         
         if 'publitas' in src:
             high_res = re.sub(r'-at\d+', '-at2400', src)
@@ -30,7 +33,7 @@ def extract_images(driver) -> set[str]:
     return urls
 
 
-def discover_pages(base_url: str) -> dict[int, str]:
+def discover_pages(base_url: str, config: BrowserConfig = BrowserConfig()) -> Dict[int, str]:
     """
     Opens page/1, clicks next until the end.
     Returns {page_number: image_url}
@@ -38,20 +41,23 @@ def discover_pages(base_url: str) -> dict[int, str]:
     print(f"🔍 Opening: {base_url}")
     
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
+    if config.headless:
+        options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--window-size=1920,1080")
+    if config.viewport:
+        width = config.viewport.get('width', 1920)
+        height = config.viewport.get('height', 1080)
+        options.add_argument(f"--window-size={width},{height}")
     
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 15)
-    pages = {}
+    pages: Dict[int, str] = {}
     
     try:
         driver.get(base_url)
         time.sleep(3)
         
-        # Esperar a que cargue la primera imagen
         try:
             wait.until(EC.visibility_of_element_located(
                 (By.CSS_SELECTOR, "img.left, img.right")
@@ -64,15 +70,12 @@ def discover_pages(base_url: str) -> dict[int, str]:
         page_num = 1
         
         while True:
-            # Capturar imagen actual para detectar cambio
             try:
-                current_src = driver.find_element(
-                    By.CSS_SELECTOR, "img.left, img.right"
-                ).get_attribute('src')
-            except:
+                elem = driver.find_element(By.CSS_SELECTOR, "img.left, img.right")
+                current_src = elem.get_attribute('src') or ""
+            except Exception:
                 current_src = ""
             
-            # Extraer URLs de esta vista
             new_urls = extract_images(driver)
             for url in new_urls:
                 if url not in pages.values():
@@ -80,7 +83,6 @@ def discover_pages(base_url: str) -> dict[int, str]:
                     print(f"📄 Page {page_num}: ✅")
                     page_num += 1
             
-            # Intentar ir a la siguiente página
             try:
                 next_btn = driver.find_element(By.ID, "next_slide")
                 
@@ -91,7 +93,6 @@ def discover_pages(base_url: str) -> dict[int, str]:
                 
                 driver.execute_script("arguments[0].click();", next_btn)
                 
-                # Esperar a que cambie la imagen
                 try:
                     wait.until(
                         lambda d: d.find_element(
@@ -117,13 +118,13 @@ def discover_pages(base_url: str) -> dict[int, str]:
     return pages
 
 
-def download_flyer(base_url: str, city: str, base_dir: str) -> bool:
+def download_flyer(base_url: str, city: str, base_dir: str, config: BrowserConfig = BrowserConfig()) -> bool:
     """
     Discovers all pages via Selenium, downloads images, saves metadata.
     """
     print(f"🚀 Downloading flyer for: {city}")
     
-    pages = discover_pages(base_url)
+    pages = discover_pages(base_url, config)
     
     if not pages:
         print("\n⚠️ No pages found.")
@@ -144,7 +145,7 @@ def download_flyer(base_url: str, city: str, base_dir: str) -> bool:
     print(f"\n--- Downloading {len(pages)} images to: {output_dir} ---")
     success = 0
     
-    metadata = {
+    metadata: Dict[str, Any] = {
         "city": city,
         "extracting_date": timestamp,
         "base_url": base_url,
