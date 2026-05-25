@@ -158,7 +158,10 @@
                             <input type="number" id="calc-amount" class="calc-input" placeholder="35" min="0" step="0.01" oninput="calcularCosto()">
                             <div class="calc-results" id="calc-results" style="display:none">
                                 <div class="calc-line">
-                                    <span class="calc-label">💰 Barata:</span>
+                                    <span class="calc-label">
+                                        <span id="calc-base-label">💰 Barata</span>
+                                        <button id="btn-reset-base" onclick="resetComparacion()" style="display:none; cursor:pointer; background:none; border:none; padding:0; margin-left:5px; font-size:11px; color:#ff3b30;" title="Restablecer base">✖</button>:
+                                    </span>
                                     <span class="calc-value" id="calc-cheap-value">--</span>
                                 </div>
                                 <div class="calc-sub" id="calc-cheap-name">—</div>
@@ -220,6 +223,10 @@
                                 <div class="dp-val" id="di-diesel">--</div>
                             </div>
                         </div>
+                        <div class="detail-actions">
+                            <button class="btn-action" onclick="abrirRuta()">🗺️ Cómo llegar</button>
+                            <button class="btn-action" onclick="fijarBase()">🔄 Fijar base</button>
+                        </div>
                     </div>
                 </div>
 
@@ -249,6 +256,10 @@
                                     <div class="dp-tipo">Diesel</div>
                                     <div class="dp-val" id="d-diesel">--</div>
                                 </div>
+                            </div>
+                            <div class="detail-actions">
+                                <button class="btn-action" onclick="abrirRuta()">🗺️ Cómo llegar</button>
+                                <button class="btn-action" onclick="fijarBase()">🔄 Fijar base</button>
                             </div>
                         </div>
                     </div>

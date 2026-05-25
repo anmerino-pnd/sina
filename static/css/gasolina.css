@@ -580,6 +580,15 @@
         .dp-val  { font-size: 1rem; font-weight: 700; color: var(--text); }
         .dp-val.na { font-size: 0.76rem; color: var(--ter); font-weight: 400; }
 
+        .detail-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .btn-action {
+            flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--rs); color: var(--text); cursor: pointer;
+            transition: background 0.15s, border-color 0.15s; font-family: inherit;
+        }
+        .btn-action:hover { background: #e8e8ed; border-color: #c2c2c7; }
+
         /* ── Cerca de ti ── */
         .cerca-card { background: var(--white); border-radius: var(--r); box-shadow: var(--sh); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; }
 

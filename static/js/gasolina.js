@@ -17,7 +17,8 @@ var zoomAntes = null; // zoom antes de seleccionar un marker
 var calcType = 'litros'; // 'litros' o 'pesos'
 var calcAmount = 0;
 var selectedStation = null; // Estación seleccionada por el usuario
-
+var baseStation = null;     // Estación seleccionada como base de comparación
+var currentDetailStation = null; // Estación actualmente visible en detalle
 // ─────────────────────────────────────────────
 //  AUTOCOMPLETE ESTADO
 // ─────────────────────────────────────────────
@@ -158,6 +159,7 @@ async function cargarCiudad() {
 
         combustible  = 'Magna';
         markerSelIdx = -1;
+        baseStation = null;
         syncPills();
         detectarCombustibles();
 
@@ -389,6 +391,7 @@ function selMarker(idx) {
 //  MOSTRAR DETALLE (desktop + inline)
 // ─────────────────────────────────────────────
 function mostrarDetalle(d, precio, todosPrecios) {
+    currentDetailStation = d;
     var cat  = precio != null ? categorizar(precio, todosPrecios) : '—';
     var dist = userLoc ? ' · ' + distKm(userLoc.lat, userLoc.lng, d.Latitud, d.Longitud).toFixed(1) + ' km' : '';
     var meta = combustible + ' · ' + cat + dist;
@@ -455,6 +458,7 @@ function resetDetalle() {
     }
 
     document.getElementById('detail-inline').classList.remove('visible');
+    currentDetailStation = null;
 
     // Clear selected station — falls back to most expensive
     selectedStation = null;
@@ -731,6 +735,7 @@ function renderCercanas() {
 function setCombustible(tipo) {
     combustible  = tipo;
     markerSelIdx = -1;
+    baseStation  = null;
     syncPills();
     resetDetalle();
     render();
@@ -911,6 +916,16 @@ function calcularCosto() {
         }
     }
 
+    if (baseStation) {
+        estacionBarata = baseStation;
+        precioBarato = baseStation[combustible] !== null ? baseStation[combustible] : precioBarato;
+        document.getElementById('calc-base-label').textContent = '📍 Base';
+        document.getElementById('btn-reset-base').style.display = 'inline-block';
+    } else {
+        document.getElementById('calc-base-label').textContent = '💰 Barata';
+        document.getElementById('btn-reset-base').style.display = 'none';
+    }
+
     if (!estacionBarata) {
         document.getElementById('calc-results').style.display = 'none';
         return;
@@ -998,6 +1013,32 @@ function calcularCosto() {
 
 function setStationForCalculator(station) {
     selectedStation = station;
+    calcularCosto();
+}
+
+// ─────────────────────────────────────────────
+//  ACCIONES DETALLE (Ruta y Base)
+// ─────────────────────────────────────────────
+function abrirRuta() {
+    if (!currentDetailStation) return;
+    var lat = currentDetailStation.Latitud;
+    var lng = currentDetailStation.Longitud;
+    var url = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
+    window.open(url, '_blank');
+}
+
+function fijarBase() {
+    if (!currentDetailStation) return;
+    baseStation = currentDetailStation;
+    // Si la estación de referencia es igual a la base, limpiamos la selección
+    if (selectedStation && selectedStation.Numero === baseStation.Numero) {
+        selectedStation = null;
+    }
+    calcularCosto();
+}
+
+function resetComparacion() {
+    baseStation = null;
     calcularCosto();
 }
 
