@@ -6,477 +6,291 @@
 
 ## 1. Visión y Propósito
 
-SINA es una plataforma pública de consulta de precios de productos y servicios de primera necesidad en México (Gasolina, Gas LP, Supermercados).
+SINA es una plataforma pública que ayuda a las familias mexicanas a cuidar su economía:
+les muestra dónde encontrar más barato lo que necesitan (combustibles y despensa) y les
+permite tomar decisiones de compra informadas.
 
-**Misión:**
-
-Empoderar al ciudadano mexicano con información clara y accesible para tomar mejores decisiones de compra y ahorro.
+**Misión:** Empoderar a la familia mexicana con información clara y accesible de precios de
+primera necesidad, para que gaste menos o le afecte lo menos posible.
 
 **Público objetivo:**
-
-* Ciudadanos en general (amas de casa, trabajadores, estudiantes)
-* Personas adultas con baja alfabetización digital (por eso el chatbot)
-* Municipios y gobierno local (presentación para patrocinio)
+- Familias y ciudadanos en general (amas de casa, trabajadores, estudiantes).
+- Personas con baja alfabetización digital (de ahí el chat conversacional).
+- Municipios / gobierno local (para patrocinio y presentación).
 
 **Alcance geográfico (por fases):**
-
 1. Hermosillo, Sonora (MVP)
 2. Estado de Sonora completo
 3. Zona Norte de México
 4. Centro y Sur de México
 
 **Modelo de acceso:**
+- Dashboards (Gasolina, Gas LP, Supermercados): 100% público, sin login.
+- Chat: funcional sin login (el historial se pierde al recargar).
+- Chat con historial persistente: requiere Google OAuth 2.0.
+- Nunca se almacenan contraseñas.
 
-* Dashboards: 100% público, sin login
-* Chatbot: funcional sin login (historial se pierde al recargar)
-* Chatbot con historial: requiere Google OAuth 2.0
-* No se almacenan contraseñas nunca
+---
 
 ## 2. Arquitectura del Sistema
 
 ### 2.1 Stack Tecnológico
 
-| Capa          | Actual (MVP)           | Futuro (Producción)              |
-| ------------- | ---------------------- | --------------------------------- |
-| Backend       | FastAPI (Python 3.12+) | FastAPI + Celery (jobs)           |
-| Frontend      | HTML/CSS/JS + Jinja2   | React SPA (Liquid Glass UI)       |
-| Base de Datos | SQLite local           | PostgreSQL (remoto)               |
-| ORM           | SQLAlchemy             | SQLAlchemy (sin cambios)          |
-| LLM           | Ollama API (Qwen 3.5)  | Ollama cloud / Anthropic / Google |
-| Vector DB     | —                     | pgvector o ChromaDB               |
-| Mapas         | Leaflet.js             | Leaflet.js                        |
-| Scheduling    | Manual                 | Cron jobs / APScheduler           |
-| Paquetes      | uv                     | uv                                |
+| Capa          | Actual                          | Producción (meta)                          |
+| ------------- | ------------------------------- | ------------------------------------------ |
+| Backend       | FastAPI (Python 3.12+)          | FastAPI + jobs de scraping programados     |
+| Frontend      | HTML/CSS/JS + Jinja2 (por vista)| React SPA (Vite + Tailwind, "Liquid Glass")|
+| Base de Datos | PostgreSQL 16 + pgvector        | PostgreSQL 16 + pgvector (Cloud SQL en GCP)|
+| ORM           | SQLAlchemy + Repository Pattern | igual                                      |
+| Embeddings    | `EmbeddingProvider` abstracto: open-source local (Qwen / sentence-transformers) | + proveedor privado intercambiable (si hay patrocinio) |
+| LLM           | `LLMProvider` abstracto: open-source local (Ollama / llama.cpp) | + `GeminiProvider` en GCP |
+| Mapas         | Leaflet.js                      | Leaflet.js                                 |
+| Scheduling    | Manual (endpoints POST)         | APScheduler en lifespan / Cloud Scheduler  |
+| Empaquetado   | uv (deps) + Podman (compose DB) | Podman / Containerfile (no Docker)         |
+| Deploy        | Local                           | PC / servidor dedicado / GCP (Cloud Run)   |
 
-### 2.2 Patrón Arquitectónico
+> **Nota — SQLite quedó descartado.** Al ejecutar los scrapers de ubicaciones de gasolineras
+> y de localidades por municipio, el volumen de datos hizo inviable SQLite. Se adoptó
+> **PostgreSQL + pgvector**: PostgreSQL aguanta el volumen y pgvector permite guardar
+> embeddings de productos para búsqueda semántica. SQLite queda solo como *fallback* de
+> desarrollo (ver `get_db_url()` en `config/credentials.py`).
+
+### 2.2 Patrón Arquitectónico (meta)
 
 ```
-┌─────────────────────────────────────────────┐
-│ USUARIO (navegador)                         │
-└──────────────┬──────────────┬───────────────┘
-               │              │
-        Dashboard         Chatbot
-               ▼              ▼
-┌──────────────────────┐ ┌──────────────────────┐
-│ React SPA            │ │ Chat UI              │
-│ (Liquid Glass)       │ │ (mismo SPA)          │
-└──────────┬───────────┘ └──────────┬───────────┘
-           │                        │
-           ▼                        ▼
-┌─────────────────────────────────────────────┐
-│ 		FastAPI Backend               │
-└─────────────────────────────────────────────┘
-
-┌─────────────┐	┌─────────────┐ ┌─────────────┐
-|   /api/v1   | |   /api/v1   | |   /api/v1   |
-|   gasolina  | |    gas-lp   | |  qqp/super  |
-└───────┬─────┘ └───────┬─────┘ └───────┬─────┘
-	|		|		|   
-        ▼		▼		▼
-┌─────────────────────────────────────────────┐
-│ 		 SQLAlchemy ORM 	      |
-|          Repository Pattern + Cache         │
-└───────────────────────┬─────────────────────┘
-			|
-			▼
-┌─────────────────────────────────────────────┐
-│		SQLite / PostgreSQL	      |
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ USUARIO (navegador)                                       │
+│   React SPA: / · /gasolina · /gas-lp · /supermercados · /chat │
+└───────────────┬───────────────────────────┬──────────────┘
+        Dashboards                         Chat
+                │                            │
+                ▼                            ▼
+┌─────────────────────────────────────────────────────────┐
+│ FastAPI Backend                                           │
+│  /api/v1/gasolina   /api/v1/gas-lp   /api/v1/supermercados│
+│  /api/v1/chat  ──► Capa de Agente (tools internas)        │
+└───────────────┬─────────────────────────┬────────────────┘
+                │                          │
+                ▼                          ▼
+┌──────────────────────────┐   ┌──────────────────────────┐
+│ Repository Pattern + Cache│   │ LLMProvider (abstracto)   │
+│ (SQLAlchemy)              │   │  · OpenSource (Ollama/    │
+└────────────┬─────────────┘   │    llama.cpp) — local     │
+             │                 │  · Gemini — GCP           │
+             ▼                 └──────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ PostgreSQL 16 + pgvector                                  │
+│  precios (gasolina, gas LP) · productos + embeddings ·    │
+│  catálogos CNE · config de scraping · usuarios / chat     │
+└─────────────────────────────────────────────────────────┘
+        ▲
+        │ scrapers (gobierno: requests · supermercados: Playwright/Selenium)
 ```
 
 ### 2.3 Estrategia de Datos (Caching Inteligente)
 
-| Categoría  | Frecuencia        | Trigger                                  |
-| ----------- | ----------------- | ---------------------------------------- |
-| Gasolina    | Diaria (AM)       | Usuario busca + datos > 24h              |
-| Gas LP      | Semanal (sábado) | Usuario busca +datos > último sábado |
-| QQP/super   | Bimensual         | Manual o schedule (PROFECO publica)      |
-| Ubicaciones | Una vez           | Scraping inicial, luego solo updates     |
+| Categoría     | Frecuencia        | Trigger                                  |
+| ------------- | ----------------- | ---------------------------------------- |
+| Gasolina      | Diaria (AM)       | Usuario busca + datos > 24h              |
+| Gas LP        | Semanal (sábado)  | Usuario busca + datos > último sábado    |
+| Supermercados | Programada        | Scraping directo (Soriana, Del Sol, …)   |
+| Ubicaciones   | Una vez + updates | Scraping inicial, luego solo cambios     |
 
-**Regla general:**
+**Regla general:** si el usuario busca un lugar y los datos están vigentes → se sirve de
+caché; si vencieron → se llama a la API de gobierno / se re-scrapea → se guarda en DB →
+se responde.
 
-Si el usuario busca un lugar y los datos están vigentes → se sirve de caché
+**Datos inexistentes:** si un municipio no tiene datos de una categoría, mostrar aviso
+("De momento no tenemos datos de [categoría] para [municipio]…") y filtrar dinámicamente
+los selectores Estado/Municipio según la categoría.
 
-Si están vencidos → se llama la del API gobierno → guardar en db → responder al usuario
-
-**Manejo de datos inexistentes:**
-
-* Si un municipio no tiene datos para una categoría, mostrar: "De momento no tenemos datos de [categoría] para [municipio]. Estamos trabajando para ampliar la cobertura."
-* Las opciones de Estado/Municipio en los selectores se filtran
-  dinámicamente según la categoría seleccionada.
+---
 
 ## 3. Estado Actual del Proyecto
 
 ### 3.1 Módulos
 
-| Módulo             | Estado | Funcional | Producción | Notas                           |
-| ------------------- | ------ | --------- | ----------- | ------------------------------- |
-| Pipeline Gasolina   | ✅     | ✅        | ⚠️        | Falta schedule automático      |
-| UI Gasolina         | ✅     | ✅        | ⚠️        | Falta responsive, filtros extra |
-| Scraper ubicaciones | ✅     | ✅        | ⚠️        | No ejecutado, se corre 1 vez    |
-| Pipeline Gas LP     | ✅     | ✅        | ⚠️        | Falta schedule automático      |
-| UI Gas LP           | ✅     | ✅        | ⚠️        | Falta comparador proveedores    |
-| Pipeline QQP        | ✅     | ✅        | ⚠️        | Falta schedule automático      |
-| UI Supermercados    | ❌     | —        | —          | No existe aún                  |
-| Annotator           | ✅     | ✅        | ⚠️        | Funcional para crops + metadata |
-| OAuth               | ❌     | —        | —          | Fase 2+                         |
-| Chatbot             | ❌     | —        | —          | Fase 4                          |
-| React SPA           | ❌     | —        | —          | Fase 2                          |
-| Scheduling          | ❌     | —        | —          | Fase 1 Pendiente                |
+| Módulo                          | Estado | Notas                                                      |
+| ------------------------------- | ------ | ---------------------------------------------------------- |
+| Pipeline + API Gasolina         | ✅     | API CRE + caché 24h on-demand. Falta scheduler automático. |
+| UI Gasolina (Jinja2)            | ✅     | Mapa + ranking. Migra a SPA preservando funciones.         |
+| Scraper ubicaciones gasolineras | ✅     | Código listo; se corre puntualmente.                       |
+| Pipeline + API Gas LP           | ✅     | API CNE + caché semanal. Falta scheduler automático.       |
+| UI Gas LP (Jinja2)              | ✅     | Cascada estado→municipio→localidad. Migra a SPA.           |
+| Scraping Soriana                | ✅     | Playwright; `upsert` a tabla `supermercados`.              |
+| Scraping Del Sol                | ✅     | Playwright async; `upsert` a `supermercados`.              |
+| Embeddings de productos         | ⚠️     | Proveedor Qwen existe pero **no se invoca**; sin búsqueda vectorial. |
+| Búsqueda / API Supermercados    | ❌     | Falta endpoint de consulta + UI.                           |
+| Agente / Chat (tools internas)  | ❌     | `chat.py` vacío. Por construir.                            |
+| Pipeline volantes (Casa Ley)    | ✅*    | Descarga flyer + anotación manual + OCR LLM. Track secundario. |
+| QQP / PROFECO                   | 🗑️     | **Legacy a eliminar** (endpoints removidos, tablas sin uso). |
+| React SPA                       | ❌     | Por construir (Fase 4).                                    |
+| Google OAuth                    | ❌     | Fase 4.                                                     |
+| Scheduling automático           | ❌     | APScheduler en deps, sin usar.                             |
+| Tests / CI-CD / Containerfile   | ❌     | No existen (Fase 5).                                       |
 
----
+### 3.2 Pendientes críticos inmediatos
 
-### 3.2 Pendientes críticos de fase 1
-
-- [ ] Ejecutar scraper de ubicaciones de gasolineras (código existe)
-- [ ] Implementar scheduler automático (APScheduler o cron) horario México centro:
-  - Gasolina: diario 6:00 AM
-  - Gas LP: sábados 8:00 AM
-  - QQP: 1ro y 15 de cada mes (o manual)
-- [ ] Validar schemas de datos para las 3 categorías
-- [ ] Definir qué estados/municipios cubre QQP realmente
-- [ ] Migrar de SQLite a PostgreSQL (para producción)
+- [ ] Fijar PostgreSQL + pgvector como base por defecto; documentar `compose.yaml`.
+- [ ] Eliminar/retirar código muerto de QQP (modelo `PrecioQQP`, `QQPRepository`, tabla).
+- [ ] Conectar embeddings al `upsert_productos()` y añadir búsqueda vectorial.
+- [ ] Scheduler automático (gasolina diario, gas LP sábados, supermercados programado).
+- [ ] Endpoint + consulta de supermercados.
 
 ---
 
 ## 4. Fases de Desarrollo
 
-### FASE 1: Estabilización de Pipelines (Actual)
+### FASE 1 — Estabilización del Backend
+**Meta:** que gasolina y gas LP corran solos y la base sea PostgreSQL.
+- [ ] PostgreSQL + pgvector como default (vía `compose.yaml`); SQLite solo fallback dev.
+- [ ] Retirar QQP/PROFECO (modelo, repositorio, tabla, referencias).
+- [ ] APScheduler en el `lifespan` de FastAPI:
+  - Gasolina: diario 6:00 AM (hora centro MX)
+  - Gas LP: sábados 8:00 AM
+- [ ] Logging unificado (archivo + consola) y manejo de fallos de API CRE/CNE
+      (fallback: servir datos vencidos con aviso).
+- [ ] Health check `GET /api/v1/health` con vigencia por categoría.
 
-**Objetivo:** Que los 3 pipelines corran solos sin intervención manual.
+### FASE 2 — Pipeline de Supermercados + Embeddings (CORE)
+**Meta:** convertir el scraping directo en una base de productos consultable y vectorizada.
+- [ ] Scraping directo como fuente primaria (Soriana, Del Sol; ampliar a más tiendas).
+- [ ] Normalizar nombres de producto (mayúsculas/acentos) y deduplicar.
+- [ ] **Conectar embeddings**: invocar `EmbeddingService.vectorizar_supermercado()` al hacer
+      `upsert_productos()` y poblar `Supermercado.embedding`. El servicio usa el
+      `EmbeddingProvider` abstracto (`embedder/base.py`) para poder cambiar de proveedor
+      open-source a uno privado sin tocar el pipeline.
+- [ ] Búsqueda vectorial sobre pgvector (similitud por coseno) + filtros duros
+      (municipio, tienda, categoría).
+- [ ] Endpoint `GET /api/v1/supermercados` (filtros + búsqueda) que la SPA y el agente usarán.
+- Volantes (Casa Ley → annotator → OCR LLM) se mantienen como **track secundario** para
+  tiendas sin sitio scrapeable.
 
-#### Infraestructura
+### FASE 3 — Capa de Agente (tools internas)
+**Meta:** un asistente conectado a la DB que resuelve consultas de ahorro.
+- [ ] `LLMProvider` (ABC) con `generate(prompt, context)`:
+  - `OpenSourceProvider` (Ollama / llama.cpp) — local.
+  - `GeminiProvider` — para el servidor GCP.
+- [ ] Tools internas (Python) sobre los repositorios, p. ej.:
+  - `buscar_gasolina_barata(municipio, tipo)`
+  - `buscar_gas_lp(localidad)`
+  - `buscar_producto(producto, municipio)` (vectorial + filtro)
+  - `comparar_lista_de_compras(items, municipio)` → dónde sale más barato
+  - `armar_canasta_economica(municipio, presupuesto?)`
+- [ ] Router de intención → tool → el LLM redacta la respuesta en lenguaje sencillo.
+- [ ] Manejo de ubicación (geolocalización opcional; si no, preguntar municipio una vez).
+- [ ] `POST /api/v1/chat` (funciona sin login; sin persistencia si no hay sesión).
+- **Sin servidor MCP por ahora**; las tools viven dentro del backend. Empaquetarlas como
+  servidor MCP estándar queda como posible evolución futura.
 
-#### 1.1 Gasolina
+### FASE 4 — SPA React + Liquid Glass + OAuth
+**Meta:** unificar todo en una sola app moderna.
+- Setup: Vite + React + React Router + Tailwind. Tema light, glassmorphism, mobile-first.
+- Rutas: `/` (landing), `/gasolina`, `/gas-lp`, `/supermercados`, `/chat`.
+- **Gasolina y Gas LP — REFACTOR (no rehacer):** migrar a React **conservando todas las
+  secciones y funciones actuales** (mapa Leaflet, autocomplete/cascada de selectores, tabla
+  ranking, comparador por proveedor, indicador de vigencia). Cambia el diseño, no el alcance.
+- **Supermercados — NUEVA:** tabla/comparador de productos por tienda con filtros y búsqueda.
+- **Chat — NUEVA:** UI conversacional contra `/api/v1/chat`.
+- Google OAuth 2.0: botón en navbar; sin login todo funciona sin persistencia; con login se
+  guarda historial. Tablas `usuarios` y `chat_historial`.
 
-- [ ] Ejecutar scraper de ubicaciones (una vez)
-- [ ] Schedule diario de actualización de precios
-- [ ] Validar que el cache de 24h funciona correctamente
-- [ ] Log de errores si la API del CRE falla
-- [ ] Fallback: servir datos vencidos con aviso al usuario
+### FASE 5 — Calidad y Despliegue (Producción)
+**Meta:** que sea desplegable y mantenible siguiendo buenas prácticas.
+- [ ] Tests con pytest (unit de repositorios/tools; integración de endpoints; mocks de
+      scrapers y de gobierno).
+- [ ] CI/CD con GitHub Actions: lint + tests en PR; build de imagen al hacer merge.
+- [ ] Empaquetado con **Podman** (`Containerfile`, no Docker); `compose` para app + Postgres.
+- [ ] Deploy multi-destino:
+  - Local / PC (Podman compose)
+  - Servidor dedicado (mismo contenedor)
+  - **GCP (meta):** Cloud Run para el backend + Cloud SQL (PostgreSQL + pgvector); jobs de
+    scraping vía Cloud Scheduler / Cloud Run Jobs; secretos en Secret Manager.
+- [ ] Buscar patrocinador para el servidor / dominio (p. ej. `sina.mx`).
 
-#### 1.2 Gas LP
+### FASE 6 — Automatización ML de Volantes (Largo Plazo)
+**Meta:** reducir la anotación manual de volantes.
+- Acumular dataset del annotator (~500+ imágenes anotadas).
+- Entrenar detección de zonas (p. ej. Roboflow) e integrarla al pipeline OCR existente.
+- Expansión geográfica de volantes (Hermosillo → Sonora → Norte → Centro/Sur).
 
-- [ ] Schedule semanal (sábados)
-- [ ] Validar expiración basada en último sábado
-- [ ] Log de errores si la API del CNE falla
-- [ ] Fallback: servir datos vencidos con aviso al usuario
+---
 
-#### 1.3 QQP / Supermercados
+## 5. Esquema de Base de Datos
 
-- [ ] Mapear cobertura real (¿qué estados/municipios tiene?)
-- [ ] Schedule bimensual o trigger manual
-- [ ] Normalizar nombres de productos (mayúsculas, acentos, etc.)
-- [ ] Deduplicar productos similares
+### Tablas actuales
 
-#### 1.4 Infraestructura
+| Tabla            | Propósito                                              |
+| ---------------- | ------------------------------------------------------ |
+| `gasolineras`    | Precios + ubicaciones (PK `numero`; magna/premium/diesel). |
+| `gas_lp_precios` | Precios Gas LP por permisionario/localidad (desnormalizado). |
+| `supermercados`  | Productos + precios + **embedding** (pgvector).        |
+| `catalogos_config`| Rutas activas de scraping (Soriana, etc.).            |
+| `cne_entidades` / `cne_municipios` / `cne_localidades` | Catálogos geográficos CNE. |
+| `qqp_precios`    | 🗑️ **Legacy — a eliminar** (reemplazado por `supermercados`). |
 
-- [ ] APScheduler integrado en FastAPI lifespan
-- [ ] Logging unificado (archivo + consola)
-- [ ] Health check endpoint: GET /api/v1/health
+### Tablas nuevas
 
-```
-{
-  "gasolina": {"ultima_actualizacion": "2025-01-15", "vigente": true},
-  "gas_lp": {"ultima_actualizacion": "2025-01-11", "vigente": true},
-  "qqp": {"ultima_actualizacion": "2024-12-01", "vigente": false}
-}
-```
+| Tabla            | Propósito                          | Fase |
+| ---------------- | ---------------------------------- | ---- |
+| `usuarios`       | Usuarios Google OAuth (sin pwd)    | 4    |
+| `chat_historial` | Conversaciones persistidas         | 4    |
+| `favoritos`      | Gasolineras/productos guardados    | 4+   |
+| `alertas`        | "Avísame si baja de $X" (futuro)   | 4+   |
 
-### FASE 2: SPA + Liquid Glass UI
+---
 
-**Objetivo:** Unificar la experiencia en una sola aplicación React moderna.
+## 6. Capa de Agente y Tools (detalle)
 
-#### 2.1 Decisión técnica: ¿Por qué React?
-
-| Vanilla JS (actual)               | React (propuesto)                      |
-| --------------------------------- | -------------------------------------- |
-| Sin dependencias                  | Ecosistema maduro de componentes       |
-| Difícil mantener estado complejo | Estado centralizado (useState/Context) |
-| DOM manipulation manual           | Virtual DOM eficiente                  |
-| Difícil hacer SPA                | SPA nativo con React Router            |
-| OK para páginas simples          | Necesario para chatbot + dashboards    |
-
-****Setup propuesto:** Vite + React + React Router
-**CSS:** Tailwind CSS (utility-first, perfecto para Liquid Glass)**
-
-#### 2.2 Estructura de la SPA
-
-```
-/                     → Landing page (hero + resumen de las 3 categorías)
-/gasolina             → Dashboard de gasolina (mapa + filtros + ranking)
-/gas-lp               → Dashboard de gas LP (comparador + tabla)
-/supermercados        → Dashboard de precios QQP (tabla + filtros)
-/chat                 → Chatbot (Fase 4, placeholder por ahora)
-```
-
-#### 2.3 Diseño UI: Liquid Glass
-
-**Principios:**
-
-* Tema light (no dark)
-* Fondo: gradientes suaves (blues, purples)
-* Tarjetas: efecto glassmorphism (backdrop-filter: blur)
-* Transiciones smooth (300ms ease)
-* Responsive: mobile-first
-* Performance: lazy loading, code splitting por ruta
-
-**Componentes Liquid Glass reutilizables:**
-
-```
-<GlassCard>        → Contenedor principal con blur
-<GlassButton>      → Botón con efecto glass
-<GlassNavbar>      → Navbar fija translúcida
-<GlassSelect>      → Dropdown estilizado
-<GlassModal>       → Modal con overlay blur
-<GlassKPI>         → Tarjeta de indicador numérico
-```
-
-#### 2.4 Vista Landing Page ("/")
-
-```
-┌─────────────────────────────────────────────┐
-│  [GLASS NAVBAR]  SINA  | Gas | GasLP | Super│
-├─────────────────────────────────────────────┤
-│                                             │
-│    ╔═══════════════════════════════════╗    │
-│    ║  SINA                             ║    │
-│    ║                                   ║    │
-│    ║  [Explorar precios]               ║    │
-│    ╚═══════════════════════════════════╝    │
-│                                             │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐     │
-│  │  Gas     │ │  GasLP   │ │   Super  │     │
-│  │ $XX.XX   │ │ $XX.XX   │ │ XXX prod │     │
-│  │ promedio │ │ promedio │ │ en oferta│     │
-│  └──────────┘ └──────────┘ └──────────┘     │
-│                                             │
-│  "Datos actualizados al DD/MM/YYYY"         │
-└─────────────────────────────────────────────┘
-```
-
-#### 2.5 Vista Gasolina ("/gasolina") — REFACTORIZAR
-
-**Ya existe, migrar a React:**
-
-* Mapa Leaflet con marcadores color-coded
-* Autocomplete de estado/municipio
-* Tabla ranking de precios
-* Migrar a componente React
-* Agregar filtro por tipo combustible (Regular, Premium, Diésel)
-* Agregar gráfica de tendencia (si hay histórico)
-* Responsive mobile
-* Indicador visual de "datos vigentes" vs "datos vencidos"
-
-#### 2.6 Vista Gas LP ("/gas-lp") — REFACTORIZAR
-
-**Ya existe, migrar a React:**
-
-* Selectores estado → municipio → localidad (cascada)
-* Tabla de precios por proveedor
-* Migrar a componente React
-* Comparador visual entre proveedores
-* Mapa con cobertura (si hay coordenadas)
-* Badge "Mejor precio" en el más barato
-
-#### 2.7 Vista Supermercados ("/supermercados") — NUEVA
-
-```
-┌────────────────────────────────────────────────┐
-│  Filtros: [Estado ▼] [Municipio ▼] [Producto]  │
-│           [Categoría ▼] [Tienda ▼]             │
-├────────────────────────────────────────────────┤
-│  Producto    │ Tienda A  │ Tienda B │ Tienda C │
-│  Leche 1L    │ $22.50    │ $24.00   │ $21.90 ★ │
-│  Aceite 1L   │ $35.00 ★ │ $38.50    │ $36.00  │
-│  Arroz 1kg   │ \$18.00    │ $17.50 ★│ $19.00  │
-├────────────────────────────────────────────────┤
-│  ★ = Precio más bajo                           │
-│  Datos de PROFECO, actualizados al DD/MM/YYYY  │
-└────────────────────────────────────────────────┘
-```
-
-#### 2.8 Google OAuth 2.0
-
-* Botón "Iniciar sesión con Google" en navbar
-* Sin login: todo funcional, sin persistencia
-* Con login: historial de chat guardado en DB
-* Tabla usuarios: google_id, email, nombre, created_at
-* Tabla chat_historial: user_id, mensaje, respuesta, timestamp
-
-### FASE 3: Motor de Búsqueda Vectorial y RAG
-
-**Objetivo:** Preparar la infraestructura semántica para el chatbot.
-
-#### 3.1 ¿Qué se vectoriza?
-
-| Entidad          | Texto a vectorizar                      | Metadata                              |
-| ---------------- | --------------------------------------- | ------------------------------------- |
-| Gasolinera       | "{marca} en {dirección}, {municipio}"  | lat, lng, estado, municipio, precios  |
-| Proveedor Gas LP | "{empresa} en {localidad}, {municipio}" | estado, municipio, precios            |
-| Producto QQP     | "{producto} {marca} {presentación}"    | tienda, precio, municipio, categoría |
-
-#### 3.2 Stack vectorial
-
-* **Opción A:** pgvector (extensión de PostgreSQL) → menos infra
-* **Opción B:** ChromaDB (standalone) → más flexible
-
-#### 3.3 Criterios de éxito
-
-* Búsqueda "leche más barata en Hermosillo" retorna top 5 en < 2s
-* Búsqueda "gasolinera cerca de [coordenadas]" retorna top 3 con distancia
-* Precision > 80% en queries de productos
-
-### FASE 4: Chatbot Agéntico
-
-**Objetivo:** Asistente conversacional que resuelve consultas de ahorro.
-
-#### 4.1 Queries que DEBE poder responder
-
-**Gasolina:**
-
-* "¿Dónde está la gasolina más barata cerca de mí?"
-* "¿Cuánto cuesta la premium en Hermosillo?"
-* "¿Qué gasolinera me recomiendas en [colonia/zona]?"
-
-**Gas LP:**
-
-* "¿Cuánto cuesta el gas LP esta semana?"
-* "¿Qué proveedor es más barato en [localidad]?"
-* "¿Cuándo se actualizan los precios del gas?"
-
-**Supermercados:**
-
-* "¿Dónde está más barata la leche?"
-* "Tengo esta lista: [productos]. ¿En qué tienda me sale más barato?"
-* "¿Qué ofertas hay esta semana en Ley?"
-
-**General:**
-
-* "¿Cuánto me puedo ahorrar si cambio de gasolinera?"
-* "¿Qué es PROFECO?"
-* "No entiendo, explícame más sencillo" (accesibilidad)
-
-#### 4.2 Flujo del agente
-
-```
-Usuario: "¿Dónde compro más barata la leche en Hermosillo?"
-              │
-              ▼
-┌─────────────────────────────┐
-│  LLM Router (Intent)        │
-│  → Detecta: buscar_producto │
-│  → Params: leche, Hermosillo│
-└──────────────┬──────────────┘
-               ▼
-┌──────────────────────────────┐
-│  Tool: buscar_producto()     │
-│  1. Filtro duro: QQP DB      │
-│     WHERE municipio = Hillo  │
-│     AND producto LIKE leche  │
-│  2. Ordena por precio ASC    │
-│  3. Retorna top 5 JSON       │
-└──────────────┬───────────────┘
-               ▼
-┌──────────────────────────────┐
-│  LLM Genera respuesta:       │
-│  "La leche más barata está   │
-│   en Soriana Centro a $21.90 │
-│   seguida de Walmart..."     │
-└──────────────────────────────┘
-```
-
-#### 4.3 Manejo de ubicación
-
-* Si el usuario permite geolocalización → usar coordenadas
-* Si no → preguntar: "¿En qué municipio te encuentras?"
-* Guardar en sesión para no preguntar repetidamente
-
-#### 4.4 Proveedor LLM (abstracción)
-
-```
-# ABC para cambiar proveedor fácilmente
+```python
 class LLMProvider(ABC):
     @abstractmethod
     async def generate(self, prompt: str, context: dict) -> str: ...
 
-class OllamaProvider(LLMProvider): ...    # Actual
-class AnthropicProvider(LLMProvider): ...  # Futuro
-class GoogleProvider(LLMProvider): ...     # Futuro
+class OpenSourceProvider(LLMProvider): ...  # Ollama / llama.cpp (local)
+class GeminiProvider(LLMProvider): ...       # GCP
+
+# Misma estrategia para embeddings (ver embedder/base.py):
+class EmbeddingProvider(ABC):
+    @abstractmethod
+    def generate_embedding(self, text: str) -> list[float]: ...
+
+class QwenHuggingFaceProvider(EmbeddingProvider): ...  # open-source local (actual)
+# + proveedor privado intercambiable si hay patrocinio, sin tocar el pipeline.
 ```
 
-### FASE 5: Annotator + ML Pipeline (Largo Plazo)
+Consultas que el agente debe resolver (ejemplos):
+- **Gasolina:** "¿Dónde está la gasolina más barata cerca de mí?", "¿Cuánto cuesta la premium en Hermosillo?"
+- **Gas LP:** "¿Qué proveedor de gas es más barato en [localidad]?", "¿Cuándo se actualizan los precios?"
+- **Supermercados:** "¿Dónde está más barata la leche?", "Tengo esta lista: […], ¿dónde me sale más barato?"
+- **General:** "¿Cuánto me ahorro si cambio de gasolinera?", "Explícame más sencillo" (accesibilidad).
 
-**Objetivo:** Automatizar extracción de datos de folletos de supermercados.
-
-#### 5.1 Roadmap de supermercados
-
-| Prioridad | Supermercado | Método flyer | Estado       |
-| --------- | ------------ | ------------- | ------------ |
-| 1         | Casa Ley     | Web scraping  | ✅ Funcional |
-| 2         | Abarrey      | Web scraping  | ❌ Pendiente |
-| 3         | Soriana      | Web scraping  | ❌ Pendiente |
-| 4         | Walmart      | Web scraping  | ❌ Pendiente |
-
-#### 5.2 Pipeline ML
-
-```
-Flyer imagen → Roboflow (detección zonas) → Recortes → 
-LLM (extracción texto) → JSON estructurado → DB
-```
-
-
-* Acumular dataset de annotator (mínimo ~500 imágenes anotadas)
-* Entrenar modelo en Roboflow (object detection)
-* Integrar modelo en pipeline automatizado
-* Eliminar necesidad de anotación manual
-
-#### 5.3 Expansión geográfica flyers
-
-1. Hermosillo
-2. Sonora (estado completo)
-3. Zona Norte
-4. Centro y Sur México
-
-## 5. Esquema de Base de Datos
-
-### Tablas actuales (funcionando)
-
-| Tabla           | Propósito                             |
-| --------------- | -------------------------------------- |
-| gasolineras     | Precios + ubicaciones de gasolineras   |
-| gas_lp_precios  | Precios Gas LP por proveedor/localidad |
-| qqp_precios     | Precios productos PROFECO              |
-| cne_entidades   | Catálogo de estados                   |
-| cne_municipios  | Catálogo de municipios                |
-| cne_localidades | Catálogo de localidades               |
-
-### Tablas nuevas (Fase 2+)
-
-| Tabla          | Propósito                        | Fase |
-| -------------- | --------------------------------- | ---- |
-| usuarios       | Google OAuth users                | 2    |
-| chat_historial | Conversaciones del chatbot        | 4    |
-| favoritos      | Gasolineras/productos guardados   | 2    |
-| alertas        | "Avísame si baja de $X" (futuro) | 3+   |
+Las tools consultan los repositorios existentes (`GasolinaRepository`, `GasLPRepository`,
+`SupermercadoRepository`) y, para productos, combinan **filtro duro + similitud vectorial**.
 
 ---
 
-## 6. Criterios de "Listo para Producción"
+## 7. Estrategia de Despliegue
 
-### Para presentar al municipio necesitas:
+- **Empaquetado:** Podman (no Docker). `Containerfile` para el backend; `compose.yaml` para
+  app + PostgreSQL/pgvector.
+- **Destinos:** PC local · servidor dedicado · **GCP (norte)**.
+- **GCP (objetivo):** Cloud Run (backend) + Cloud SQL PostgreSQL con pgvector + Cloud
+  Scheduler/Jobs para el scraping + Secret Manager para credenciales. El flujo
+  extraer → limpiar → guardar → servir UI encaja bien en este modelo serverless.
 
-* Los 3 dashboards funcionando en la SPA
-* Datos actualizándose automáticamente
-* UI profesional (Liquid Glass)
-* Funcione en celular (responsive)
-* Deployed en un servidor público (Railway, Render, o VPS)
-* Dominio propio (ej. sina.mx)
-* Página "Acerca de" con propósito del proyecto
-* Métricas básicas: cuántos usuarios, consultas por día
+---
 
-### Nice to have para la presentación:
+## 8. Criterios de "Listo para Producción"
 
-* Chatbot funcional
-* Demo en vivo con datos reales
-* Comparación: "Un usuario puede ahorrar $X al mes usando SINA"
+Para presentar a un municipio / patrocinador:
+- Los 3 dashboards (Gasolina, Gas LP, Supermercados) funcionando en la SPA.
+- Datos actualizándose automáticamente (scheduler).
+- UI profesional, responsive (mobile-first).
+- Desplegado en servidor público con dominio propio.
+- Tests + CI/CD verdes.
+- Página "Acerca de" con el propósito del proyecto.
+- Métricas básicas (usuarios, consultas/día).
+
+**Nice to have:** chat funcional con datos reales y mensaje de impacto
+("una familia puede ahorrar $X al mes usando SINA").
