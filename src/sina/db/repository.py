@@ -1,14 +1,17 @@
+import logging
+import warnings
 from typing import Generic, TypeVar
 from contextlib import contextmanager
 from typing import cast as typing_cast
 from datetime import datetime, timezone
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy import (
-    create_engine, 
-    insert, 
-    delete, 
-    select, 
+    create_engine,
+    insert,
+    delete,
+    select,
     event,
+    text,
     update)
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import (
@@ -17,7 +20,10 @@ from sina.db.models import (
     CatalogoConfig, Supermercado,
 )
 from sina.config.credentials import DB_URL
+from sina.config.timezone import get_mexico_now
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+log = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=DeclarativeBase)
 
@@ -38,6 +44,12 @@ if DB_URL.startswith("sqlite"):
         cur.execute("PRAGMA temp_store=MEMORY")       # tablas temp en RAM
         cur.execute("PRAGMA foreign_keys=ON")
         cur.close()
+
+# pgvector vive en PostgreSQL: la extensión debe existir antes de crear las
+# tablas que usan la columna Vector (p. ej. `supermercados`).
+if DB_URL.startswith("postgresql"):
+    with _engine.begin() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
 
 Base.metadata.create_all(_engine)
 _SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False)
@@ -68,7 +80,24 @@ class BaseRepository(Generic[T]):
 
 
 class QQPRepository(BaseRepository[PrecioQQP]):
+    """
+    DEPRECADO (jun 2026). PROFECO / "Quién es Quién en los Precios" (QQP) fue
+    reemplazado por el scraping directo de supermercados (ver
+    `SupermercadoRepository`). Los endpoints QQP ya se removieron de `main.py`.
+
+    Se conserva intacto por si se reactiva la fuente PROFECO en el futuro, para
+    no tener que volver a implementarlo. **No usar en código nuevo.**
+    """
     model = PrecioQQP
+
+    def __init__(self, db_url: str = DB_URL):
+        warnings.warn(
+            "QQPRepository está deprecado; usa SupermercadoRepository "
+            "(PROFECO/QQP fue reemplazado por scraping directo).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(db_url)
 
     def obtener_por_municipio(self, estado: str, municipio: str) -> list[dict]:
         """Consulta precios por estado y municipio."""
@@ -364,6 +393,35 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                 return True
             return not ultimo.esta_vigente()
 
+    def ubicaciones_con_precios(self) -> list[tuple[str, str]]:
+        """
+        (estado, municipio) distintos que ya tienen al menos un precio cargado.
+        Lo usa el scheduler para saber qué refrescar.
+        """
+        with self.Session() as session:
+            rows = session.execute(
+                select(self.model.estado, self.model.municipio)
+                .where(self.model.fecha_registro.is_not(None))
+                .distinct()
+            ).all()
+        return [(e, m) for e, m in rows]
+
+    def estado_cache(self) -> dict:
+        """Última actualización y vigencia (para el health check)."""
+        with self.Session() as session:
+            ultimo = (
+                session.query(self.model)
+                .filter(self.model.fecha_registro.is_not(None))
+                .order_by(self.model.fecha_registro.desc())
+                .first()
+            )
+        if ultimo is None:
+            return {"ultima_actualizacion": None, "vigente": False}
+        return {
+            "ultima_actualizacion": ultimo.fecha_registro,
+            "vigente": ultimo.esta_vigente(),
+        }
+
 class EntidadFederativaRepository(BaseRepository[EntidadFederativa]):
     model = EntidadFederativa
 
@@ -497,51 +555,230 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
             )
             
             ultimo = session.execute(stmt).scalars().first()
-            
+
             if ultimo is None:
                 return True  # No hay datos
-            
+
             return not ultimo.esta_vigente()  # True si expiró
+
+    def combinaciones_con_datos(self) -> list[dict]:
+        """
+        Combinaciones (entidad/municipio/localidad) distintas con datos en DB,
+        incluyendo nombres. Lo usa el scheduler para saber qué refrescar.
+        """
+        with self.Session() as session:
+            rows = session.execute(
+                select(
+                    self.model.entidad_id,
+                    self.model.municipio_id,
+                    self.model.localidad_id,
+                    self.model.entidad_nombre,
+                    self.model.municipio_nombre,
+                    self.model.localidad_nombre,
+                ).distinct()
+            ).all()
+        return [
+            {
+                "entidad_id": r.entidad_id,
+                "municipio_id": r.municipio_id,
+                "localidad_id": r.localidad_id,
+                "entidad_nombre": r.entidad_nombre,
+                "municipio_nombre": r.municipio_nombre,
+                "localidad_nombre": r.localidad_nombre,
+            }
+            for r in rows
+        ]
+
+    def estado_cache(self) -> dict:
+        """Última actualización y vigencia (para el health check)."""
+        with self.Session() as session:
+            ultimo = (
+                session.query(self.model)
+                .order_by(self.model.fecha_extraccion.desc())
+                .first()
+            )
+        if ultimo is None:
+            return {"ultima_actualizacion": None, "vigente": False}
+        return {
+            "ultima_actualizacion": ultimo.fecha_extraccion,
+            "vigente": ultimo.esta_vigente(),
+        }
 
 # ── Repositorio para Catálogo de Rutas Soriana ─────────────────
 class SupermercadoRepository(BaseRepository[Supermercado]):
     model = Supermercado
 
+    @staticmethod
+    def _normalizar_producto(p: dict, ahora: datetime) -> dict | None:
+        """
+        Convierte un producto de scraper (claves variables, p. ej. `pid_origen`)
+        en un dict con exactamente las columnas del modelo. Devuelve None si el
+        producto es inválido (sin pid, sin nombre o sin precio).
+        """
+        pid = p.get("pid", p.get("pid_origen"))
+        try:
+            pid = int(pid)
+        except (ValueError, TypeError):
+            return None
+
+        nombre = " ".join(str(p.get("producto", "")).split()).strip()
+        if not nombre:
+            return None
+
+        try:
+            precio = float(p["precio"])
+        except (KeyError, ValueError, TypeError):
+            return None
+
+        sub = p.get("subcategoria")
+        return {
+            "pid":          pid,
+            "producto":     nombre,
+            "precio":       precio,
+            "tienda":       p.get("tienda") or "Soriana",
+            "departamento": p.get("departamento") or "",
+            "categoria":    p.get("categoria") or "",
+            "subcategoria": sub if sub not in ("", None) else None,
+            "fecha_actualizacion": ahora,
+        }
+
     def upsert_productos(self, productos: list[dict]) -> int:
         """
-        Inserta o actualiza productos en la tabla Supermercado.
-        
-        Args:
-            productos: Lista de dicts con estructura:
-                {
-                    "producto": str,
-                    "precio": float,
-                    "pid": int,
-                    "tienda": str,
-                    "departamento": str,
-                    "categoria": str,
-                    "subcategoria": str,
-                    "fecha_actualizacion": datetime
-                }
-                
+        Inserta o actualiza productos en la tabla `supermercados`.
+
+        Acepta los dicts tal como los producen los spiders (clave `pid_origen`),
+        los normaliza a las columnas del modelo, deduplica por `pid` dentro del
+        lote y, si `ENABLE_EMBEDDINGS` está activo (solo PostgreSQL), genera y
+        guarda el embedding de cada producto.
+
         Returns:
-            int: Número de productos guardados/actualizados
+            int: número de productos guardados/actualizados.
         """
         if not productos:
             return 0
-        
+
+        # Normalizar + dedup por pid (último gana) para no chocar en ON CONFLICT.
+        ahora = get_mexico_now()
+        filas_por_pid: dict[int, dict] = {}
+        for p in productos:
+            fila = self._normalizar_producto(p, ahora)
+            if fila is not None:
+                filas_por_pid[fila["pid"]] = fila
+        filas = list(filas_por_pid.values())
+        if not filas:
+            return 0
+
+        # Embeddings opcionales (gated por ENABLE_EMBEDDINGS; requiere pgvector).
+        incluir_embedding = False
+        if DB_URL.startswith("postgresql"):
+            from sina.embedder.embeddings import get_embedding_service
+            service = get_embedding_service()
+            if service is not None:
+                try:
+                    vectores = service.vectorizar_productos(filas)
+                    for fila, vec in zip(filas, vectores):
+                        fila["embedding"] = vec
+                    incluir_embedding = True
+                except Exception as e:
+                    log.error("Error generando embeddings de productos: %s", e)
+
         base = sqlite_insert(self.model)
-        stmt = base.values(productos).on_conflict_do_update(
+        set_ = {
+            "producto":            base.excluded.producto,
+            "precio":              base.excluded.precio,
+            "departamento":        base.excluded.departamento,
+            "categoria":           base.excluded.categoria,
+            "subcategoria":        base.excluded.subcategoria,
+            "fecha_actualizacion": base.excluded.fecha_actualizacion,
+        }
+        if incluir_embedding:
+            set_["embedding"] = base.excluded.embedding
+
+        stmt = base.values(filas).on_conflict_do_update(
             index_elements=["pid"],
-            set_={
-                "producto": base.excluded.producto,
-                "precio": base.excluded.precio,
-                "fecha_actualizacion": base.excluded.fecha_actualizacion,
-            },
+            set_=set_,
         )
         with self.engine.begin() as conn:
             conn.execute(stmt)
-        return len(productos)
+        return len(filas)
+
+    def buscar(
+        self,
+        q: str | None = None,
+        tienda: str | None = None,
+        departamento: str | None = None,
+        categoria: str | None = None,
+        limit: int = 30,
+    ) -> list[dict]:
+        """
+        Busca productos con filtros duros (tienda/departamento/categoría).
+
+        Si `q` viene y hay embeddings disponibles (PostgreSQL + ENABLE_EMBEDDINGS),
+        ordena por similitud coseno sobre pgvector. Si no, cae a búsqueda de texto
+        (ILIKE sobre el nombre) ordenada por precio ascendente.
+        """
+        limit = max(1, min(int(limit), 100))
+
+        with self.Session() as session:
+            stmt = select(self.model)
+            if tienda:
+                stmt = stmt.where(self.model.tienda.ilike(tienda))
+            if departamento:
+                stmt = stmt.where(self.model.departamento.ilike(departamento))
+            if categoria:
+                stmt = stmt.where(self.model.categoria.ilike(categoria))
+
+            usar_vector = False
+            if q:
+                if DB_URL.startswith("postgresql"):
+                    from sina.embedder.embeddings import get_embedding_service
+                    service = get_embedding_service()
+                    if service is not None:
+                        try:
+                            vector = service.vectorizar_consulta(q)
+                            stmt = (
+                                stmt.where(self.model.embedding.is_not(None))
+                                .order_by(self.model.embedding.cosine_distance(vector))
+                            )
+                            usar_vector = True
+                        except Exception as e:
+                            log.error("Error en búsqueda vectorial, usando texto: %s", e)
+                if not usar_vector:
+                    stmt = stmt.where(self.model.producto.ilike(f"%{q}%")).order_by(
+                        self.model.precio.asc()
+                    )
+            else:
+                stmt = stmt.order_by(self.model.precio.asc())
+
+            rows = session.execute(stmt.limit(limit)).scalars().all()
+            return [
+                {
+                    "pid":                 r.pid,
+                    "producto":            r.producto,
+                    "precio":              r.precio,
+                    "tienda":              r.tienda,
+                    "departamento":        r.departamento,
+                    "categoria":           r.categoria,
+                    "subcategoria":        r.subcategoria,
+                    "fecha_actualizacion": r.fecha_actualizacion,
+                }
+                for r in rows
+            ]
+
+    def estado_cache(self) -> dict:
+        """
+        Última actualización (para el health check). No hay regla de vigencia
+        definida para supermercados todavía, así que `vigente` queda en None.
+        """
+        with self.Session() as session:
+            ultimo = (
+                session.query(self.model)
+                .order_by(self.model.fecha_actualizacion.desc())
+                .first()
+            )
+        if ultimo is None:
+            return {"ultima_actualizacion": None, "vigente": None}
+        return {"ultima_actualizacion": ultimo.fecha_actualizacion, "vigente": None}
 
 
 class CatalogoRepository(BaseRepository[CatalogoConfig]):

@@ -16,9 +16,12 @@ BASE_DIR = find_project_root(Path(__file__))
 # --- Datos existentes ---
 DATA = BASE_DIR / "datos"
 DB = DATA / "db"
-CASA_LEY_DATA = DATA / "casa_ley" 
+CASA_LEY_DATA = DATA / "casa_ley"
 ABARREY_DATA = DATA / "abarrey"
 GAS_DATA = DATA / "gasolineras"
+
+# --- Logs ---
+LOGS = BASE_DIR / "logs"
 
 # --- Anotador (nuevo) ---
 
@@ -31,12 +34,13 @@ SORIANA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "soriana_config.json"
 
 for path in [
     DB,
-    DATA, 
+    DATA,
     CASA_LEY_DATA,
     ABARREY_DATA,
-    TEMPLATES_DIR, 
+    TEMPLATES_DIR,
     STATIC_DIR,
-    GAS_DATA
+    GAS_DATA,
+    LOGS,
 ]:
     path.mkdir(parents=True, exist_ok=True)
 

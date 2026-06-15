@@ -12,6 +12,12 @@ from typing import cast
 Base = declarative_base()
 
 class PrecioQQP(Base):
+    """
+    DEPRECADO (jun 2026): tabla de PROFECO "Quién es Quién en los Precios".
+    Reemplazada por la tabla `supermercados` (scraping directo). El modelo se
+    conserva (y la tabla se sigue creando) para no rehacerlo si se reactiva
+    PROFECO en el futuro. **No usar en código nuevo** — ver `Supermercado`.
+    """
     __tablename__ = 'qqp_precios'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

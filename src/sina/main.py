@@ -33,8 +33,15 @@ from sina.config.paths import (
 from sina.config.canasta import (
     estructurar_canasta
 )
-from sina.db.repository import GasolinaRepository, MunicipioRepository
+from sina.db.repository import (
+    GasolinaRepository,
+    GasLPRepository,
+    SupermercadoRepository,
+    MunicipioRepository,
+)
 from sina.db.models import EntidadFederativa, Municipio, Localidad
+from sina.config.logging_config import configurar_logging
+from sina.scheduler import iniciar_scheduler, detener_scheduler
 
 try:
     from sina.ollama.extract_flyer_text import extract_text
@@ -49,12 +56,15 @@ _catalogo_js: dict            = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Carga el catálogo desde la DB al arrancar. Una sola vez."""
+    """Arranque: logging, catálogo de municipios (una vez) y scheduler."""
+    configurar_logging()
     global _municipios_validos, _catalogo_js
     repo = MunicipioRepository(db_url=DB_URL)
     _municipios_validos = repo.obtener_nombres_validos()
     _catalogo_js        = repo.obtener_catalogo()
+    iniciar_scheduler()
     yield
+    detener_scheduler()
 
 app = FastAPI(
     title       = "SINA API",
@@ -83,6 +93,20 @@ def _validar_ubicacion(estado: str, municipio: str) -> tuple[str, str, int, str]
 
     entidad_id, municipio_id = ids
     return e, m, entidad_id, municipio_id
+
+
+# ============================================================
+#  API · SALUD
+# ============================================================
+@app.get("/api/v1/health")
+def health():
+    """Vigencia de los datos por categoría (última actualización + vigente)."""
+    return {
+        "status"       : "ok",
+        "gasolina"     : GasolinaRepository(db_url=DB_URL).estado_cache(),
+        "gas_lp"       : GasLPRepository(db_url=DB_URL).estado_cache(),
+        "supermercados": SupermercadoRepository(db_url=DB_URL).estado_cache(),
+    }
 
 
 # ============================================================
@@ -290,6 +314,39 @@ async def get_gas_lp_by_ids(entidad_id: int, municipio_id: str, localidad_id: in
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================
+#  API · SUPERMERCADOS
+# ============================================================
+@app.get("/api/v1/supermercados")
+def get_supermercados(
+    q: str | None = None,
+    tienda: str | None = None,
+    departamento: str | None = None,
+    categoria: str | None = None,
+    limit: int = 30,
+):
+    """
+    Productos de supermercado con filtros (tienda/departamento/categoría).
+    Si `q` viene y hay embeddings disponibles, usa búsqueda semántica
+    (pgvector); si no, búsqueda de texto por nombre ordenada por precio.
+    """
+    try:
+        repo = SupermercadoRepository(db_url=DB_URL)
+        datos = repo.buscar(
+            q=q, tienda=tienda, departamento=departamento,
+            categoria=categoria, limit=limit,
+        )
+        return {
+            "status": "ok",
+            "q":      q,
+            "total":  len(datos),
+            "datos":  datos,
+        }
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ============================================================
 #  API · QQP (DEPRECATED)

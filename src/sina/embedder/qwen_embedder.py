@@ -42,3 +42,12 @@ class QwenHuggingFaceProvider(EmbeddingProvider):
         )
 
         return embedding.tolist()
+
+    def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
+        """Batch real: una sola llamada a `encode` para toda la lista."""
+        embeddings = self.model.encode(
+            texts,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+        )
+        return [e.tolist() for e in embeddings]

@@ -45,7 +45,7 @@ primera necesidad, para que gaste menos o le afecte lo menos posible.
 | Embeddings    | `EmbeddingProvider` abstracto: open-source local (Qwen / sentence-transformers) | + proveedor privado intercambiable (si hay patrocinio) |
 | LLM           | `LLMProvider` abstracto: open-source local (Ollama / llama.cpp) | + `GeminiProvider` en GCP |
 | Mapas         | Leaflet.js                      | Leaflet.js                                 |
-| Scheduling    | Manual (endpoints POST)         | APScheduler en lifespan / Cloud Scheduler  |
+| Scheduling    | APScheduler en lifespan (+ endpoints POST manuales) | APScheduler / Cloud Scheduler |
 | Empaquetado   | uv (deps) + Podman (compose DB) | Podman / Containerfile (no Docker)         |
 | Deploy        | Local                           | PC / servidor dedicado / GCP (Cloud Run)   |
 
@@ -117,52 +117,64 @@ los selectores Estado/Municipio según la categoría.
 | Scraper ubicaciones gasolineras | ✅     | Código listo; se corre puntualmente.                       |
 | Pipeline + API Gas LP           | ✅     | API CNE + caché semanal. Falta scheduler automático.       |
 | UI Gas LP (Jinja2)              | ✅     | Cascada estado→municipio→localidad. Migra a SPA.           |
-| Scraping Soriana                | ✅     | Playwright; `upsert` a tabla `supermercados`.              |
+| Scraping Soriana                | ✅     | Playwright; `upsert` a tabla `supermercados` (mapeo `pid_origen`→`pid`). |
 | Scraping Del Sol                | ✅     | Playwright async; `upsert` a `supermercados`.              |
-| Embeddings de productos         | ⚠️     | Proveedor Qwen existe pero **no se invoca**; sin búsqueda vectorial. |
-| Búsqueda / API Supermercados    | ❌     | Falta endpoint de consulta + UI.                           |
+| Embeddings de productos         | ✅*    | Conectados en `upsert_productos` (opt-in `ENABLE_EMBEDDINGS`, requiere pgvector). |
+| Búsqueda / API Supermercados    | ✅     | `GET /api/v1/supermercados` (vectorial con fallback de texto). Falta UI. |
 | Agente / Chat (tools internas)  | ❌     | `chat.py` vacío. Por construir.                            |
 | Pipeline volantes (Casa Ley)    | ✅*    | Descarga flyer + anotación manual + OCR LLM. Track secundario. |
-| QQP / PROFECO                   | 🗑️     | **Legacy a eliminar** (endpoints removidos, tablas sin uso). |
+| QQP / PROFECO                   | 🗑️     | **Deprecado** (modelo/repo conservados con aviso; endpoints removidos). |
+| Scheduling automático           | ✅     | APScheduler en lifespan (`scheduler.py`); gasolina 06:00, gas LP sáb 08:00. |
+| Logging + health check          | ✅     | Logging unificado (`logging_config.py`); `GET /api/v1/health`. |
 | React SPA                       | ❌     | Por construir (Fase 4).                                    |
 | Google OAuth                    | ❌     | Fase 4.                                                     |
-| Scheduling automático           | ❌     | APScheduler en deps, sin usar.                             |
 | Tests / CI-CD / Containerfile   | ❌     | No existen (Fase 5).                                       |
 
 ### 3.2 Pendientes críticos inmediatos
 
-- [ ] Fijar PostgreSQL + pgvector como base por defecto; documentar `compose.yaml`.
-- [ ] Eliminar/retirar código muerto de QQP (modelo `PrecioQQP`, `QQPRepository`, tabla).
-- [ ] Conectar embeddings al `upsert_productos()` y añadir búsqueda vectorial.
-- [ ] Scheduler automático (gasolina diario, gas LP sábados, supermercados programado).
-- [ ] Endpoint + consulta de supermercados.
+- [x] Fijar PostgreSQL + pgvector como base por defecto (extensión `vector` auto-creada en
+      `repository.py`; `.env.example` alineado con `compose.yaml`).
+- [x] Deprecar QQP/PROFECO sin borrarlo (modelo `PrecioQQP` y `QQPRepository` conservados con
+      aviso `DeprecationWarning`, por si se reactiva).
+- [x] Scheduler automático (gasolina diario 06:00, gas LP sábados 08:00; hora MX).
+- [ ] Conectar embeddings al `upsert_productos()` y añadir búsqueda vectorial. *(Fase 2)*
+- [ ] Endpoint + consulta de supermercados. *(Fase 2)*
 
 ---
 
 ## 4. Fases de Desarrollo
 
-### FASE 1 — Estabilización del Backend
+### FASE 1 — Estabilización del Backend ✅
 **Meta:** que gasolina y gas LP corran solos y la base sea PostgreSQL.
-- [ ] PostgreSQL + pgvector como default (vía `compose.yaml`); SQLite solo fallback dev.
-- [ ] Retirar QQP/PROFECO (modelo, repositorio, tabla, referencias).
-- [ ] APScheduler en el `lifespan` de FastAPI:
+- [x] PostgreSQL + pgvector como default; SQLite solo fallback dev. La extensión `vector` se
+      crea automáticamente al arrancar (`repository.py`) y `.env.example` coincide con `compose.yaml`.
+- [x] Deprecar QQP/PROFECO **sin borrar** (modelo `PrecioQQP` + `QQPRepository` con
+      `DeprecationWarning`; la tabla se sigue creando por si se reactiva).
+- [x] APScheduler en el `lifespan` de FastAPI (`sina/scheduler.py`), controlado por
+      `ENABLE_SCHEDULER`:
   - Gasolina: diario 6:00 AM (hora centro MX)
   - Gas LP: sábados 8:00 AM
-- [ ] Logging unificado (archivo + consola) y manejo de fallos de API CRE/CNE
-      (fallback: servir datos vencidos con aviso).
-- [ ] Health check `GET /api/v1/health` con vigencia por categoría.
+  - Refresca solo ubicaciones/localidades ya presentes en la DB, reutilizando la caché on-demand.
+- [x] Logging unificado consola + archivo rotativo (`sina/config/logging_config.py`,
+      `logs/sina.log`). El fallback "servir datos vencidos con aviso" ya existe en
+      `get_precios_gasolina()` / `get_precios_gas_lp()` (fuente `cache_vencido`).
+- [x] Health check `GET /api/v1/health` con última actualización + vigencia por categoría.
 
-### FASE 2 — Pipeline de Supermercados + Embeddings (CORE)
+### FASE 2 — Pipeline de Supermercados + Embeddings (CORE) ✅ (base)
 **Meta:** convertir el scraping directo en una base de productos consultable y vectorizada.
-- [ ] Scraping directo como fuente primaria (Soriana, Del Sol; ampliar a más tiendas).
-- [ ] Normalizar nombres de producto (mayúsculas/acentos) y deduplicar.
-- [ ] **Conectar embeddings**: invocar `EmbeddingService.vectorizar_supermercado()` al hacer
-      `upsert_productos()` y poblar `Supermercado.embedding`. El servicio usa el
-      `EmbeddingProvider` abstracto (`embedder/base.py`) para poder cambiar de proveedor
-      open-source a uno privado sin tocar el pipeline.
-- [ ] Búsqueda vectorial sobre pgvector (similitud por coseno) + filtros duros
-      (municipio, tienda, categoría).
-- [ ] Endpoint `GET /api/v1/supermercados` (filtros + búsqueda) que la SPA y el agente usarán.
+- [x] Scraping directo como fuente primaria (Soriana, Del Sol). Se corrigió el bug latente:
+      `upsert_productos` mapea `pid_origen`→`pid` y normaliza al esquema del modelo.
+      *(Ampliar a más tiendas: pendiente.)*
+- [x] Normalización básica de nombres (espacios) y **dedup por `pid`** dentro del lote (evita
+      el choque en `ON CONFLICT`). *(Dedup semántico cross-tienda: futuro.)*
+- [x] **Embeddings conectados**: `upsert_productos` invoca `EmbeddingService.vectorizar_productos()`
+      (batch) y puebla `Supermercado.embedding` cuando `ENABLE_EMBEDDINGS=1` (solo PostgreSQL).
+      Provider perezoso vía `EmbeddingProvider` abstracto (open-source ↔ privado), modelo
+      configurable con `EMBEDDING_MODEL`.
+- [x] Búsqueda vectorial sobre pgvector (coseno, `cosine_distance`) + filtros duros
+      (tienda/departamento/categoría), con **fallback de texto** (ILIKE) si no hay embeddings.
+      *(Nota: el modelo `supermercados` aún no tiene ubicación; filtro por municipio = futuro.)*
+- [x] Endpoint `GET /api/v1/supermercados` (filtros + búsqueda) para SPA y agente.
 - Volantes (Casa Ley → annotator → OCR LLM) se mantienen como **track secundario** para
   tiendas sin sitio scrapeable.
 
