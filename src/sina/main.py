@@ -1,10 +1,14 @@
 # main.py
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from typing import cast
 from sqlalchemy import select
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 import traceback
 import json
 
@@ -25,10 +29,11 @@ from sina.scraping.gobierno.cne_gas_lp import get_precios_gas_lp, get_localidade
 from sina.config.credentials import DB_URL, casa_ley_url
 from sina.config.settings import _get_classes_config, build_filesystem_tree
 from sina.config.paths import (
-    TEMPLATES_DIR, 
-    CASA_LEY_DATA, 
-    STATIC_DIR, 
-    DATA
+    TEMPLATES_DIR,
+    CASA_LEY_DATA,
+    STATIC_DIR,
+    DATA,
+    BASE_DIR,
 )
 from sina.config.canasta import (
     estructurar_canasta
@@ -42,6 +47,15 @@ from sina.db.repository import (
 from sina.db.models import EntidadFederativa, Municipio, Localidad
 from sina.config.logging_config import configurar_logging
 from sina.scheduler import iniciar_scheduler, detener_scheduler
+
+# ── Fase 4: auth, seguridad, rate limiting y servido de la SPA ──
+from sina.api.auth import router as auth_router
+from sina.api.users import router as users_router
+from sina.api.ratelimit import limiter
+from sina.api.security import SecurityHeadersMiddleware, require_admin
+from sina.config.app_settings import settings
+
+FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 
 try:
     from sina.ollama.extract_flyer_text import extract_text
@@ -72,6 +86,29 @@ app = FastAPI(
     version     = "1.0.0",
     lifespan=lifespan
 )
+
+# ── Seguridad y rate limiting (Fase 4) ──────────────────────
+def _rate_limit_handler(request: Request, exc: Exception) -> Response:
+    """Adaptador tipado para el handler 429 de slowapi (conserva Retry-After)."""
+    return _rate_limit_exceeded_handler(request, cast(RateLimitExceeded, exc))
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
+app.add_middleware(SecurityHeadersMiddleware)
+if settings.cors_origins:
+    # Solo se activa CORS si hay orígenes configurados (frontend separado).
+    # En mismo-origen (SPA servida por FastAPI) no hace falta.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "X-CSRF-Token"],
+    )
+
+# ── Routers de auth y usuarios (Fase 4) ─────────────────────
+app.include_router(auth_router)
+app.include_router(users_router)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/datos",  StaticFiles(directory=str(DATA)),       name="datos")
@@ -110,6 +147,21 @@ def health():
 
 
 # ============================================================
+#  API · CATÁLOGO (estado → municipios) para la SPA
+# ============================================================
+@app.get("/api/v1/catalogo")
+def get_catalogo():
+    """
+    Catálogo { estado: [municipios] } que la SPA usa para los selectores.
+    Reemplaza la inyección del catálogo en el HTML de Jinja. Se sirve desde
+    el cache calentado en el lifespan; cae al repositorio si aún no está listo.
+    """
+    if _catalogo_js:
+        return {"estados": _catalogo_js}
+    return {"estados": MunicipioRepository(db_url=DB_URL).obtener_catalogo()}
+
+
+# ============================================================
 #  FRONTEND ROUTES  (HTML)
 # ============================================================
 @app.get("/sina/annotator", response_class=HTMLResponse)
@@ -145,7 +197,7 @@ async def view_gas_lp(request: Request):
 #  API · GASOLINA
 # ============================================================
 @app.get("/api/v1/gasolina")
-async def get_gasolina(estado: str, municipio: str):
+def get_gasolina(estado: str, municipio: str):
     estado, municipio, entidad_id, municipio_id = _validar_ubicacion(estado, municipio)
 
     try:
@@ -169,10 +221,10 @@ async def get_gasolina(estado: str, municipio: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/update/gasolina")
-async def update_gasolina(estado: str, municipio: str):
+def update_gasolina(estado: str, municipio: str, _admin: None = Depends(require_admin)):
     """
     Descarga precios desde la API CRE y hace upsert en DB.
-    Preserva lat/lng ya scrapeadas.
+    Preserva lat/lng ya scrapeadas. Requiere clave de administrador.
     """
     estado, municipio, entidad_id, municipio_id = _validar_ubicacion(estado, municipio)
     registros = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
@@ -194,7 +246,9 @@ async def update_gasolina(estado: str, municipio: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/update/ubicacion/gasolineras")
-async def update_ubicaciones_gasolineras(estado: str, municipio: str):
+def update_ubicaciones_gasolineras(
+    estado: str, municipio: str, _admin: None = Depends(require_admin)
+):
     estado, municipio, _, _ = _validar_ubicacion(estado, municipio)
     registros = scrape_municipio(estado, municipio)
 
@@ -218,7 +272,7 @@ async def update_ubicaciones_gasolineras(estado: str, municipio: str):
 #  API · GAS LP
 # ============================================================
 @app.get("/api/v1/gas-lp")
-async def get_gas_lp(estado: str, municipio: str, localidad: str):
+def get_gas_lp(estado: str, municipio: str, localidad: str):
     """
     Precios de Gas LP por localidad.
     Caché semanal on-demand — llama a CNE solo si los datos vencieron.
@@ -239,7 +293,7 @@ async def get_gas_lp(estado: str, municipio: str, localidad: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/gas-lp/localidades")
-async def get_localidades(estado: str, municipio: str):
+def get_localidades(estado: str, municipio: str):
     """
     Devuelve localidades disponibles para un estado/municipio.
     """
@@ -266,7 +320,7 @@ async def get_localidades(estado: str, municipio: str):
     }
 
 @app.get("/api/v1/gas-lp/by-ids")
-async def get_gas_lp_by_ids(entidad_id: int, municipio_id: str, localidad_id: int):
+def get_gas_lp_by_ids(entidad_id: int, municipio_id: str, localidad_id: int):
     """
     Precios de Gas LP usando IDs directamente (más eficiente para UI).
     Caché semanal on-demand — llama a CNE solo si los datos vencieron.
@@ -357,8 +411,8 @@ def get_supermercados(
 #  API · ANNOTATOR
 # ============================================================
 @app.post("/api/v1/annotator/annotate")
-def annotate(payload: AnnotationPayload):
-    """Guarda bounding boxes y genera recortes."""
+def annotate(payload: AnnotationPayload, _admin: None = Depends(require_admin)):
+    """Guarda bounding boxes y genera recortes. Requiere clave de administrador."""
     try:
         result = process_annotations(
             supermarket=payload.supermarket,
@@ -376,8 +430,8 @@ def annotate(payload: AnnotationPayload):
 
 
 @app.post("/api/v1/annotator/flyer")
-def download_flyer_endpoint(payload: FlyerPayload):
-    """Descarga el volante del supermercado indicado."""
+def download_flyer_endpoint(payload: FlyerPayload, _admin: None = Depends(require_admin)):
+    """Descarga el volante del supermercado indicado. Requiere clave de administrador."""
     match payload.supermarket:
         case "Casa Ley" | "casa_ley":
             return download_flyer(
@@ -393,8 +447,8 @@ def download_flyer_endpoint(payload: FlyerPayload):
 
 
 @app.post("/api/v1/annotator/extract")
-def extract_flyer_text(payload: ExtractPayload):
-    """Extrae texto de recortes usando LLM. Usa caché si ya existe."""
+def extract_flyer_text(payload: ExtractPayload, _admin: None = Depends(require_admin)):
+    """Extrae texto de recortes usando LLM. Usa caché si ya existe. Requiere clave de administrador."""
     json_path = DATA / payload.supermarket / payload.city / payload.date / "flyer_data.json"
 
     if not json_path.exists():
@@ -427,6 +481,50 @@ def get_annotator_status(supermarket: str, city: str, date: str):
         "has_json"    : (base_dir / "flyer_data.json").exists(),
         "has_recortes": recortes_dir.exists() and any(recortes_dir.iterdir()),
     }
+
+
+# ============================================================
+#  SPA REACT (Fase 4) — servida por FastAPI en el mismo origen
+# ============================================================
+# El build de Vite vive en frontend/dist. Montamos los assets con hash y un
+# catch-all que devuelve index.html para que el routing de cliente y los
+# deep-links funcionen. Debe registrarse DESPUÉS de todas las rutas /api,
+# /static, /datos y /sina para no ensombrecerlas.
+if (FRONTEND_DIST / "assets").is_dir():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(FRONTEND_DIST / "assets")),
+        name="spa-assets",
+    )
+
+_SPA_INDEX = FRONTEND_DIST / "index.html"
+_RESERVED_PREFIXES = ("api/", "static/", "datos/", "sina/", "assets/")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def spa_catch_all(full_path: str):
+    """Sirve la SPA. 404 JSON para rutas de API/estáticos no existentes."""
+    if full_path.startswith(_RESERVED_PREFIXES):
+        raise HTTPException(status_code=404, detail="No encontrado.")
+
+    # Archivos reales en la raíz del build (favicon, sina-mark.svg, robots…).
+    if full_path:
+        candidato = (FRONTEND_DIST / full_path).resolve()
+        if (
+            candidato.is_file()
+            and candidato.is_relative_to(FRONTEND_DIST.resolve())
+        ):
+            return FileResponse(str(candidato))
+
+    # Cualquier otra ruta → index.html (routing de cliente / deep-links).
+    if _SPA_INDEX.is_file():
+        return FileResponse(str(_SPA_INDEX))
+
+    # Aún no se ha corrido `vite build`.
+    raise HTTPException(
+        status_code=503,
+        detail="La SPA no está compilada. Corre `npm run build` en frontend/.",
+    )
 
 
 if __name__ == "__main__":

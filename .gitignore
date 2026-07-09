@@ -5,3 +5,6 @@ sina.egg-info
 chromedriver.exe
 datos/casa_ley
 datos/db
+logs/
+frontend/node_modules
+frontend/dist

@@ -1,7 +1,7 @@
 # src/sina/db/models.py
 from sqlalchemy import (
     DateTime, ForeignKey, UniqueConstraint, Index,
-    Column, Integer, String, Float, Boolean
+    Column, Integer, String, Float, Boolean, Text, JSON
 )
 from sqlalchemy.orm import declarative_base, relationship, mapped_column
 from sina.config.timezone import get_mexico_now, to_mexico_tz
@@ -289,3 +289,57 @@ class GasLPPrecio(Base):
         ) - timedelta(days=dias_desde_sabado)
         
         return fecha_mx >= ultimo_sabado
+
+
+class Usuario(Base):
+    """
+    Usuario autenticado con Google (Fase 4). Nunca se almacenan contraseñas
+    ni tokens de Google: solo la identidad estable `google_sub` (el claim `sub`
+    del ID token, inmutable por cuenta) como PK.
+
+    El `username` es OPCIONAL y distinto del `google_sub`; el usuario puede
+    fijarlo/cambiarlo. Se guarda normalizado a minúsculas y con unicidad
+    case-insensitive garantizada por la app (regex + denylist en el router).
+    PII mínima: `email`, `nombre` y `foto_url` son opcionales (display/contacto).
+    """
+    __tablename__ = "usuarios"
+
+    google_sub = Column(String, primary_key=True)
+
+    email          = Column(String, nullable=True, index=True)
+    email_verified = Column(Boolean, nullable=False, default=False)
+    username       = Column(String(30), nullable=True, unique=True)
+    nombre         = Column(String, nullable=True)
+    foto_url       = Column(String, nullable=True)
+
+    creado_en      = Column(DateTime(timezone=True), default=get_mexico_now, nullable=False)
+    actualizado_en = Column(DateTime(timezone=True), default=get_mexico_now,
+                            onupdate=get_mexico_now, nullable=False)
+    ultimo_login   = Column(DateTime(timezone=True), default=get_mexico_now, nullable=True)
+
+    def __repr__(self):
+        return f"<Usuario sub={self.google_sub} username={self.username}>"
+
+
+class ChatHistorial(Base):
+    """
+    Conversaciones persistidas de usuarios con sesión (Fase 4). El contenido se
+    consume/escribe hasta que exista el backend del chat (Fase 3). Sin sesión no
+    se persiste nada.
+    """
+    __tablename__ = "chat_historial"
+    __table_args__ = (
+        Index("ix_chat_usuario_sesion", "google_sub", "sesion_id", "creado_en"),
+    )
+
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    google_sub = Column(String, ForeignKey("usuarios.google_sub", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    sesion_id  = Column(String, nullable=False)
+    rol        = Column(String, nullable=False)          # "user" | "assistant"
+    contenido  = Column(Text, nullable=False)
+    metadatos  = Column(JSON, nullable=True)             # tool calls, contexto de municipio, etc.
+    creado_en  = Column(DateTime(timezone=True), default=get_mexico_now, nullable=False)
+
+    def __repr__(self):
+        return f"<ChatHistorial sub={self.google_sub} rol={self.rol}>"

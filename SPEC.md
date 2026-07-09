@@ -126,8 +126,8 @@ los selectores Estado/Municipio según la categoría.
 | QQP / PROFECO                   | 🗑️     | **Deprecado** (modelo/repo conservados con aviso; endpoints removidos). |
 | Scheduling automático           | ✅     | APScheduler en lifespan (`scheduler.py`); gasolina 06:00, gas LP sáb 08:00. |
 | Logging + health check          | ✅     | Logging unificado (`logging_config.py`); `GET /api/v1/health`. |
-| React SPA                       | ❌     | Por construir (Fase 4).                                    |
-| Google OAuth                    | ❌     | Fase 4.                                                     |
+| React SPA                       | ✅     | Vite + React + Tailwind. Landing, Gasolina, Gas LP y Supermercados + modo oscuro. Chat en "próximamente". |
+| Google OAuth                    | ✅     | Login con Google (sesión en cookie httpOnly + CSRF); tablas `usuarios`/`chat_historial`. Requiere configurar `GOOGLE_OAUTH_CLIENT_ID`. |
 | Tests / CI-CD / Containerfile   | ❌     | No existen (Fase 5).                                       |
 
 ### 3.2 Pendientes críticos inmediatos
@@ -195,17 +195,33 @@ los selectores Estado/Municipio según la categoría.
 - **Sin servidor MCP por ahora**; las tools viven dentro del backend. Empaquetarlas como
   servidor MCP estándar queda como posible evolución futura.
 
-### FASE 4 — SPA React + Liquid Glass + OAuth
+### FASE 4 — SPA React + OAuth ✅ (base; falta solo el chat, que depende de Fase 3)
 **Meta:** unificar todo en una sola app moderna.
-- Setup: Vite + React + React Router + Tailwind. Tema light, glassmorphism, mobile-first.
-- Rutas: `/` (landing), `/gasolina`, `/gas-lp`, `/supermercados`, `/chat`.
-- **Gasolina y Gas LP — REFACTOR (no rehacer):** migrar a React **conservando todas las
-  secciones y funciones actuales** (mapa Leaflet, autocomplete/cascada de selectores, tabla
-  ranking, comparador por proveedor, indicador de vigencia). Cambia el diseño, no el alcance.
-- **Supermercados — NUEVA:** tabla/comparador de productos por tienda con filtros y búsqueda.
-- **Chat — NUEVA:** UI conversacional contra `/api/v1/chat`.
-- Google OAuth 2.0: botón en navbar; sin login todo funciona sin persistencia; con login se
-  guarda historial. Tablas `usuarios` y `chat_historial`.
+- [x] Setup: Vite + React 19 + React Router + Tailwind v4, mobile-first. En lugar del
+      glassmorphism completo se optó por un estilo **editorial sobrio** (paleta del colibrí de
+      Costa) + **modo oscuro**, con vidrio esmerilado solo en navbar y controles del mapa
+      (mejor contraste/accesibilidad; se aleja del look "IA").
+- [x] Rutas: `/` (landing), `/gasolina`, `/gas-lp`, `/supermercados`, `/chat`.
+- [x] **Gasolina — REFACTOR:** migrado a React conservando todas las funciones (mapa Leaflet,
+      autocomplete/cascada, ranking, filtro por categoría en el mapa, calculadora con
+      comparación base/seleccionada, "cerca de ti", geolocalización, vigencia). Layout de 3
+      paneles responsivo.
+- [x] **Gas LP — REFACTOR:** cascada estado→municipio→localidad, pills de tipo/capacidad,
+      ranking y detalle de proveedor con vigencia.
+- [x] **Supermercados — NUEVA:** búsqueda (con debounce) + filtro por tienda + tabla de precios.
+- [ ] **Chat — NUEVA:** UI conversacional contra `/api/v1/chat`. **Pendiente:** el backend del
+      chat es la Fase 3 y aún no existe; por eso la sección se muestra como "próximamente" con el
+      botón deshabilitado. Al construir Fase 3, se sustituye sin cambiar la ruta.
+- [x] Google OAuth 2.0: botón en navbar; sin login todo funciona sin persistencia. Sesión propia
+      en **cookie httpOnly + Secure + SameSite firmada** con **CSRF double-submit** (nunca se
+      guardan contraseñas ni el token de Google; el `user_id` es el `sub` de Google, con
+      `username` opcional). Tablas `usuarios` y `chat_historial` creadas.
+- [x] **Extra entregado (adelanto de Fase 5):** la SPA se sirve desde FastAPI en el mismo origen
+      (mount `/assets` + catch-all), `GET /api/v1/catalogo` para los selectores, endurecimiento
+      (cabeceras CSP/HSTS, CORS por allowlist, rate limiting con slowapi, cierre de los `POST`
+      de scraping tras `ADMIN_API_KEY`) y tuning del pool de conexiones.
+- [ ] **Pendiente menor:** `favoritos` y `alertas` (Fase 4+); persistencia del historial de chat
+      (ligada a Fase 3).
 
 ### FASE 5 — Calidad y Despliegue (Producción)
 **Meta:** que sea desplegable y mantenible siguiendo buenas prácticas.
@@ -245,8 +261,8 @@ los selectores Estado/Municipio según la categoría.
 
 | Tabla            | Propósito                          | Fase |
 | ---------------- | ---------------------------------- | ---- |
-| `usuarios`       | Usuarios Google OAuth (sin pwd)    | 4    |
-| `chat_historial` | Conversaciones persistidas         | 4    |
+| `usuarios`       | Usuarios Google OAuth (sin pwd)    | 4 ✅ (creada) |
+| `chat_historial` | Conversaciones persistidas         | 4 ✅ (creada; se llena en Fase 3) |
 | `favoritos`      | Gasolineras/productos guardados    | 4+   |
 | `alertas`        | "Avísame si baja de $X" (futuro)   | 4+   |
 
@@ -296,13 +312,13 @@ Las tools consultan los repositorios existentes (`GasolinaRepository`, `GasLPRep
 ## 8. Criterios de "Listo para Producción"
 
 Para presentar a un municipio / patrocinador:
-- Los 3 dashboards (Gasolina, Gas LP, Supermercados) funcionando en la SPA.
-- Datos actualizándose automáticamente (scheduler).
-- UI profesional, responsive (mobile-first).
-- Desplegado en servidor público con dominio propio.
-- Tests + CI/CD verdes.
-- Página "Acerca de" con el propósito del proyecto.
-- Métricas básicas (usuarios, consultas/día).
+- [x] Los 3 dashboards (Gasolina, Gas LP, Supermercados) funcionando en la SPA.
+- [x] Datos actualizándose automáticamente (scheduler).
+- [x] UI profesional, responsive (mobile-first) — incluye modo oscuro.
+- [ ] Desplegado en servidor público con dominio propio.
+- [ ] Tests + CI/CD verdes.
+- [ ] Página "Acerca de" con el propósito del proyecto.
+- [ ] Métricas básicas (usuarios, consultas/día).
 
 **Nice to have:** chat funcional con datos reales y mensaje de impacto
 ("una familia puede ahorrar $X al mes usando SINA").

@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* Fuentes auto-hospedadas (sin CDN, compatibles con CSP estricta). */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/public-sans";
+
+/* Modo noche: activado por la clase .dark en <html> (persistida en localStorage). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  SINA — Sistema de diseño "Calypte costae" (colibrí de Costa).
+  Traducción del ave: gorguera/corona violeta-magenta iridiscente (color héroe,
+  usado como ACENTO, no como fondo), dorso verde-bronce (secundario), vientre
+  gris/crema pálido + tonos del desierto sonorense (neutros cálidos).
+  Tema light, editorial y sobrio: se aleja del glassmorphism morado genérico.
+*/
+@theme {
+  /* Marca — violeta gorguera */
+  --color-brand-50: #f7eafb;
+  --color-brand-100: #eed2f4;
+  --color-brand-200: #e0bff0; /* violeta claro (texto de marca sobre fondo oscuro) */
+  --color-brand-300: #c87fdd;
+  --color-brand-400: #a955c4;
+  --color-brand-500: #8e2fa8;
+  --color-brand-600: #7a2492;
+  --color-brand-700: #611b75;
+  --color-brand-800: #4c1259;
+  --color-brand-900: #3b0e48;
+
+  /* Acento — magenta destello (muy medido) */
+  --color-flare-400: #d6459e;
+  --color-flare-500: #c2277f;
+  --color-flare-600: #a81c6b;
+
+  /* Secundario — verde-bronce del dorso */
+  --color-sage-400: #4f8f73;
+  --color-sage-500: #3c7a62;
+  --color-sage-600: #2e6350;
+  --color-bronze-500: #6e7b4e;
+
+  /* Neutros — arena / crema del desierto (vientre del ave) */
+  --color-sand-50: #fbf8f2;
+  --color-sand-100: #f4eee2;
+  --color-sand-200: #e7decb;
+  --color-sand-300: #d6cbb4;
+
+  /* Superficie de tarjetas (blanca en claro, gris cálido en oscuro). */
+  --color-surface: #ffffff;
+
+  /* Tinta — grises cálidos, nunca negro puro */
+  --color-ink-900: #241f1b;
+  --color-ink-700: #453e37;
+  --color-ink-500: #6b635a;
+
+  /* Semánticos de precio (marcadores de mapa + leyenda) */
+  --color-price-low: #2e9e5b;
+  --color-price-mid: #d98a1f;
+  --color-price-high: #d24b3f;
+
+  /* Tipografía — display humanista con carácter + cuerpo neutro cálido */
+  --font-display: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Public Sans Variable", "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Sombra única, cálida y baja (restraint = editorial, no template) */
+  --shadow-card: 0 1px 2px rgba(36, 31, 27, 0.04), 0 8px 24px -12px rgba(36, 31, 27, 0.14);
+
+  /* Radios amables */
+  --radius-card: 1rem;
+}
+
+/*
+  Modo noche. Las utilidades de Tailwind v4 referencian las variables del tema,
+  así que sobrescribirlas bajo html.dark voltea toda la neutralidad (fondos,
+  texto, bordes, superficies) sin tocar cada componente. Marca/precio se
+  conservan porque leen bien en ambos temas.
+*/
+:root {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+  --color-sand-50: #17130e; /* fondo de página */
+  --color-sand-100: #201b15; /* zonas sutiles */
+  --color-sand-200: #2e2820; /* bordes / hairlines */
+  --color-sand-300: #3e372d; /* bordes fuertes */
+  --color-surface: #1d1811; /* tarjetas */
+  --color-ink-900: #f6f1e8; /* títulos */
+  --color-ink-700: #d7cfc2; /* cuerpo */
+  --color-ink-500: #9c9384; /* apagado */
+  --color-brand-50: #2b1636; /* fondos con tinte de marca */
+  --color-brand-100: #3c2249;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-feature-settings: "kern";
+  }
+
+  body {
+    background-color: var(--color-sand-50);
+    color: var(--color-ink-700);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink-900);
+    line-height: 1.1;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+  }
+
+  /* Cifras alineadas en tablas de precios y KPIs. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Foco visible y consistente en todo lo interactivo. */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Vidrio esmerilado — SOLO navbar sticky y controles del mapa. */
+  .glass {
+    background-color: color-mix(in srgb, var(--color-sand-50) 82%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+  }
+}

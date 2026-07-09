@@ -17,7 +17,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import (
     Base, PrecioQQP, PrecioGasolina,
     EntidadFederativa, Municipio, Localidad, GasLPPrecio,
-    CatalogoConfig, Supermercado,
+    CatalogoConfig, Supermercado, Usuario, ChatHistorial,
 )
 from sina.config.credentials import DB_URL
 from sina.config.timezone import get_mexico_now
@@ -28,10 +28,25 @@ log = logging.getLogger(__name__)
 T = TypeVar("T", bound=DeclarativeBase)
 
 # ── Engine ÚNICO compartido por toda la app ─────────────────
+# Pool afinado para Cloud SQL: mantener POCAS conexiones por instancia y
+# escalar horizontalmente (más instancias) evita agotar `max_connections`.
+# Parametrizable por entorno (DB_POOL_SIZE / DB_MAX_OVERFLOW).
+import os as _os
+
+_pool_kwargs: dict = {}
+if not DB_URL.startswith("sqlite"):
+    _pool_kwargs = {
+        "pool_size":     int(_os.getenv("DB_POOL_SIZE", "5")),
+        "max_overflow":  int(_os.getenv("DB_MAX_OVERFLOW", "5")),
+        "pool_timeout":  30,
+        "pool_recycle":  1800,   # < idle timeout de Cloud SQL
+    }
+
 _engine = create_engine(
     DB_URL,
     connect_args={"timeout": 30} if DB_URL.startswith("sqlite") else {},
     pool_pre_ping=True,
+    **_pool_kwargs,
 )
 if DB_URL.startswith("sqlite"):
     @event.listens_for(_engine, "connect")
@@ -833,6 +848,83 @@ class CatalogoRepository(BaseRepository[CatalogoConfig]):
             )
 
             conn.execute(stmt)
+
+
+def _usuario_a_dict(u: Usuario) -> dict:
+    return {
+        "user_id":        u.google_sub,
+        "username":       u.username,
+        "nombre":         u.nombre,
+        "foto_url":       u.foto_url,
+        "email":          u.email,
+        "email_verified": u.email_verified,
+        "needs_username": u.username is None,
+    }
+
+
+class UsuarioRepository(BaseRepository[Usuario]):
+    model = Usuario
+
+    def upsert_login(
+        self,
+        google_sub: str,
+        email: str | None,
+        email_verified: bool,
+        nombre: str | None,
+        foto_url: str | None,
+    ) -> dict:
+        """
+        Get-or-create al iniciar sesión. Portable (no usa ON CONFLICT de un
+        dialecto concreto): si el usuario existe, refresca atributos mutables
+        y `ultimo_login`; si no, lo crea. La PK es `google_sub` (claim `sub`).
+        Nunca se guardan tokens ni contraseñas.
+        """
+        with self.Session() as session:
+            u = session.get(Usuario, google_sub)
+            if u is None:
+                u = Usuario(google_sub=google_sub)
+                session.add(u)
+            u.email          = email
+            u.email_verified = email_verified
+            u.nombre         = nombre
+            u.foto_url       = foto_url
+            u.ultimo_login   = get_mexico_now()
+            session.commit()
+            session.refresh(u)
+            return _usuario_a_dict(u)
+
+    def obtener_por_sub(self, google_sub: str) -> dict | None:
+        with self.Session() as session:
+            u = session.get(Usuario, google_sub)
+            return _usuario_a_dict(u) if u else None
+
+    def username_en_uso(self, username: str, excepto_sub: str) -> bool:
+        """Unicidad case-insensitive; ignora al propio usuario."""
+        with self.Session() as session:
+            existe = (
+                session.query(Usuario)
+                .filter(
+                    Usuario.username == username,
+                    Usuario.google_sub != excepto_sub,
+                )
+                .first()
+            )
+            return existe is not None
+
+    def fijar_username(self, google_sub: str, username: str) -> dict | None:
+        with self.Session() as session:
+            u = session.get(Usuario, google_sub)
+            if u is None:
+                return None
+            u.username = username
+            session.commit()
+            session.refresh(u)
+            return _usuario_a_dict(u)
+
+
+class ChatHistorialRepository(BaseRepository[ChatHistorial]):
+    model = ChatHistorial
+
 
 # ── Helper para obtener session (mantén compatibilidad) ────────
 @contextmanager
