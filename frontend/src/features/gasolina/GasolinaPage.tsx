@@ -182,6 +182,7 @@ export default function GasolinaPage() {
   }, [marcadores, st.punto]);
 
   const cercanasDentro = cercanas.filter((c) => c.dist <= 2).length;
+  const hayCercanas = !!st.punto && cercanas.length > 0;
   const distanciaSeleccion =
     st.punto && seleccionada?.latitud != null && seleccionada?.longitud != null
       ? distKm(st.punto.lat, st.punto.lng, seleccionada.latitud, seleccionada.longitud)
@@ -289,17 +290,24 @@ export default function GasolinaPage() {
               <div className="grid gap-5 lg:grid-cols-12">
                 {/* Ranking (+ cercanas al fijar punto) — izquierda en desktop,
                     debajo del mapa en móvil. Al fijar punto, el Top 10 se compacta
-                    (menos filas, scroll interno) para dejar sitio a las cercanas. */}
-                <div className="order-2 flex flex-col gap-5 lg:order-1 lg:col-span-5 xl:col-span-3">
+                    (menos filas, scroll interno) para dejar sitio a las cercanas.
+                    content-start evita que las cards se estiren cuando la columna
+                    crece; en pantalla partida (md) se ponen lado a lado. */}
+                <div
+                  className={[
+                    "order-2 grid content-start gap-5 lg:order-1 lg:col-span-5 lg:grid-cols-1 xl:col-span-3",
+                    hayCercanas ? "md:grid-cols-2" : "",
+                  ].join(" ")}
+                >
                   <RankingTable
                     titulo={`Top 10 más baratas · ${capitalizar(st.fuel)}`}
                     filas={ranking}
                     seleccionadoId={st.seleccionadoNumero}
                     onSelect={(id) => dispatch({ type: "SELECT", numero: id })}
                     mostrarCategoria={false}
-                    compacto={!!st.punto && cercanas.length > 0}
+                    compacto={hayCercanas}
                   />
-                  {st.punto && cercanas.length > 0 && (
+                  {hayCercanas && (
                     <NearbyList
                       titulo={
                         cercanasDentro >= 2
@@ -349,7 +357,7 @@ export default function GasolinaPage() {
 
                 {/* Rail derecho — calculadora + detalle.
                     En tablet ocupa el ancho completo con 2 columnas internas. */}
-                <div className="order-3 grid gap-5 sm:grid-cols-2 lg:col-span-12 xl:col-span-3 xl:grid-cols-1">
+                <div className="order-3 grid content-start gap-5 sm:grid-cols-2 lg:col-span-12 xl:col-span-3 xl:grid-cols-1">
                   {calc && (
                     <FuelCalculator
                       tipo={st.calc.tipo}
