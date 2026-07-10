@@ -294,6 +294,7 @@ export default function GasolinaPage() {
                     filas={ranking}
                     seleccionadoId={st.seleccionadoNumero}
                     onSelect={(id) => dispatch({ type: "SELECT", numero: id })}
+                    mostrarCategoria={false}
                   />
                 </div>
 

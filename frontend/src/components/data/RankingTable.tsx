@@ -16,6 +16,8 @@ interface Props {
   seleccionadoId: string | null;
   onSelect: (id: string) => void;
   vacioTexto?: string;
+  /** El color del precio ya comunica la categoría; ocultar la columna evita redundancia. */
+  mostrarCategoria?: boolean;
 }
 
 export function RankingTable({
@@ -24,6 +26,7 @@ export function RankingTable({
   seleccionadoId,
   onSelect,
   vacioTexto = "Sin datos",
+  mostrarCategoria = true,
 }: Props) {
   return (
     <div className="rounded-[var(--radius-card)] border border-sand-200 bg-surface p-4 shadow-[var(--shadow-card)]">
@@ -38,7 +41,9 @@ export function RankingTable({
                 <th className="w-8 pb-2 font-semibold">#</th>
                 <th className="pb-2 font-semibold">Nombre</th>
                 <th className="pb-2 text-right font-semibold">Precio</th>
-                <th className="pb-2 pl-3 font-semibold">Categoría</th>
+                {mostrarCategoria && (
+                  <th className="pb-2 pl-3 font-semibold">Categoría</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -67,9 +72,11 @@ export function RankingTable({
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 pl-3">
-                      <CategoryBadge categoria={f.categoria} />
-                    </td>
+                    {mostrarCategoria && (
+                      <td className="py-2.5 pl-3">
+                        <CategoryBadge categoria={f.categoria} />
+                      </td>
+                    )}
                   </tr>
                 );
               })}

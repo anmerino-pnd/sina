@@ -1,5 +1,21 @@
 import { formatearPesos } from "@/lib/format";
 
+/** Flecha de sentido: hacia abajo = gastas menos (favorable); hacia arriba = gastas más. */
+function FlechaSentido({ favorable }: { favorable: boolean }) {
+  return (
+    <svg viewBox="0 0 16 16" className="size-4 shrink-0" aria-hidden="true">
+      <path
+        d={favorable ? "M8 3v8m0 0l-3.5-3.5M8 11l3.5-3.5" : "M8 13V5m0 0L4.5 8.5M8 5l3.5 3.5"}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 interface Props {
   tipo: "litros" | "pesos";
   monto: number;
@@ -35,23 +51,27 @@ export function FuelCalculator({
   const costoBase = tipo === "litros" ? m * basePrecio : m;
 
   // Comparación contra la referencia (más cara o seleccionada).
-  let comp: { costo: string; ahorro: string; pct: string } | null = null;
+  // `favorable` = tu base sale mejor que la referencia. Nunca mostramos números
+  // negativos: cambian el verbo (Ahorras ↔ Pagas más) y el color según el sentido.
+  let comp: { costo: string; delta: string; pct: string; favorable: boolean } | null = null;
   if (refPrecio != null && refNombre != null && refPrecio !== basePrecio) {
     if (tipo === "litros") {
       const costoRef = m * refPrecio;
-      const ahorro = costoRef - costoBase;
+      const ahorro = costoRef - costoBase; // > 0 → tu base es más barata
       comp = {
         costo: formatearPesos(costoRef),
-        ahorro: formatearPesos(ahorro),
-        pct: `${((ahorro / costoBase) * 100).toFixed(1)}%`,
+        delta: formatearPesos(Math.abs(ahorro)),
+        pct: `${Math.abs((ahorro / costoBase) * 100).toFixed(1)}%`,
+        favorable: ahorro >= 0,
       };
     } else {
       const litrosRef = m / refPrecio;
-      const extra = litrosBase - litrosRef;
+      const extra = litrosBase - litrosRef; // > 0 → tu base rinde más
       comp = {
         costo: `${litrosRef.toFixed(2)} L`,
-        ahorro: `${extra.toFixed(2)} L`,
-        pct: `${((extra / litrosRef) * 100).toFixed(1)}%`,
+        delta: `${Math.abs(extra).toFixed(2)} L`,
+        pct: `${Math.abs((extra / litrosRef) * 100).toFixed(1)}%`,
+        favorable: extra >= 0,
       };
     }
   }
@@ -122,10 +142,20 @@ export function FuelCalculator({
             <span className="tabular text-sm font-medium text-ink-700">{comp.costo}</span>
           </div>
           <p className="truncate text-sm text-ink-500">{refNombre}</p>
-          <p className="tabular mt-2 text-sm font-semibold text-price-high">
+          <p
+            className={[
+              "tabular mt-2 flex items-center gap-1.5 text-sm font-semibold",
+              comp.favorable ? "text-price-low" : "text-price-high",
+            ].join(" ")}
+          >
+            <FlechaSentido favorable={comp.favorable} />
             {tipo === "litros"
-              ? `Ahorras ${comp.ahorro} (${comp.pct})`
-              : `Rinde ${comp.ahorro} más (${comp.pct})`}
+              ? comp.favorable
+                ? `Ahorras ${comp.delta} (${comp.pct})`
+                : `Pagas ${comp.delta} más (${comp.pct})`
+              : comp.favorable
+                ? `Rinde ${comp.delta} más (${comp.pct})`
+                : `Rinde ${comp.delta} menos (${comp.pct})`}
           </p>
         </div>
       ) : (
