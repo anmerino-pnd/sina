@@ -2,6 +2,7 @@ import asyncio
 from typing import List, Dict, Any
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 from playwright_stealth import stealth_async
+from sina.config.credentials import delsol_base_url
 from sina.db.repository import CatalogoRepository, SupermercadoRepository
 from sina.scraping.supermercados.delsol_helper import scrape_delsol_page
 from sina.scraping.supermercados.interfaces import BrowserConfig
@@ -33,7 +34,7 @@ async def scrape_delsol(config: BrowserConfig = BrowserConfig()) -> List[Dict[st
             for route in rutas_activas:
                 print(f"\n[*] Procesando: {route['departamento']} > {route['categoria']}")
                 
-                url = f"https://www.delsol.com.mx{route['url_path']}"
+                url = f"{delsol_base_url}{route['url_path']}"
                 
                 productos = await scrape_delsol_page(
                     page=page,

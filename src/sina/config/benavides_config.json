@@ -1,0 +1,223 @@
+{
+    "medicamentos": {
+        "dolor": {
+            "url_path": "/medicamentos-dolor",
+            "nombre_visible": "Dolor",
+            "prioridad": 1
+        },
+        "otico": {
+            "url_path": "/medicamentos-otico",
+            "nombre_visible": "Ótico",
+            "prioridad": 2
+        },
+        "estomacales": {
+            "url_path": "/medicamentos-estomacales",
+            "nombre_visible": "Estomacales",
+            "prioridad": 3
+        },
+        "insomnio": {
+            "url_path": "/medicamentos-insomnio",
+            "nombre_visible": "Insomnio",
+            "prioridad": 4
+        },
+        "respiratorios": {
+            "url_path": "/medicamentos-respiratorios",
+            "nombre_visible": "Respiratorios",
+            "prioridad": 5
+        },
+        "hemorroides": {
+            "url_path": "/medicamentos-hemorroides",
+            "nombre_visible": "Hemorroides",
+            "prioridad": 6
+        },
+        "pediatrico": {
+            "url_path": "/medicamentos-pediatrico",
+            "nombre_visible": "Pediátrico",
+            "prioridad": 7
+        },
+        "infecciones": {
+            "url_path": "/medicamentos-infecciones",
+            "nombre_visible": "Infecciones",
+            "prioridad": 8
+        },
+        "antibioticos": {
+            "url_path": "/medicamentos-antibioticos",
+            "nombre_visible": "Antibióticos",
+            "prioridad": 9
+        },
+        "especialidades": {
+            "url_path": "/medicamentos-especialidades",
+            "nombre_visible": "Especialidades",
+            "prioridad": 10
+        }
+    },
+    "bienestar-sexual": {
+        "general": {
+            "url_path": "/bienestar-sexual",
+            "nombre_visible": "Bienestar Sexual",
+            "prioridad": 11
+        }
+    },
+    "cuidado-y-prevencion": {
+        "vitaminas-y-suplementos": {
+            "url_path": "/cuidado-y-prevencion-vitaminas-y-suplementos",
+            "nombre_visible": "Vitaminas y suplementos",
+            "prioridad": 12
+        },
+        "pruebas": {
+            "url_path": "/cuidado-y-prevencion-pruebas",
+            "nombre_visible": "Pruebas",
+            "prioridad": 13
+        },
+        "electrolitos": {
+            "url_path": "/cuidado-y-prevencion-electrolitos",
+            "nombre_visible": "Electrolitos",
+            "prioridad": 14
+        },
+        "ortopedicos": {
+            "url_path": "/cuidado-y-prevencion-ortopedicos",
+            "nombre_visible": "Ortopédicos",
+            "prioridad": 15
+        },
+        "botiquin": {
+            "url_path": "/cuidado-y-prevencion-botiquin",
+            "nombre_visible": "Botiquín",
+            "prioridad": 16
+        },
+        "aparatos-de-medicion": {
+            "url_path": "/cuidado-y-prevencion-aparatos-de-medicion",
+            "nombre_visible": "Aparatos de medición",
+            "prioridad": 17
+        }
+    },
+    "bebes": {
+        "alimentos": {
+            "url_path": "/bebes-alimentos",
+            "nombre_visible": "Alimentos",
+            "prioridad": 18
+        },
+        "cuidado-del-bebe": {
+            "url_path": "/bebes-cuidado-del-bebe",
+            "nombre_visible": "Cuidado del bebé",
+            "prioridad": 19
+        },
+        "leches-en-polvo-infantiles": {
+            "url_path": "/bebes-leches-en-polvo-infantiles",
+            "nombre_visible": "Leches en polvo infantiles",
+            "prioridad": 20
+        },
+        "accesorios-del-bebe": {
+            "url_path": "/bebes-accesorios-del-bebe",
+            "nombre_visible": "Accesorios del bebé",
+            "prioridad": 21
+        },
+        "formulas-infantiles": {
+            "url_path": "/bebes-formulas-infantiles",
+            "nombre_visible": "Fórmulas infantiles",
+            "prioridad": 22
+        },
+        "panales": {
+            "url_path": "/bebes-panales",
+            "nombre_visible": "Pañales",
+            "prioridad": 23
+        }
+    },
+    "dermocosmeticos": {
+        "proteccion-solar": {
+            "url_path": "/dermocosmeticos-proteccion-solar",
+            "nombre_visible": "Protección solar",
+            "prioridad": 24
+        },
+        "cuidado-de-la-piel": {
+            "url_path": "/dermocosmeticos-cuidado-de-la-piel",
+            "nombre_visible": "Cuidado de la piel",
+            "prioridad": 25
+        },
+        "cuidado-del-rostro": {
+            "url_path": "/dermocosmeticos-cuidado-del-rostro",
+            "nombre_visible": "Cuidado del rostro",
+            "prioridad": 26
+        },
+        "cuidado-del-cabello": {
+            "url_path": "/dermocosmeticos-cuidado-del-cabello",
+            "nombre_visible": "Cuidado del cabello",
+            "prioridad": 27
+        }
+    },
+    "cuidado-personal": {
+        "proteccion-solar": {
+            "url_path": "/cuidado-personal-proteccion-solar",
+            "nombre_visible": "Protección solar",
+            "prioridad": 28
+        },
+        "depilacion-y-afeitado": {
+            "url_path": "/cuidado-personal-depilacion-y-afeitado",
+            "nombre_visible": "Depilación y Afeitado",
+            "prioridad": 29
+        },
+        "higiene-bucal": {
+            "url_path": "/cuidado-personal-higiene-bucal",
+            "nombre_visible": "Higiene bucal",
+            "prioridad": 30
+        },
+        "incontinencia": {
+            "url_path": "/cuidado-personal-incontinencia",
+            "nombre_visible": "Incontinencia",
+            "prioridad": 31
+        },
+        "cuidado-del-rostro": {
+            "url_path": "/cuidado-personal-cuidado-del-rostro",
+            "nombre_visible": "Cuidado del rostro",
+            "prioridad": 32
+        },
+        "proteccion-femenina": {
+            "url_path": "/cuidado-personal-proteccion-femenina",
+            "nombre_visible": "Protección femenina",
+            "prioridad": 33
+        },
+        "cuidado-de-la-piel": {
+            "url_path": "/cuidado-personal-cuidado-de-la-piel",
+            "nombre_visible": "Cuidado de la piel",
+            "prioridad": 34
+        },
+        "accesorios": {
+            "url_path": "/cuidado-personal-accesorios",
+            "nombre_visible": "Accesorios",
+            "prioridad": 35
+        },
+        "cuidado-del-cabello": {
+            "url_path": "/cuidado-personal-cuidado-del-cabello",
+            "nombre_visible": "Cuidado del cabello",
+            "prioridad": 36
+        },
+        "fragancias": {
+            "url_path": "/cuidado-personal-fragancias",
+            "nombre_visible": "Fragancias",
+            "prioridad": 37
+        },
+        "cuidado-de-los-pies": {
+            "url_path": "/cuidado-personal-cuidado-de-los-pies",
+            "nombre_visible": "Cuidado de los pies",
+            "prioridad": 38
+        },
+        "desodorantes": {
+            "url_path": "/cuidado-personal-desodorantes",
+            "nombre_visible": "Desodorantes",
+            "prioridad": 39
+        }
+    },
+    "alimentos-y-hogar": {
+        "general": {
+            "url_path": "/alimentos-y-hogar",
+            "nombre_visible": "Alimentos y Hogar",
+            "prioridad": 40
+        }
+    },
+    "promociones": {
+        "general": {
+            "url_path": "/promociones",
+            "nombre_visible": "Promociones",
+            "prioridad": 41
+        }
+    }
+}

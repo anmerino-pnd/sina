@@ -19,6 +19,13 @@ cne_refer : str = os.getenv('CNE_REFER', "")
 cne_localidades_url: str = os.getenv('CNE_LOCALIDADES_URL', "")
 cne_precios_gas_lp_url: str = os.getenv('CNE_PRECIOS_GAS_LP_URL', "")
 
+# ── URLs base de supermercados (dominio; el url_path vive en los *_config.json) ──
+# Con default para que el scraping funcione aunque el .env no las declare.
+soriana_base_url: str = os.getenv('SORIANA_BASE_URL', "https://www.soriana.com").rstrip("/")
+delsol_base_url: str = os.getenv('DELSOL_BASE_URL', "https://www.delsol.com.mx").rstrip("/")
+benavides_base_url: str = os.getenv('BENAVIDES_BASE_URL', "https://www.benavides.com.mx").rstrip("/")
+guadalajara_base_url: str = os.getenv('GUADALAJARA_BASE_URL', "https://www.farmaciasguadalajara.com").rstrip("/")
+
 def get_db_url() -> str:
     """
     Si existen las variables de entorno de DB remota, construye la URL de PostgreSQL.

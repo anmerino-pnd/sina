@@ -1,0 +1,694 @@
+{
+    "dermo/cuidado-corporal": {
+        "cicatrizantes": {
+            "url_path": "/dermo/cuidado-corporal/cicatrizantes",
+            "nombre_visible": "Cicatrizantes",
+            "prioridad": 1
+        },
+        "desodorantes": {
+            "url_path": "/dermo/cuidado-corporal/desodorantes",
+            "nombre_visible": "Desodorantes",
+            "prioridad": 2
+        },
+        "hidratacion": {
+            "url_path": "/dermo/cuidado-corporal/hidratacion",
+            "nombre_visible": "Hidratación",
+            "prioridad": 3
+        },
+        "higiene-intima": {
+            "url_path": "/dermo/cuidado-corporal/higiene-intima",
+            "nombre_visible": "Higiene íntima",
+            "prioridad": 4
+        }
+    },
+    "dermo/cuidado-del-cabello": {
+        "anti-caida": {
+            "url_path": "/dermo/cuidado-del-cabello/anti-caida",
+            "nombre_visible": "Anti-caída",
+            "prioridad": 5
+        },
+        "anti-caspa": {
+            "url_path": "/dermo/cuidado-del-cabello/anti-caspa",
+            "nombre_visible": "Anti-caspa",
+            "prioridad": 6
+        }
+    },
+    "dermo/cuidado-especializado": {
+        "bebes": {
+            "url_path": "/dermo/cuidado-especializado/bebes",
+            "nombre_visible": "Bebés",
+            "prioridad": 7
+        }
+    },
+    "dermo/cuidado-facial": {
+        "acne": {
+            "url_path": "/dermo/cuidado-facial/acne",
+            "nombre_visible": "Acné",
+            "prioridad": 8
+        },
+        "anti-edad": {
+            "url_path": "/dermo/cuidado-facial/anti-edad",
+            "nombre_visible": "Anti-edad",
+            "prioridad": 9
+        },
+        "anti-manchas": {
+            "url_path": "/dermo/cuidado-facial/anti-manchas",
+            "nombre_visible": "Anti-manchas",
+            "prioridad": 10
+        },
+        "desmaquillantes": {
+            "url_path": "/dermo/cuidado-facial/desmaquillantes",
+            "nombre_visible": "Desmaquillantes",
+            "prioridad": 11
+        },
+        "hidratacion": {
+            "url_path": "/dermo/cuidado-facial/hidratacion",
+            "nombre_visible": "Hidratación",
+            "prioridad": 12
+        },
+        "limpieza": {
+            "url_path": "/dermo/cuidado-facial/limpieza",
+            "nombre_visible": "Limpieza",
+            "prioridad": 13
+        },
+        "maquillaje": {
+            "url_path": "/dermo/cuidado-facial/maquillaje",
+            "nombre_visible": "Maquillaje",
+            "prioridad": 14
+        }
+    },
+    "dermo/proteccion-solar": {
+        "fotoproteccion": {
+            "url_path": "/dermo/proteccion-solar/fotoproteccion",
+            "nombre_visible": "Fotoprotección",
+            "prioridad": 15
+        }
+    },
+    "farmacia/accesorios-medicos": {
+        "baumanometros": {
+            "url_path": "/farmacia/accesorios-medicos/baumanometros",
+            "nombre_visible": "Baumanómetros",
+            "prioridad": 16
+        },
+        "nebulizadores": {
+            "url_path": "/farmacia/accesorios-medicos/nebulizadores",
+            "nombre_visible": "Nebulizadores",
+            "prioridad": 17
+        },
+        "ortopedicos": {
+            "url_path": "/farmacia/accesorios-medicos/ortopedicos",
+            "nombre_visible": "Ortopédicos",
+            "prioridad": 18
+        },
+        "termometros": {
+            "url_path": "/farmacia/accesorios-medicos/termometros",
+            "nombre_visible": "Termómetros",
+            "prioridad": 19
+        }
+    },
+    "farmacia/circulatorio": {
+        "antianemico": {
+            "url_path": "/farmacia/circulatorio/antianemico",
+            "nombre_visible": "Antianémico",
+            "prioridad": 20
+        },
+        "anticoagulantes": {
+            "url_path": "/farmacia/circulatorio/anticoagulantes",
+            "nombre_visible": "Anticoagulantes",
+            "prioridad": 21
+        },
+        "anticolesterol": {
+            "url_path": "/farmacia/circulatorio/anticolesterol",
+            "nombre_visible": "Anticolesterol",
+            "prioridad": 22
+        },
+        "cardiovasculares": {
+            "url_path": "/farmacia/circulatorio/cardiovasculares",
+            "nombre_visible": "Cardiovasculares",
+            "prioridad": 23
+        },
+        "hemostaticos": {
+            "url_path": "/farmacia/circulatorio/hemostaticos",
+            "nombre_visible": "Hemostáticos",
+            "prioridad": 24
+        },
+        "lipotropicos-e-hipocolesterol": {
+            "url_path": "/farmacia/circulatorio/lipotropicos-e-hipocolesterol",
+            "nombre_visible": "Lipotrópicos e Hipocolesterol",
+            "prioridad": 25
+        },
+        "tonicos-reconstituyentes": {
+            "url_path": "/farmacia/circulatorio/tonicos-reconstituyentes",
+            "nombre_visible": "Tónicos Reconstituyentes",
+            "prioridad": 26
+        },
+        "vasoconstrictores": {
+            "url_path": "/farmacia/circulatorio/vasoconstrictores",
+            "nombre_visible": "Vasoconstrictores",
+            "prioridad": 27
+        }
+    },
+    "farmacia/curaciones": {
+        "accesorios-para-curacion": {
+            "url_path": "/farmacia/curaciones/accesorios-para-curacion",
+            "nombre_visible": "Accesorios para Curación",
+            "prioridad": 28
+        },
+        "alcohol": {
+            "url_path": "/farmacia/curaciones/alcohol",
+            "nombre_visible": "Alcohol",
+            "prioridad": 29
+        },
+        "algodon-y-gasas": {
+            "url_path": "/farmacia/curaciones/algodon-y-gasas",
+            "nombre_visible": "Algodón y Gasas",
+            "prioridad": 30
+        },
+        "antisepticos-y-antibacterianos": {
+            "url_path": "/farmacia/curaciones/antisepticos-y-antibacterianos",
+            "nombre_visible": "Antisépticos y Antibacterianos",
+            "prioridad": 31
+        },
+        "botiquin": {
+            "url_path": "/farmacia/curaciones/botiquin",
+            "nombre_visible": "Botiquín",
+            "prioridad": 32
+        },
+        "cintas-y-parches-adhesivos": {
+            "url_path": "/farmacia/curaciones/cintas-y-parches-adhesivos",
+            "nombre_visible": "Cintas y Parches Adhesivos",
+            "prioridad": 33
+        },
+        "jeringas-y-agujas": {
+            "url_path": "/farmacia/curaciones/jeringas-y-agujas",
+            "nombre_visible": "Jeringas y Agujas",
+            "prioridad": 34
+        },
+        "vendas-elasticas-y-adheribles": {
+            "url_path": "/farmacia/curaciones/vendas-elasticas-y-adheribles",
+            "nombre_visible": "Vendas Elásticas y Adheribles",
+            "prioridad": 35
+        },
+        "venditas": {
+            "url_path": "/farmacia/curaciones/venditas",
+            "nombre_visible": "Venditas",
+            "prioridad": 36
+        }
+    },
+    "farmacia/dermatologia": {
+        "anti-vph": {
+            "url_path": "/farmacia/dermatologia/anti-vph",
+            "nombre_visible": "Anti VPH",
+            "prioridad": 37
+        },
+        "antiherpetico": {
+            "url_path": "/farmacia/dermatologia/antiherpetico",
+            "nombre_visible": "Antiherpético",
+            "prioridad": 38
+        },
+        "antimicoticos": {
+            "url_path": "/farmacia/dermatologia/antimicoticos",
+            "nombre_visible": "Antimicóticos",
+            "prioridad": 39
+        },
+        "dermatologia-especializada": {
+            "url_path": "/farmacia/dermatologia/dermatologia-especializada",
+            "nombre_visible": "Dermatología Especializada",
+            "prioridad": 40
+        },
+        "escabicidas": {
+            "url_path": "/farmacia/dermatologia/escabicidas",
+            "nombre_visible": "Escabicidas",
+            "prioridad": 41
+        }
+    },
+    "farmacia/diabetes-y-endocrinas": {
+        "antidiabeticos": {
+            "url_path": "/farmacia/diabetes-y-endocrinas/antidiabeticos",
+            "nombre_visible": "Antidiabéticos",
+            "prioridad": 42
+        },
+        "diureticos": {
+            "url_path": "/farmacia/diabetes-y-endocrinas/diureticos",
+            "nombre_visible": "Diuréticos",
+            "prioridad": 43
+        },
+        "tiroides": {
+            "url_path": "/farmacia/diabetes-y-endocrinas/tiroides",
+            "nombre_visible": "Tiroides",
+            "prioridad": 44
+        }
+    },
+    "farmacia/incontinencia": {
+        "pañales": {
+            "url_path": "/farmacia/incontinencia/pañales",
+            "nombre_visible": "Pañales",
+            "prioridad": 45
+        },
+        "predoblados": {
+            "url_path": "/farmacia/incontinencia/predoblados",
+            "nombre_visible": "Predoblados",
+            "prioridad": 46
+        },
+        "protectores": {
+            "url_path": "/farmacia/incontinencia/protectores",
+            "nombre_visible": "Protectores",
+            "prioridad": 47
+        },
+        "ropa-interior": {
+            "url_path": "/farmacia/incontinencia/ropa-interior",
+            "nombre_visible": "Ropa Interior",
+            "prioridad": 48
+        },
+        "toallas-humedas": {
+            "url_path": "/farmacia/incontinencia/toallas-humedas",
+            "nombre_visible": "Toallas Húmedas",
+            "prioridad": 49
+        },
+        "toallas-protectoras": {
+            "url_path": "/farmacia/incontinencia/toallas-protectoras",
+            "nombre_visible": "Toallas Protectoras",
+            "prioridad": 50
+        }
+    },
+    "farmacia/medicina": {
+        "antibioticos": {
+            "url_path": "/farmacia/medicina/antibioticos",
+            "nombre_visible": "Antibióticos",
+            "prioridad": 51
+        },
+        "digestivo": {
+            "url_path": "/farmacia/medicina/digestivo",
+            "nombre_visible": "Digestivo",
+            "prioridad": 52
+        },
+        "dolor": {
+            "url_path": "/farmacia/medicina/dolor",
+            "nombre_visible": "Dolor",
+            "prioridad": 53
+        },
+        "hemorroides": {
+            "url_path": "/farmacia/medicina/hemorroides",
+            "nombre_visible": "Hemorroides",
+            "prioridad": 54
+        },
+        "homeopatia": {
+            "url_path": "/farmacia/medicina/homeopatia",
+            "nombre_visible": "Homeopatía",
+            "prioridad": 55
+        },
+        "hormonal": {
+            "url_path": "/farmacia/medicina/hormonal",
+            "nombre_visible": "Hormonal",
+            "prioridad": 56
+        },
+        "inmunologico": {
+            "url_path": "/farmacia/medicina/inmunologico",
+            "nombre_visible": "Inmunológico",
+            "prioridad": 57
+        },
+        "oseo": {
+            "url_path": "/farmacia/medicina/oseo",
+            "nombre_visible": "Óseo",
+            "prioridad": 58
+        },
+        "respiratorio": {
+            "url_path": "/farmacia/medicina/respiratorio",
+            "nombre_visible": "Respiratorio",
+            "prioridad": 59
+        },
+        "sistema-nervioso": {
+            "url_path": "/farmacia/medicina/sistema-nervioso",
+            "nombre_visible": "Sistema Nervioso",
+            "prioridad": 60
+        },
+        "urinario": {
+            "url_path": "/farmacia/medicina/urinario",
+            "nombre_visible": "Urinario",
+            "prioridad": 61
+        }
+    },
+    "farmacia/obesidad": {
+        "antiobesidad": {
+            "url_path": "/farmacia/obesidad/antiobesidad",
+            "nombre_visible": "Antiobesidad",
+            "prioridad": 62
+        }
+    },
+    "farmacia/salud-sexual": {
+        "anticonceptivos": {
+            "url_path": "/farmacia/salud-sexual/anticonceptivos",
+            "nombre_visible": "Anticonceptivos",
+            "prioridad": 63
+        },
+        "cuidado-femenino": {
+            "url_path": "/farmacia/salud-sexual/cuidado-femenino",
+            "nombre_visible": "Cuidado Femenino",
+            "prioridad": 64
+        },
+        "lubricantes": {
+            "url_path": "/farmacia/salud-sexual/lubricantes",
+            "nombre_visible": "Lubricantes",
+            "prioridad": 65
+        },
+        "preservativos": {
+            "url_path": "/farmacia/salud-sexual/preservativos",
+            "nombre_visible": "Preservativos",
+            "prioridad": 66
+        },
+        "pruebas-de-embarazo": {
+            "url_path": "/farmacia/salud-sexual/pruebas-de-embarazo",
+            "nombre_visible": "Pruebas de Embarazo",
+            "prioridad": 67
+        }
+    },
+    "farmacia/sueros": {
+        "hidratacion-oral": {
+            "url_path": "/farmacia/sueros/hidratacion-oral",
+            "nombre_visible": "Hidratación Oral",
+            "prioridad": 68
+        },
+        "soluciones-intravenosas": {
+            "url_path": "/farmacia/sueros/soluciones-intravenosas",
+            "nombre_visible": "Soluciones Intravenosas",
+            "prioridad": 69
+        }
+    },
+    "farmacia/visual": {
+        "oftalmologia": {
+            "url_path": "/farmacia/visual/oftalmologia",
+            "nombre_visible": "Oftalmología",
+            "prioridad": 70
+        },
+        "optica": {
+            "url_path": "/farmacia/visual/optica",
+            "nombre_visible": "Óptica",
+            "prioridad": 71
+        }
+    },
+    "farmacia/vitaminas-y-suplementos-": {
+        "complementos-alimenticios": {
+            "url_path": "/farmacia/vitaminas-y-suplementos-/complementos-alimenticios",
+            "nombre_visible": "Complementos Alimenticios",
+            "prioridad": 72
+        },
+        "multivitaminas": {
+            "url_path": "/farmacia/vitaminas-y-suplementos-/multivitaminas",
+            "nombre_visible": "Multivitaminas",
+            "prioridad": 73
+        },
+        "suplementos-alimenticios": {
+            "url_path": "/farmacia/vitaminas-y-suplementos-/suplementos-alimenticios",
+            "nombre_visible": "Suplementos Alimenticios",
+            "prioridad": 74
+        }
+    },
+    "super/alimentos": {
+        "botanas": {
+            "url_path": "/super/alimentos/botanas",
+            "nombre_visible": "Botanas",
+            "prioridad": 75
+        },
+        "cafe--te-y-cremas": {
+            "url_path": "/super/alimentos/cafe--te-y-cremas",
+            "nombre_visible": "Café, Té y Cremas",
+            "prioridad": 76
+        },
+        "carnes-frias": {
+            "url_path": "/super/alimentos/carnes-frias",
+            "nombre_visible": "Carnes Frías",
+            "prioridad": 77
+        },
+        "cereales-y-barras": {
+            "url_path": "/super/alimentos/cereales-y-barras",
+            "nombre_visible": "Cereales y Barras",
+            "prioridad": 78
+        },
+        "congelados": {
+            "url_path": "/super/alimentos/congelados",
+            "nombre_visible": "Congelados",
+            "prioridad": 79
+        },
+        "despensa": {
+            "url_path": "/super/alimentos/despensa",
+            "nombre_visible": "Despensa",
+            "prioridad": 80
+        },
+        "dulceria": {
+            "url_path": "/super/alimentos/dulceria",
+            "nombre_visible": "Dulcería",
+            "prioridad": 81
+        },
+        "enlatados-y-conservas": {
+            "url_path": "/super/alimentos/enlatados-y-conservas",
+            "nombre_visible": "Enlatados y Conservas",
+            "prioridad": 82
+        },
+        "lacteos": {
+            "url_path": "/super/alimentos/lacteos",
+            "nombre_visible": "Lácteos",
+            "prioridad": 83
+        },
+        "panaderia": {
+            "url_path": "/super/alimentos/panaderia",
+            "nombre_visible": "Panadería",
+            "prioridad": 84
+        }
+    },
+    "super/bebes": {
+        "alimentos-para-bebe": {
+            "url_path": "/super/bebes/alimentos-para-bebe",
+            "nombre_visible": "Alimentos para Bebé",
+            "prioridad": 85
+        },
+        "formulas-infantiles": {
+            "url_path": "/super/bebes/formulas-infantiles",
+            "nombre_visible": "Fórmulas Infantiles",
+            "prioridad": 86
+        },
+        "higiene-y-cuidado-del-bebe": {
+            "url_path": "/super/bebes/higiene-y-cuidado-del-bebe",
+            "nombre_visible": "Higiene y cuidado del bebé",
+            "prioridad": 87
+        },
+        "pañales": {
+            "url_path": "/super/bebes/pañales",
+            "nombre_visible": "Pañales",
+            "prioridad": 88
+        }
+    },
+    "super/bebidas": {
+        "agua-pura-y-saborizada": {
+            "url_path": "/super/bebidas/agua-pura-y-saborizada",
+            "nombre_visible": "Agua Pura y Saborizada",
+            "prioridad": 89
+        },
+        "cerveza--vinos-y-licores": {
+            "url_path": "/super/bebidas/cerveza--vinos-y-licores",
+            "nombre_visible": "Cerveza, Vinos y Licores",
+            "prioridad": 90
+        },
+        "energeticas-e-hidratantes": {
+            "url_path": "/super/bebidas/energeticas-e-hidratantes",
+            "nombre_visible": "Energéticas e Hidratantes",
+            "prioridad": 91
+        },
+        "jugos-y-nectares": {
+            "url_path": "/super/bebidas/jugos-y-nectares",
+            "nombre_visible": "Jugos y Néctares",
+            "prioridad": 92
+        },
+        "preparadas-y-refrescantes": {
+            "url_path": "/super/bebidas/preparadas-y-refrescantes",
+            "nombre_visible": "Preparadas y Refrescantes",
+            "prioridad": 93
+        },
+        "refrescos": {
+            "url_path": "/super/bebidas/refrescos",
+            "nombre_visible": "Refrescos",
+            "prioridad": 94
+        }
+    },
+    "super/electronicos": {
+        "audifonos-y-bocinas-": {
+            "url_path": "/super/electronicos/audifonos-y-bocinas-",
+            "nombre_visible": "Audífonos y Bocinas",
+            "prioridad": 95
+        },
+        "computo": {
+            "url_path": "/super/electronicos/computo",
+            "nombre_visible": "Cómputo",
+            "prioridad": 96
+        },
+        "telefonia": {
+            "url_path": "/super/electronicos/telefonia",
+            "nombre_visible": "Telefonía",
+            "prioridad": 97
+        }
+    },
+    "super/higiene-y-belleza": {
+        "afeitado": {
+            "url_path": "/super/higiene-y-belleza/afeitado",
+            "nombre_visible": "Afeitado",
+            "prioridad": 98
+        },
+        "cosmeticos": {
+            "url_path": "/super/higiene-y-belleza/cosmeticos",
+            "nombre_visible": "Cosméticos",
+            "prioridad": 99
+        },
+        "cuidado-bucal": {
+            "url_path": "/super/higiene-y-belleza/cuidado-bucal",
+            "nombre_visible": "Cuidado Bucal",
+            "prioridad": 100
+        },
+        "cuidado-del-cabello": {
+            "url_path": "/super/higiene-y-belleza/cuidado-del-cabello",
+            "nombre_visible": "Cuidado del Cabello",
+            "prioridad": 101
+        },
+        "cuidado-del-pie": {
+            "url_path": "/super/higiene-y-belleza/cuidado-del-pie",
+            "nombre_visible": "Cuidado del Pie",
+            "prioridad": 102
+        },
+        "cuidado-facial": {
+            "url_path": "/super/higiene-y-belleza/cuidado-facial",
+            "nombre_visible": "Cuidado Facial",
+            "prioridad": 103
+        },
+        "cuidado-para-manos": {
+            "url_path": "/super/higiene-y-belleza/cuidado-para-manos",
+            "nombre_visible": "Cuidado para Manos",
+            "prioridad": 104
+        },
+        "higiene-y-cuidado-corporal": {
+            "url_path": "/super/higiene-y-belleza/higiene-y-cuidado-corporal",
+            "nombre_visible": "Higiene y Cuidado Corporal",
+            "prioridad": 105
+        },
+        "proteccion-femenina": {
+            "url_path": "/super/higiene-y-belleza/proteccion-femenina",
+            "nombre_visible": "Protección Femenina",
+            "prioridad": 106
+        }
+    },
+    "super/hogar": {
+        "articulos-de-temporada": {
+            "url_path": "/super/hogar/articulos-de-temporada",
+            "nombre_visible": "Artículos de Temporada",
+            "prioridad": 107
+        },
+        "cuidado-del-calzado": {
+            "url_path": "/super/hogar/cuidado-del-calzado",
+            "nombre_visible": "Cuidado del Calzado",
+            "prioridad": 108
+        },
+        "desechables": {
+            "url_path": "/super/hogar/desechables",
+            "nombre_visible": "Desechables",
+            "prioridad": 109
+        },
+        "jardin-y-ferreteria": {
+            "url_path": "/super/hogar/jardin-y-ferreteria",
+            "nombre_visible": "Jardín y Ferretería",
+            "prioridad": 110
+        },
+        "lavanderia-": {
+            "url_path": "/super/hogar/lavanderia-",
+            "nombre_visible": "Lavandería",
+            "prioridad": 111
+        },
+        "limpieza": {
+            "url_path": "/super/hogar/limpieza",
+            "nombre_visible": "Limpieza",
+            "prioridad": 112
+        },
+        "papel-higienico": {
+            "url_path": "/super/hogar/papel-higienico",
+            "nombre_visible": "Papel Higiénico",
+            "prioridad": 113
+        },
+        "pañuelos-y-servilletas": {
+            "url_path": "/super/hogar/pañuelos-y-servilletas",
+            "nombre_visible": "Pañuelos y Servilletas",
+            "prioridad": 114
+        },
+        "velas-y-veladoras": {
+            "url_path": "/super/hogar/velas-y-veladoras",
+            "nombre_visible": "Velas y Veladoras",
+            "prioridad": 115
+        }
+    },
+    "super/jugueteria": {
+        "juegos-de-creatividad": {
+            "url_path": "/super/jugueteria/juegos-de-creatividad",
+            "nombre_visible": "Juegos de Creatividad",
+            "prioridad": 116
+        },
+        "juegos-de-mesa": {
+            "url_path": "/super/jugueteria/juegos-de-mesa",
+            "nombre_visible": "Juegos de Mesa",
+            "prioridad": 117
+        },
+        "niñas": {
+            "url_path": "/super/jugueteria/niñas",
+            "nombre_visible": "Niñas",
+            "prioridad": 118
+        },
+        "niños": {
+            "url_path": "/super/jugueteria/niños",
+            "nombre_visible": "Niños",
+            "prioridad": 119
+        }
+    },
+    "super/mascotas": {
+        "alimento-para-gato": {
+            "url_path": "/super/mascotas/alimento-para-gato",
+            "nombre_visible": "Alimento para Gato",
+            "prioridad": 120
+        },
+        "alimento-para-perros": {
+            "url_path": "/super/mascotas/alimento-para-perros",
+            "nombre_visible": "Alimento para Perros",
+            "prioridad": 121
+        },
+        "jabon-y-shampoo": {
+            "url_path": "/super/mascotas/jabon-y-shampoo",
+            "nombre_visible": "Jabón y Shampoo",
+            "prioridad": 122
+        }
+    },
+    "super/papeleria": {
+        "basicos-de-papeleria": {
+            "url_path": "/super/papeleria/basicos-de-papeleria",
+            "nombre_visible": "Básicos de Papelería",
+            "prioridad": 123
+        },
+        "bolsas-de-regalo": {
+            "url_path": "/super/papeleria/bolsas-de-regalo",
+            "nombre_visible": "Bolsas de Regalo",
+            "prioridad": 124
+        },
+        "cintas-y-pegamento": {
+            "url_path": "/super/papeleria/cintas-y-pegamento",
+            "nombre_visible": "Cintas y Pegamento",
+            "prioridad": 125
+        },
+        "cuadernos": {
+            "url_path": "/super/papeleria/cuadernos",
+            "nombre_visible": "Cuadernos",
+            "prioridad": 126
+        },
+        "globos": {
+            "url_path": "/super/papeleria/globos",
+            "nombre_visible": "Globos",
+            "prioridad": 127
+        },
+        "lapices-y-boligrafos": {
+            "url_path": "/super/papeleria/lapices-y-boligrafos",
+            "nombre_visible": "Lápices y Bolígrafos",
+            "prioridad": 128
+        }
+    }
+}

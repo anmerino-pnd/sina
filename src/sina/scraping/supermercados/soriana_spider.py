@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
+from sina.config.credentials import soriana_base_url
 from sina.db.repository import CatalogoRepository, SupermercadoRepository
 from sina.scraping.supermercados.soriana_helper import scrape_soriana_page
 from sina.scraping.supermercados.interfaces import BrowserConfig
@@ -30,7 +31,7 @@ def scrape_soriana(config: BrowserConfig = BrowserConfig()) -> List[Dict[str, An
             for route in rutas_activas:
                 print(f"\n📦 {route['departamento']} > {route['categoria']}")
                 
-                url = f"{route['tienda']}{route['url_path']}"
+                url = f"{soriana_base_url}{route['url_path']}"
                 
                 page.goto(url, wait_until="domcontentloaded", timeout=config.timeout_ms)
                 page.wait_for_timeout(2000)

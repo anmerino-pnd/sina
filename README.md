@@ -10,8 +10,9 @@ SINA centraliza precios de primera necesidad y los sirve en dashboards + una API
 
 - **Gasolina** — API de la CRE (Magna, Premium, Diésel por estación, con mapa).
 - **Gas LP** — API de la CNE (precio por kilo por permisionario y localidad).
-- **Supermercados** — scraping directo (Soriana, Del Sol; volantes de Casa Ley como track
-  secundario) con búsqueda por texto y **semántica (pgvector)**.
+- **Supermercados** — scraping directo (Soriana, Del Sol, Farmacias Benavides y Farmacias
+  Guadalajara; volantes de Casa Ley como track secundario) con búsqueda por texto y
+  **semántica (pgvector)**.
 
 **Misión:** empoderar a la familia mexicana con información clara y accesible para gastar menos.
 El proyecto arranca en Hermosillo, Sonora, y crece por fases hacia el resto del país.
@@ -79,8 +80,10 @@ podman-compose up -d        # arranca el contenedor sina_db (pgvector/pgvector:p
 uv run python -m sina.db.seeder
 ```
 
-Esto carga entidades/municipios/**localidades** y el catálogo de Soriana. Es lo que habilita las
-localidades del dashboard de **Gas LP** (sin seeder, esa lista sale vacía).
+Esto carga entidades/municipios/**localidades** y los **catálogos de rutas de scraping** de
+Soriana, Del Sol, Benavides y Farmacias Guadalajara. Es lo que habilita las localidades del
+dashboard de **Gas LP** (sin seeder, esa lista sale vacía) y las rutas que consumen los spiders
+de supermercados (ver [Ingesta de datos](#ingesta-de-datos-scraping)).
 
 ### 4. Levantar el backend
 
@@ -116,7 +119,8 @@ API, sin CORS). Útil para probar el comportamiento real de despliegue.
 
 ### 6. (Opcional) Datos de Supermercados y búsqueda semántica
 
-- Corre los scrapers de supermercados (Soriana / Del Sol) para poblar la tabla `supermercados`.
+- Corre los scrapers de supermercados (Soriana / Del Sol / Benavides / Farmacias Guadalajara)
+  para poblar la tabla `supermercados` — ver [Ingesta de datos](#ingesta-de-datos-scraping).
 - Para **embeddings + búsqueda vectorial**, pon `ENABLE_EMBEDDINGS=1` en el `.env` **antes** de
   scrapear. El modelo por defecto (`Qwen/Qwen3-Embedding-8B`) es pesado; en una PC sin GPU usa uno
   ligero, p. ej. `EMBEDDING_MODEL=intfloat/multilingual-e5-small`. Sin embeddings, la búsqueda cae
@@ -124,6 +128,88 @@ API, sin CORS). Útil para probar el comportamiento real de despliegue.
 
 > Nota: `DB_URL` se resuelve **al importar** y las tablas se crean solas en ese momento. Define el
 > `.env` antes de arrancar o sembrar.
+
+---
+
+## Ingesta de datos (scraping)
+
+SINA se alimenta de tres tipos de fuente, cada una con su propio ritmo:
+
+| Fuente               | Cómo entra                            | Frecuencia sugerida        |
+| -------------------- | ------------------------------------- | -------------------------- |
+| Gasolina (CRE)       | API de gobierno, caché **on-demand**  | al consultar (refresco 24h) |
+| Gas LP (CNE)         | API de gobierno, caché **on-demand**  | al consultar (refresco semanal) |
+| Supermercados        | **web scraping** por catálogo de rutas | semanal (job pesado)       |
+
+Gasolina y Gas LP se refrescan solos: la primera consulta a un municipio/localidad llama a la API
+de gobierno y guarda; después se sirve de la base hasta que la caché vence. El
+[scheduler](src/sina/scheduler.py) además re-scrapea en segundo plano lo que ya se consultó
+(gasolina diario 06:00, gas LP sábado 08:00, hora MX).
+
+**Los supermercados sí se scrapean explícitamente.** El flujo tiene dos etapas:
+
+### 1. Catálogo de rutas (una vez, o cuando cambie el árbol de la tienda)
+
+Cada tienda tiene un archivo de configuración en `src/sina/config/` con su árbol
+departamento → categoría → `url_path`:
+
+- `soriana_config.json`, `delsol_config.json`, `benavides_config.json`, `guadalajara_config.json`.
+
+> **Farmacias Guadalajara** solo incluye las pestañas **Super**, **Farmacia** y **Dermo**.
+> Se excluye **Ofertas** a propósito: es una vista promocional que re-lista los mismos
+> productos (mismos `pid`) de las otras pestañas — el descuento igual se captura porque el
+> spider lee el precio vigente de cada categoría.
+
+El **seeder** (`python -m sina.db.seeder`) lee esos archivos y puebla la tabla `catalogos_config`
+(una fila por ruta activa). Es idempotente: re-ejecutarlo no duplica.
+
+Para **regenerar** un catálogo (p. ej. si la tienda reorganizó su menú), corre el explorador de
+árbol correspondiente en `notebooks/` y vuelve a sembrar:
+
+```bash
+# Benavides (Magento): reconstruye benavides_config.json desde el menú del sitio
+uv run python notebooks/benavides_01.py
+# Farmacias Guadalajara (SFCC): reconstruye guadalajara_config.json (Super/Farmacia/Dermo)
+uv run python notebooks/guadalajara_01.py
+# Del Sol (VTEX): reconstruye delsol_config.json
+uv run python notebooks/woolworth_01.py
+uv run python -m sina.db.seeder            # re-siembra las rutas nuevas
+```
+
+### 2. Extracción de productos (periódica)
+
+Con las rutas sembradas y **PostgreSQL arriba**, cada spider recorre las rutas activas de su
+tienda, extrae productos y hace `upsert` en la tabla `supermercados`:
+
+```bash
+uv run python -m sina.scraping.supermercados.soriana_spider       # Playwright (navegador)
+uv run python -m sina.scraping.supermercados.delsol_spider        # Playwright (navegador)
+uv run python -m sina.scraping.supermercados.benavides_spider     # curl_cffi (sin navegador)
+uv run python -m sina.scraping.supermercados.guadalajara_spider   # curl_cffi (sin navegador)
+```
+
+Notas de implementación:
+
+- La **URL base** de cada tienda vive en el `.env` (`SORIANA_BASE_URL`, `DELSOL_BASE_URL`,
+  `BENAVIDES_BASE_URL`, `GUADALAJARA_BASE_URL`); los `*_config.json` solo guardan el `url_path`.
+  El spider arma la URL final = base + path. Así, si una tienda cambia de dominio, se ajusta el
+  `.env` sin tocar código.
+- **Soriana** y **Del Sol** usan navegador headless (Playwright + stealth); **Benavides**
+  (Magento) y **Farmacias Guadalajara** (Salesforce Commerce Cloud) se renderizan en el servidor,
+  así que usan `curl_cffi` — más ligeros y rápidos.
+- Con `ENABLE_EMBEDDINGS=1` (solo PostgreSQL), el `upsert` genera además el embedding de cada
+  producto para la búsqueda semántica.
+
+### Automatización (crones)
+
+Hoy la programación vive en [`scheduler.py`](src/sina/scheduler.py) (APScheduler en proceso). El
+job de supermercados está **desactivado por defecto** porque es pesado (abre navegadores); se
+activa con `ENABLE_SUPERMERCADOS_SCRAPING=1` y corre los domingos 04:00 (hora MX). Actívalo solo en
+un **worker dedicado**, nunca en el proceso web con varias instancias (se duplicaría el trabajo).
+
+A futuro, en GCP, estos crones se moverán a **Cloud Scheduler + Cloud Run Jobs** (contenedor con
+navegador), apagando el scheduler en proceso (`ENABLE_SCHEDULER=0`) para que una sola tarea
+programada sea la fuente de verdad.
 
 ---
 
@@ -174,6 +260,8 @@ Todas se documentan en [.env.example](.env.example). Resumen:
 | `CORS_ORIGINS`                                                        | Orígenes permitidos (solo si la SPA va en otro host).           | vacío                     |
 | `ADMIN_API_KEY`                                                       | Protege los`POST` de scraping/actualización.                  | vacío = cerrados          |
 | `ENABLE_SCHEDULER`                                                    | Actualizaciones automáticas (gasolina diario, gas LP sábados). | `1`                      |
+| `ENABLE_SUPERMERCADOS_SCRAPING`                                       | Job semanal de scraping de supermercados (pesado, opt-in).       | `0`                      |
+| `*_BASE_URL` (Soriana/Del Sol/Benavides/Guadalajara)                | Dominio base de cada tienda (el `url_path` vive en su config).   | dominios oficiales         |
 | `ENABLE_EMBEDDINGS`                                                   | Genera embeddings al scrapear productos (solo PostgreSQL).       | `0`                      |
 | `EMBEDDING_MODEL`                                                     | Modelo de embeddings (intercambiable).                           | Qwen (pesado)              |
 | `DB_POOL_SIZE` / `DB_MAX_OVERFLOW`                                  | Tamaño del pool de conexiones.                                  | 5 / 5                      |
@@ -216,13 +304,13 @@ sina/
 ├── SPEC.md · CLAUDE.md        # visión / guía de desarrollo
 ├── src/sina/
 │   ├── main.py                # FastAPI: endpoints + montaje de la SPA
-│   ├── scheduler.py           # APScheduler (gasolina diario, gas LP sábados)
+│   ├── scheduler.py           # APScheduler (gasolina diario, gas LP sábados, supermercados opt-in)
 │   ├── api/                   # auth.py, users.py, deps.py, session.py, security.py, ratelimit.py
 │   ├── config/                # credentials.py, app_settings.py, paths.py, timezone.py, logging_config.py
 │   ├── db/                    # models.py, repository.py, seeder.py
 │   ├── scraping/
 │   │   ├── gobierno/          # cre_gasolina.py, cne_gas_lp.py (APIs de gobierno)
-│   │   └── supermercados/     # soriana_spider.py, delsol_spider.py, casaley_spider.py
+│   │   └── supermercados/     # soriana_spider.py, delsol_spider.py, benavides_spider.py, guadalajara_spider.py, casaley_spider.py
 │   ├── embedder/              # base.py (ABC) + qwen_embedder.py + embeddings.py
 │   ├── annotator/             # image_segmentation.py, records.py
 │   └── ollama/                # extract_flyer_text.py (OCR/LLM)
@@ -246,7 +334,13 @@ podman exec -it sina_db psql -U sina_admin -d sina_db   # consola SQL
 
 # Backend
 uv run uvicorn sina.main:app --reload --port 8000
-uv run python -m sina.db.seeder      # sembrar catálogos
+uv run python -m sina.db.seeder      # sembrar catálogos (municipios + rutas de scraping)
+
+# Ingesta de supermercados (requiere PostgreSQL + catálogos sembrados)
+uv run python -m sina.scraping.supermercados.soriana_spider
+uv run python -m sina.scraping.supermercados.delsol_spider
+uv run python -m sina.scraping.supermercados.benavides_spider
+uv run python -m sina.scraping.supermercados.guadalajara_spider
 
 # Frontend
 cd frontend && npm run dev           # desarrollo (:5173)

@@ -93,7 +93,7 @@ primera necesidad, para que gaste menos o le afecte lo menos posible.
 | ------------- | ----------------- | ---------------------------------------- |
 | Gasolina      | Diaria (AM)       | Usuario busca + datos > 24h              |
 | Gas LP        | Semanal (sábado)  | Usuario busca + datos > último sábado    |
-| Supermercados | Programada        | Scraping directo (Soriana, Del Sol, …)   |
+| Supermercados | Programada        | Scraping directo (Soriana, Del Sol, Benavides, Guadalajara) |
 | Ubicaciones   | Una vez + updates | Scraping inicial, luego solo cambios     |
 
 **Regla general:** si el usuario busca un lugar y los datos están vigentes → se sirve de
@@ -117,8 +117,10 @@ los selectores Estado/Municipio según la categoría.
 | Scraper ubicaciones gasolineras | ✅     | Código listo; se corre puntualmente.                       |
 | Pipeline + API Gas LP           | ✅     | API CNE + caché semanal. Falta scheduler automático.       |
 | UI Gas LP (Jinja2)              | ✅     | Cascada estado→municipio→localidad. Migra a SPA.           |
-| Scraping Soriana                | ✅     | Playwright; `upsert` a tabla `supermercados` (mapeo `pid_origen`→`pid`). |
-| Scraping Del Sol                | ✅     | Playwright async; `upsert` a `supermercados`.              |
+| Scraping Soriana                | ✅     | SFCC; Playwright; `upsert` a tabla `supermercados` (mapeo `pid_origen`→`pid`). |
+| Scraping Del Sol                | ✅     | VTEX; Playwright async; `upsert` a `supermercados`.        |
+| Scraping Benavides              | ✅     | Magento; `curl_cffi` (server-side, sin navegador); paginación `?p=N`. |
+| Scraping Farmacias Guadalajara  | ✅     | SFCC; `curl_cffi`; paginación "Show More" SFCC; pestañas Super/Farmacia/Dermo (Ofertas excluida por solaparse). |
 | Embeddings de productos         | ✅*    | Conectados en `upsert_productos` (opt-in `ENABLE_EMBEDDINGS`, requiere pgvector). |
 | Búsqueda / API Supermercados    | ✅     | `GET /api/v1/supermercados` (vectorial con fallback de texto). Falta UI. |
 | Agente / Chat (tools internas)  | ❌     | `chat.py` vacío. Por construir.                            |
@@ -162,9 +164,11 @@ los selectores Estado/Municipio según la categoría.
 
 ### FASE 2 — Pipeline de Supermercados + Embeddings (CORE) ✅ (base)
 **Meta:** convertir el scraping directo en una base de productos consultable y vectorizada.
-- [x] Scraping directo como fuente primaria (Soriana, Del Sol). Se corrigió el bug latente:
-      `upsert_productos` mapea `pid_origen`→`pid` y normaliza al esquema del modelo.
-      *(Ampliar a más tiendas: pendiente.)*
+- [x] Scraping directo como fuente primaria (Soriana, Del Sol, **Benavides**, **Farmacias
+      Guadalajara**). Se corrigió el bug latente: `upsert_productos` mapea `pid_origen`→`pid` y
+      normaliza al esquema del modelo. El seeder es genérico (`seed_catalogo_tienda` +
+      `TIENDAS_CATALOGO`), la URL base de cada tienda vive en `.env`, y hay job semanal opt-in de
+      scraping en `scheduler.py` (`ENABLE_SUPERMERCADOS_SCRAPING`). *(Ampliar a más tiendas: seguir sumando.)*
 - [x] Normalización básica de nombres (espacios) y **dedup por `pid`** dentro del lote (evita
       el choque en `ON CONFLICT`). *(Dedup semántico cross-tienda: futuro.)*
 - [x] **Embeddings conectados**: `upsert_productos` invoca `EmbeddingService.vectorizar_productos()`
@@ -253,7 +257,7 @@ los selectores Estado/Municipio según la categoría.
 | `gasolineras`    | Precios + ubicaciones (PK `numero`; magna/premium/diesel). |
 | `gas_lp_precios` | Precios Gas LP por permisionario/localidad (desnormalizado). |
 | `supermercados`  | Productos + precios + **embedding** (pgvector).        |
-| `catalogos_config`| Rutas activas de scraping (Soriana, etc.).            |
+| `catalogos_config`| Rutas activas de scraping (Soriana, Del Sol, Benavides, Guadalajara). |
 | `cne_entidades` / `cne_municipios` / `cne_localidades` | Catálogos geográficos CNE. |
 | `qqp_precios`    | 🗑️ **Legacy — a eliminar** (reemplazado por `supermercados`). |
 

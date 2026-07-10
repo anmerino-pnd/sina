@@ -31,6 +31,9 @@ STATIC_DIR = BASE_DIR / "static"
 
 CLASSES = BASE_DIR / "src" / "sina" / "config" / "classes.json"
 SORIANA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "soriana_config.json"
+DELSOL_CONFIG = BASE_DIR / "src" / "sina" / "config" / "delsol_config.json"
+BENAVIDES_CONFIG = BASE_DIR / "src" / "sina" / "config" / "benavides_config.json"
+GUADALAJARA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "guadalajara_config.json"
 
 for path in [
     DB,
@@ -47,4 +50,7 @@ for path in [
 CATALOGO_MUNICIPIOS_PATH = GAS_DATA / "catalogo_municipios.json"
 CLASES_JSON_PATH = CLASSES
 SORIANA_CONFIG_PATH = SORIANA_CONFIG
+DELSOL_CONFIG_PATH = DELSOL_CONFIG
+BENAVIDES_CONFIG_PATH = BENAVIDES_CONFIG
+GUADALAJARA_CONFIG_PATH = GUADALAJARA_CONFIG
 

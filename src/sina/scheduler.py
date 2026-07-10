@@ -69,8 +69,39 @@ def refrescar_gas_lp() -> None:
             )
 
 
+def refrescar_supermercados() -> None:
+    """
+    Re-scrapea el catálogo de productos de los supermercados (Soriana, Del Sol,
+    Benavides). Cada tienda se aísla en su propio try/except para que el fallo de
+    una no tumbe a las demás.
+
+    Ojo: Soriana y Del Sol usan navegador (Playwright), es un job pesado; por eso
+    va aparte de gasolina/gas LP y semanal en horario de baja demanda.
+    """
+    tiendas = [
+        ("Soriana",               "sina.scraping.supermercados.soriana_spider",     "scrape_soriana"),
+        ("Del Sol",               "sina.scraping.supermercados.delsol_spider",      "scrape_delsol"),
+        ("Benavides",             "sina.scraping.supermercados.benavides_spider",   "scrape_benavides"),
+        ("Farmacias Guadalajara", "sina.scraping.supermercados.guadalajara_spider", "scrape_guadalajara"),
+    ]
+    for nombre, modulo, funcion in tiendas:
+        try:
+            import importlib
+            spider = getattr(importlib.import_module(modulo), funcion)
+            log.info("[scheduler] Supermercados: scrapeando %s", nombre)
+            spider()
+        except Exception as e:
+            log.error("[scheduler] Error scrapeando %s: %s", nombre, e)
+
+
 def _scheduler_habilitado() -> bool:
     return os.getenv("ENABLE_SCHEDULER", "1").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _supermercados_habilitado() -> bool:
+    # Desactivado por defecto: es un job pesado (navegador) que casi nunca quieres
+    # correr dentro del proceso web. Actívalo explícitamente donde toque.
+    return os.getenv("ENABLE_SUPERMERCADOS_SCRAPING", "0").strip().lower() in ("1", "true", "yes", "on")
 
 
 def iniciar_scheduler() -> BackgroundScheduler | None:
@@ -97,6 +128,17 @@ def iniciar_scheduler() -> BackgroundScheduler | None:
         id="gas_lp_semanal",
         replace_existing=True,
     )
+
+    # Scraping de supermercados: pesado (navegador), opt-in por env aparte.
+    if _supermercados_habilitado():
+        _scheduler.add_job(
+            refrescar_supermercados,
+            CronTrigger(day_of_week="sun", hour=4, minute=0, timezone=MEXICO_TZ),
+            id="supermercados_semanal",
+            replace_existing=True,
+        )
+        log.info("[scheduler] Job de supermercados habilitado (dom 04:00, hora MX).")
+
     _scheduler.start()
     log.info("[scheduler] Iniciado (gasolina 06:00 diario, gas LP sáb 08:00, hora MX).")
     return _scheduler
