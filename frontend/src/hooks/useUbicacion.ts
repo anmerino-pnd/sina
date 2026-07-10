@@ -4,9 +4,15 @@ import { useSearchParams } from "react-router-dom";
 const KEY = "sina.ubicacion";
 
 type Clave = "estado" | "municipio" | "localidad";
-type Ubicacion = Partial<Record<Clave, string>>;
+// Además de los nombres, cacheamos las coordenadas del usuario (si las compartió)
+// para las consultas de cercanía. Se comparten entre Gasolina y Chat.
+export type Ubicacion = Partial<Record<Clave, string>> & {
+  lat?: number;
+  lng?: number;
+  ts?: number; // epoch ms de la última captura de coordenadas
+};
 
-function leer(): Ubicacion {
+export function leerUbicacion(): Ubicacion {
   try {
     const raw = localStorage.getItem(KEY);
     return raw ? (JSON.parse(raw) as Ubicacion) : {};
@@ -22,6 +28,13 @@ function guardar(u: Ubicacion): void {
     /* almacenamiento no disponible */
   }
 }
+
+/** Cachea las coordenadas del usuario (fuente única compartida Gasolina ↔ Chat). */
+export function guardarCoordsUsuario(lat: number, lng: number): void {
+  guardar({ ...leerUbicacion(), lat, lng, ts: Date.now() });
+}
+
+const leer = leerUbicacion;
 
 /**
  * Sincroniza los parámetros de ubicación con localStorage para que la selección

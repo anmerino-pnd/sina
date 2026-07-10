@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { COLOR_CATEGORIA, type Categoria } from "@/lib/precios";
 import { IconCheck, IconPin, IconTarget } from "@/components/ui/icons";
+import { guardarCoordsUsuario } from "@/hooks/useUbicacion";
 
 const CATEGORIAS: Categoria[] = ["Barato", "Promedio", "Caro"];
 
@@ -35,6 +36,8 @@ export function MapToolbar({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setBuscando(false);
+        // Cachea las coordenadas para compartirlas con el chat ("cerca de mí").
+        guardarCoordsUsuario(pos.coords.latitude, pos.coords.longitude);
         onUbicarme(pos.coords.latitude, pos.coords.longitude, false);
       },
       () => {

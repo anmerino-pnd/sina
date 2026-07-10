@@ -123,7 +123,7 @@ los selectores Estado/Municipio según la categoría.
 | Scraping Farmacias Guadalajara  | ✅     | SFCC; `curl_cffi`; paginación "Show More" SFCC; pestañas Super/Farmacia/Dermo (Ofertas excluida por solaparse). |
 | Embeddings de productos         | ✅*    | Conectados en `upsert_productos` (opt-in `ENABLE_EMBEDDINGS`, requiere pgvector). |
 | Búsqueda / API Supermercados    | ✅     | `GET /api/v1/supermercados` (vectorial con fallback de texto). Falta UI. |
-| Agente / Chat (tools internas)  | ❌     | `chat.py` vacío. Por construir.                            |
+| Agente / Chat (tools internas)  | ✅     | `sina/agent/` (LLM Ollama + tools + grafo); `POST /api/v1/chat` en streaming SSE; historial en MongoDB. |
 | Pipeline volantes (Casa Ley)    | ✅*    | Descarga flyer + anotación manual + OCR LLM. Track secundario. |
 | QQP / PROFECO                   | 🗑️     | **Deprecado** (modelo/repo conservados con aviso; endpoints removidos). |
 | Scheduling automático           | ✅     | APScheduler en lifespan (`scheduler.py`); gasolina 06:00, gas LP sáb 08:00. |
@@ -182,22 +182,27 @@ los selectores Estado/Municipio según la categoría.
 - Volantes (Casa Ley → annotator → OCR LLM) se mantienen como **track secundario** para
   tiendas sin sitio scrapeable.
 
-### FASE 3 — Capa de Agente (tools internas)
+### FASE 3 — Capa de Agente (tools internas) ✅ (base; falta Gemini y streaming SSE avanzado)
 **Meta:** un asistente conectado a la DB que resuelve consultas de ahorro.
-- [ ] `LLMProvider` (ABC) con `generate(prompt, context)`:
-  - `OpenSourceProvider` (Ollama / llama.cpp) — local.
-  - `GeminiProvider` — para el servidor GCP.
-- [ ] Tools internas (Python) sobre los repositorios, p. ej.:
-  - `buscar_gasolina_barata(municipio, tipo)`
-  - `buscar_gas_lp(localidad)`
-  - `buscar_producto(producto, municipio)` (vectorial + filtro)
-  - `comparar_lista_de_compras(items, municipio)` → dónde sale más barato
-  - `armar_canasta_economica(municipio, presupuesto?)`
-- [ ] Router de intención → tool → el LLM redacta la respuesta en lenguaje sencillo.
-- [ ] Manejo de ubicación (geolocalización opcional; si no, preguntar municipio una vez).
-- [ ] `POST /api/v1/chat` (funciona sin login; sin persistencia si no hay sesión).
+- [x] `LLMProvider` (ABC) en `sina/agent/llm/base.py` con `chat_stream` (+ `chat`) y telemetría
+      `LLMUso`. `OllamaProvider` (open-source local) implementado; fábrica perezosa gated por
+      `ENABLE_CHAT` y elegida por `LLM_PROVIDER` (`GeminiProvider` = hueco listo para el patrocinador,
+      hereda de la ABC y recibe las MISMAS tools).
+- [x] Tools internas (Python) sobre los repositorios (`sina/agent/tools/`): `buscar_gasolina`
+      (precio o cercanía por haversine), `buscar_gas_lp`, `listar_localidades_gas_lp`,
+      `buscar_producto` (vectorial + filtro), `comparar_lista`, `armar_canasta`, `datos_disponibles`.
+      Cada tool cierra sobre un `ContextoConsulta` (el `lat/lng` se INYECTA, el LLM no lo alucina).
+- [x] **Motor de grafo propio** (`sina/agent/graph.py`, estilo LangGraph **sin** LangChain/LangGraph):
+      nodos `agente ↔ tools` con router condicional e iteraciones acotadas (`LLM_MAX_ITERS`).
+- [x] Manejo de ubicación: se pasa por request (nunca se persiste en servidor); el frontend la
+      captura de forma no intrusiva (botón) y la cachea compartida con Gasolina.
+- [x] `POST /api/v1/chat` en **streaming SSE** con **pausa** (abortar = no se persiste); funciona sin
+      login (sin persistencia) y con login (guarda en Mongo). CSRF condicional + rate limit.
+- [x] **Telemetría por mensaje** (para optimizar): modelo, input/output/cached tokens, tokens/seg,
+      duración, `tool_timings` y `phase_timings`.
 - **Sin servidor MCP por ahora**; las tools viven dentro del backend. Empaquetarlas como
   servidor MCP estándar queda como posible evolución futura.
+- [ ] Pendiente: `GeminiProvider` real (con `cached_tokens`), y streaming SSE "premium" (reintentos).
 
 ### FASE 4 — SPA React + OAuth ✅ (base; falta solo el chat, que depende de Fase 3)
 **Meta:** unificar todo en una sola app moderna.
@@ -213,9 +218,10 @@ los selectores Estado/Municipio según la categoría.
 - [x] **Gas LP — REFACTOR:** cascada estado→municipio→localidad, pills de tipo/capacidad,
       ranking y detalle de proveedor con vigencia.
 - [x] **Supermercados — NUEVA:** búsqueda (con debounce) + filtro por tienda + tabla de precios.
-- [ ] **Chat — NUEVA:** UI conversacional contra `/api/v1/chat`. **Pendiente:** el backend del
-      chat es la Fase 3 y aún no existe; por eso la sección se muestra como "próximamente" con el
-      botón deshabilitado. Al construir Fase 3, se sustituye sin cambiar la ruta.
+- [x] **Chat — NUEVA:** `ChatPage` conversacional contra `/api/v1/chat` (streaming SSE + botón de
+      pausa). Con login: panel de conversaciones (máx 5) y "cargar mensajes anteriores" (paginación
+      por puntero). Chip de ubicación no intrusivo compartido con Gasolina. Sustituyó a
+      `ChatUnavailable` sin cambiar la ruta.
 - [x] Google OAuth 2.0: botón en navbar; sin login todo funciona sin persistencia. Sesión propia
       en **cookie httpOnly + Secure + SameSite firmada** con **CSRF double-submit** (nunca se
       guardan contraseñas ni el token de Google; el `user_id` es el `sub` de Google, con
@@ -266,9 +272,22 @@ los selectores Estado/Municipio según la categoría.
 | Tabla            | Propósito                          | Fase |
 | ---------------- | ---------------------------------- | ---- |
 | `usuarios`       | Usuarios Google OAuth (sin pwd)    | 4 ✅ (creada) |
-| `chat_historial` | Conversaciones persistidas         | 4 ✅ (creada; se llena en Fase 3) |
+| `chat_historial` | 🗑️ **Deprecada** — el historial vive en MongoDB (ver abajo) | 4 → 3 |
 | `favoritos`      | Gasolineras/productos guardados    | 4+   |
 | `alertas`        | "Avísame si baja de $X" (futuro)   | 4+   |
+
+### Historial de chat en MongoDB (Fase 3)
+
+El chat NO usa PostgreSQL: por ser documental y con paginación por punteros, vive en **MongoDB**
+(local por ahora; al patrocinar un servidor solo cambia `MONGO_URI`). Máximo `CHAT_MAX_CONVERSACIONES`
+(5) conversaciones por usuario. Patrón **bucket / lista ligada** (estilo WhatsApp/Messenger):
+
+| Colección        | Propósito                                                              |
+| ---------------- | ---------------------------------------------------------------------- |
+| `conversaciones` | `{google_sub, titulo, cabeza_chunk_id→chunk más reciente, num_mensajes, ultimo_preview}` |
+| `chat_chunks`    | `{conversacion_id, mensajes:[…≤CHAT_CHUNK_SIZE], anterior_id→chunk más viejo, seq}` — se pagina hacia atrás siguiendo `anterior_id` |
+
+Si Mongo no está disponible, el chat sigue funcionando **sin** persistencia (degradación elegante).
 
 ---
 

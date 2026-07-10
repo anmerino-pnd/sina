@@ -36,6 +36,26 @@ class AppSettings(BaseSettings):
     # Orígenes permitidos por CORS (coma-separados). Vacío → mismo origen.
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
 
+    # ── Chat / Agente (Fase 3) ────────────────────────────────────────────
+    # Feature flag del asistente. Off → POST /api/v1/chat responde 503.
+    enable_chat: bool = Field(default=False, alias="ENABLE_CHAT")
+    # Proveedor de LLM: "ollama" (local) hoy; "gemini" (GCP) futuro.
+    llm_provider: str = Field(default="ollama", alias="LLM_PROVIDER")
+    # Ollama: host local por defecto; el modelo debe soportar tool-calling.
+    ollama_host: str = Field(default="http://localhost:11434", alias="OLLAMA_HOST")
+    ollama_model: str = Field(default="qwen2.5:7b", alias="OLLAMA_MODEL")
+    llm_temperature: float = Field(default=0.2, alias="LLM_TEMPERATURE")
+    # Tope de iteraciones del grafo (rondas de tool-calling) por respuesta.
+    llm_max_iters: int = Field(default=6, alias="LLM_MAX_ITERS")
+
+    # ── Historial de chat en MongoDB (Fase 3) ─────────────────────────────
+    # Local por ahora; al patrocinar un servidor solo cambia la URI.
+    mongo_uri: str = Field(default="mongodb://localhost:27017", alias="MONGO_URI")
+    mongo_db: str = Field(default="sina", alias="MONGO_DB")
+    # Conversaciones por usuario (tope) y tamaño del "chunk" (bucket pattern).
+    chat_max_conversaciones: int = Field(default=5, alias="CHAT_MAX_CONVERSACIONES")
+    chat_chunk_size: int = Field(default=15, alias="CHAT_CHUNK_SIZE")
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_origins(cls, v: object) -> object:

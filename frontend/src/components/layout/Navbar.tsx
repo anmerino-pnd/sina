@@ -17,7 +17,7 @@ const SECCIONES: Seccion[] = [
   { to: "/gasolina", label: "Gasolina" },
   { to: "/gas-lp", label: "Gas LP" },
   { to: "/supermercados", label: "Supermercados" },
-  { to: "/chat", label: "Chat", pronto: true },
+  { to: "/chat", label: "Chat" },
 ];
 
 function linkClases({ isActive }: { isActive: boolean }): string {

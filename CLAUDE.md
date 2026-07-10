@@ -19,8 +19,12 @@ Package manager is **uv** (Python ≥ 3.12). Prefix Python commands with `uv run
 uv sync                                          # install deps
 uv run uvicorn sina.main:app --reload            # dev server on :8000
 uv run python -m sina.db.seeder                  # seed entidades/municipios/localidades + supermarket route catalogs (Soriana/Del Sol/Benavides/Guadalajara)
-podman-compose up -d                             # start PostgreSQL 16 + pgvector (compose.yaml)
+podman-compose up -d                             # start PostgreSQL 16 + pgvector + MongoDB (compose.yaml)
 ```
+
+The chat agent (Fase 3) needs **Ollama** running with a tool-capable model
+(`ollama pull qwen2.5:7b`) and `ENABLE_CHAT=1`. Chat history persists to **MongoDB** (from
+compose); if Mongo is down the chat still answers, just without saving.
 
 There is **no test suite** in the repo yet (the README's `pytest tests/` is aspirational —
 no `tests/` directory exists). Verify changes by running the server and hitting endpoints,
@@ -42,8 +46,8 @@ target is locked in the moment any repository module is imported. Set `.env` (co
 loads the municipio catalog from the DB once into module-level globals
 (`_municipios_validos`, `_catalogo_js`) used to validate `estado`/`municipio` query params.
 Mounts `/static` and `/datos` (served files), renders Jinja2 templates from `templates/`.
-QQP endpoints are deprecated/removed; active API surfaces are gasolina, gas-lp, and
-annotator.
+QQP endpoints are deprecated/removed; active API surfaces are gasolina, gas-lp, supermercados,
+chat (Fase 3), auth/users, and annotator.
 
 **Data layer — `src/sina/db/`:**
 - `models.py` — SQLAlchemy models. Notable: `PrecioGasolina` (`gasolineras`) uses the CRE
@@ -95,6 +99,32 @@ annotator.
 - `scheduler.py` also has an **opt-in** weekly supermarket scraping job
   (`refrescar_supermercados`, Sun 04:00 MX), gated by `ENABLE_SUPERMERCADOS_SCRAPING` (off by
   default — it's heavy and must not run in a multi-instance web process).
+
+**Agente / Chat (Fase 3) — `src/sina/agent/`:** el asistente de ahorro.
+- `llm/base.py` — `LLMProvider` (ABC) con `chat_stream`/`chat` + dataclasses `ToolCall`/`LLMUso`/`LLMDelta`.
+  `llm/ollama_provider.py` (open-source local, tool-calling + streaming nativos de Ollama).
+  `llm/factory.py` — `get_llm_provider()` perezoso, gated por `ENABLE_CHAT`, elegido por `LLM_PROVIDER`
+  (mismo patrón que `embedder/embeddings.py`). Un patrocinador añade `gemini_provider.py` (subclase) y
+  una rama en la fábrica; **las tools no cambian**.
+- `tools/` — cada tool envuelve una consulta a los repos con su JSON Schema; `registry.construir_registro(ctx)`
+  las crea **cerrando sobre un `ContextoConsulta`** (estado/municipio/localidad/lat/lng). El `lat/lng` se
+  **inyecta** (el LLM nunca lo rellena). Tools: `buscar_gasolina` (precio o cercanía por haversine),
+  `buscar_gas_lp`, `listar_localidades_gas_lp`, `buscar_producto`, `comparar_lista`, `armar_canasta`,
+  `datos_disponibles`.
+- `graph.py` — motor de grafo mínimo (estilo LangGraph, **sin** LangChain/LangGraph): nodos que pueden ser
+  generadores (ceden eventos de streaming y `return` la actualización de estado), aristas fijas y condicionales.
+- `agent.py` — `responder_stream(mensaje, contexto, historial, provider)` recorre el grafo `agente ↔ tools`
+  (tope `LLM_MAX_ITERS`) cediendo eventos `paso`/`token`/`done`, y agrega **telemetría** por respuesta
+  (tokens, tokens/seg, `tool_timings`, `phase_timings`). `geo.py` — haversine (R=6371, espeja `frontend/src/lib/geo.ts`).
+- **Endpoint** `src/sina/api/chat.py`: `POST /api/v1/chat` es **SSE** (`text/event-stream`), sesión opcional
+  (`require_csrf_si_sesion` en `deps.py`), rate-limited; **solo persiste al completar** el stream (pausa = no
+  guarda). CRUD de conversaciones con paginación por puntero.
+
+**Historial de chat en MongoDB — `src/sina/db/mongo.py` + `chat_store.py`:** `get_mongo_db()` perezoso
+(devuelve `None` si Mongo no está → el chat degrada sin persistencia). `ChatStore` implementa el **patrón
+bucket / lista ligada**: `conversaciones.cabeza_chunk_id` apunta al chunk más reciente; cada `chat_chunks`
+guarda ≤`CHAT_CHUNK_SIZE` mensajes y un `anterior_id` al chunk más viejo (paginación hacia atrás O(1)).
+Tope `CHAT_MAX_CONVERSACIONES` por usuario. La tabla Postgres `chat_historial` quedó **deprecada** (no se usa).
 
 **ML / annotation:**
 - `annotator/image_segmentation.py` — flyer bounding-box annotations → crops; `records.py` —

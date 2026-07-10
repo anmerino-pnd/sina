@@ -2,6 +2,52 @@
 
 <div align="center">
 
+_Sistema de Información Nacional de Ahorro — precios de primera necesidad para las familias mexicanas._
+
+**Backend**
+
+![Python](https://img.shields.io/badge/Python%203.12-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-2094F3?style=flat-square&logo=gunicorn&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic&logoColor=white)
+![APScheduler](https://img.shields.io/badge/APScheduler-4B8BBE?style=flat-square)
+
+**Datos e IA**
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL%2016-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat-square&logo=ollama&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/Embeddings-FFD21E?style=flat-square&logo=huggingface&logoColor=black)
+
+**Frontend**
+
+![React](https://img.shields.io/badge/React%2019-61DAFB?style=flat-square&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![React Router](https://img.shields.io/badge/React%20Router-CA4245?style=flat-square&logo=reactrouter&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack%20Query-FF4154?style=flat-square&logo=reactquery&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=flat-square&logo=leaflet&logoColor=white)
+
+**Scraping**
+
+![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white)
+![Selenium](https://img.shields.io/badge/Selenium-43B02A?style=flat-square&logo=selenium&logoColor=white)
+![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup-4B8BBE?style=flat-square)
+![curl_cffi](https://img.shields.io/badge/curl__cffi-073551?style=flat-square&logo=curl&logoColor=white)
+
+**Auth, seguridad y tooling**
+
+![Google OAuth](https://img.shields.io/badge/Google%20OAuth%202.0-4285F4?style=flat-square&logo=google&logoColor=white)
+![slowapi](https://img.shields.io/badge/slowapi-rate--limit-555555?style=flat-square)
+![uv](https://img.shields.io/badge/uv-DE5FE9?style=flat-square&logo=uv&logoColor=white)
+![Podman](https://img.shields.io/badge/Podman-892CA0?style=flat-square&logo=podman&logoColor=white)
+![License MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+</div>
+
 ---
 
 ## Qué es
@@ -31,7 +77,7 @@ El proyecto arranca en Hermosillo, Sonora, y crece por fases hacia el resto del 
 | SPA React (Vite + Tailwind): landing, dashboards, modo oscuro       | Funcional                                        |
 | Autenticación con Google + sesión segura (cookie httpOnly + CSRF) | Funcional (requiere configurar OAuth)            |
 | Scheduler de actualizaciones (APScheduler)                          | Funcional                                        |
-| Chat / asistente conversacional                                     | **Pendiente** (UI muestra "próximamente") |
+| Chat / asistente conversacional (Ollama + tools + grafo, SSE)       | Funcional (requiere Ollama; historial en MongoDB)  |
 | Tests, CI/CD, contenedor de la app, despliegue GCP                  | **Pendiente**                              |
 
 **Selección de base de datos (importante):** SINA usa **PostgreSQL** cuando están definidas las
@@ -46,7 +92,9 @@ CRE bajo demanda; Gas LP y Supermercados necesitan PostgreSQL con datos sembrado
 
 - **Python 3.12+** y **[uv](https://docs.astral.sh/uv/)** (gestor de paquetes).
 - **Node.js 20+** y **npm** (para la SPA en `frontend/`).
-- **Podman** + **podman-compose** (para PostgreSQL local). En Windows, con WSL2.
+- **Podman** + **podman-compose** (para PostgreSQL y MongoDB locales). En Windows, con WSL2.
+- **[Ollama](https://ollama.com)** (opcional, solo para el chat) con un modelo con tool-calling
+  (`ollama pull qwen2.5:7b`).
 
 ---
 
@@ -68,11 +116,14 @@ cp .env.example .env        # crea tu configuración local
 El `.env.example` ya trae los valores de PostgreSQL que coinciden con `compose.yaml`
 (`localhost:5432`, usuario `sina_admin`), así que para local no hace falta cambiar nada.
 
-### 2. Levantar PostgreSQL + pgvector con Podman
+### 2. Levantar PostgreSQL + pgvector (y MongoDB) con Podman
 
 ```bash
-podman-compose up -d        # arranca el contenedor sina_db (pgvector/pgvector:pg16)
+podman-compose up -d        # arranca sina_db (pgvector/pgvector:pg16) y sina_mongo (mongo:7)
 ```
+
+MongoDB solo se usa para el historial del chat (Fase 3). Si no lo levantas, todo lo demás
+funciona; el chat responde pero sin guardar conversaciones.
 
 ### 3. Sembrar catálogos
 
@@ -128,6 +179,25 @@ API, sin CORS). Útil para probar el comportamiento real de despliegue.
 
 > Nota: `DB_URL` se resuelve **al importar** y las tablas se crean solas en ese momento. Define el
 > `.env` antes de arrancar o sembrar.
+
+### 7. (Opcional) Chat / asistente (Fase 3)
+
+El asistente usa **Ollama** (local) detrás de una clase abstracta `LLMProvider` (para cambiar a un
+modelo patrocinado sin tocar el resto). Para habilitarlo:
+
+```bash
+ollama pull qwen2.5:7b        # un modelo que soporte tool-calling
+# en .env:
+#   ENABLE_CHAT=1
+#   OLLAMA_MODEL=qwen2.5:7b
+```
+
+Luego abre `/chat` en la SPA. Funciona **sin login** (sin guardar historial) o **con login**
+(guarda hasta `CHAT_MAX_CONVERSACIONES` conversaciones en MongoDB, paginadas por punteros). La
+respuesta llega en **streaming** con botón de **pausa** (al pausar no se guarda ese intercambio).
+Para "gasolina cerca de mí", el chat usa la ubicación que compartas con el botón "usar mi
+ubicación" (se cachea y se comparte con el mapa de Gasolina). Si Ollama o Mongo no están, el chat
+degrada con un aviso claro en vez de romper.
 
 ---
 
@@ -263,6 +333,10 @@ Todas se documentan en [.env.example](.env.example). Resumen:
 | `ENABLE_SUPERMERCADOS_SCRAPING`                                       | Job semanal de scraping de supermercados (pesado, opt-in).       | `0`                      |
 | `*_BASE_URL` (Soriana/Del Sol/Benavides/Guadalajara)                | Dominio base de cada tienda (el `url_path` vive en su config).   | dominios oficiales         |
 | `ENABLE_EMBEDDINGS`                                                   | Genera embeddings al scrapear productos (solo PostgreSQL).       | `0`                      |
+| `ENABLE_CHAT`                                                        | Habilita el asistente en`POST /api/v1/chat`.                    | `0`                      |
+| `LLM_PROVIDER` / `OLLAMA_HOST` / `OLLAMA_MODEL`                    | Proveedor LLM y Ollama (modelo con tool-calling).                | ollama / :11434 / qwen2.5:7b |
+| `MONGO_URI` / `MONGO_DB`                                            | Historial de chat (local; cambia la URI al patrocinar).          | localhost:27017 / sina     |
+| `CHAT_MAX_CONVERSACIONES` / `CHAT_CHUNK_SIZE`                      | Conversaciones por usuario y mensajes por bucket.                | 5 / 15                     |
 | `EMBEDDING_MODEL`                                                     | Modelo de embeddings (intercambiable).                           | Qwen (pesado)              |
 | `DB_POOL_SIZE` / `DB_MAX_OVERFLOW`                                  | Tamaño del pool de conexiones.                                  | 5 / 5                      |
 | `GOOGLE_API_KEY`                                                      | Clave de Gemini para OCR de volantes (no es OAuth).              | opcional                   |
@@ -286,6 +360,8 @@ Base: `/api/v1`.
 | POST        | `/auth/google`                                         | Verifica el ID token de Google y abre sesión.                                  |
 | POST        | `/auth/logout`                                         | Cierra sesión.                                                                 |
 | GET / PATCH | `/me`                                                  | Perfil del usuario / fijar`username`.                                         |
+| POST        | `/chat`                                                | Asistente en **streaming SSE** (anónimo o con sesión). Con login persiste en Mongo. |
+| GET/POST/DELETE | `/chat/conversaciones[...]`                        | Conversaciones (máx 5) + carga de mensajes por puntero. Requiere sesión.        |
 | POST        | `/update/gasolina`, `/update/ubicacion/gasolineras`  | Actualización manual (requiere`ADMIN_API_KEY`).                              |
 | POST/GET    | `/annotator/*`                                         | Herramientas de anotación de volantes (mutaciones requieren`ADMIN_API_KEY`). |
 
@@ -305,9 +381,10 @@ sina/
 ├── src/sina/
 │   ├── main.py                # FastAPI: endpoints + montaje de la SPA
 │   ├── scheduler.py           # APScheduler (gasolina diario, gas LP sábados, supermercados opt-in)
-│   ├── api/                   # auth.py, users.py, deps.py, session.py, security.py, ratelimit.py
+│   ├── agent/                 # Chat (Fase 3): llm/ (LLMProvider+Ollama), tools/, graph.py, agent.py, geo.py
+│   ├── api/                   # auth.py, users.py, chat.py, deps.py, session.py, security.py, ratelimit.py
 │   ├── config/                # credentials.py, app_settings.py, paths.py, timezone.py, logging_config.py
-│   ├── db/                    # models.py, repository.py, seeder.py
+│   ├── db/                    # models.py, repository.py, seeder.py, mongo.py, chat_store.py
 │   ├── scraping/
 │   │   ├── gobierno/          # cre_gasolina.py, cne_gas_lp.py (APIs de gobierno)
 │   │   └── supermercados/     # soriana_spider.py, delsol_spider.py, benavides_spider.py, guadalajara_spider.py, casaley_spider.py
@@ -331,6 +408,7 @@ podman-compose logs -f               # ver logs
 podman-compose down                  # detener
 podman-compose down -v               # detener y borrar el volumen (datos)
 podman exec -it sina_db psql -U sina_admin -d sina_db   # consola SQL
+podman exec -it sina_mongo mongosh sina                 # consola de MongoDB (historial de chat)
 
 # Backend
 uv run uvicorn sina.main:app --reload --port 8000
@@ -355,7 +433,7 @@ cd frontend && npm run build         # compilar (lo sirve FastAPI en :8000)
 | ---- | -------------------------------------------------------------- | ------------------------------------------------------------------ |
 | 1    | Estabilizar backend (PostgreSQL + pgvector, scheduler, health) | Hecho                                                              |
 | 2    | Pipeline de supermercados + embeddings (core)                  | Hecho (base)                                                       |
-| 3    | Capa de agente / chat con tools internas                       | Pendiente                                                          |
+| 3    | Capa de agente / chat con tools internas                       | Hecho (base): Ollama + tools + grafo, `/chat` SSE, historial Mongo |
 | 4    | SPA React + Google OAuth                                       | En curso (landing, auth y dashboards hechos; chat "próximamente") |
 | 5    | Calidad y despliegue (tests, CI/CD, Containerfile, GCP)        | Pendiente                                                          |
 | 6    | ML de volantes (detección de zonas)                           | Largo plazo                                                        |

@@ -51,6 +51,7 @@ from sina.scheduler import iniciar_scheduler, detener_scheduler
 # ── Fase 4: auth, seguridad, rate limiting y servido de la SPA ──
 from sina.api.auth import router as auth_router
 from sina.api.users import router as users_router
+from sina.api.chat import router as chat_router
 from sina.api.ratelimit import limiter
 from sina.api.security import SecurityHeadersMiddleware, require_admin
 from sina.config.app_settings import settings
@@ -106,9 +107,10 @@ if settings.cors_origins:
         allow_headers=["Content-Type", "X-CSRF-Token"],
     )
 
-# ── Routers de auth y usuarios (Fase 4) ─────────────────────
+# ── Routers de auth y usuarios (Fase 4) + chat (Fase 3) ─────
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(chat_router)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/datos",  StaticFiles(directory=str(DATA)),       name="datos")

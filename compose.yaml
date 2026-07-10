@@ -13,5 +13,17 @@ services:
       - sina_pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  # Historial de chat (Fase 3). Local por ahora; al patrocinar un servidor solo
+  # cambia MONGO_URI en el .env.
+  mongo:
+    image: mongo:7
+    container_name: sina_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - sina_mongodata:/data/db
+    restart: unless-stopped
+
 volumes:
   sina_pgdata:
+  sina_mongodata:

@@ -24,6 +24,12 @@ function leerCookie(nombre: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+/** Header CSRF para peticiones mutantes hechas fuera de `apiFetch` (p. ej. SSE). */
+export function csrfHeader(): Record<string, string> {
+  const csrf = leerCookie(CSRF_COOKIE);
+  return csrf ? { [CSRF_HEADER]: csrf } : {};
+}
+
 interface RequestOpts {
   method?: string;
   body?: unknown;

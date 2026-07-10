@@ -9,7 +9,7 @@ const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const GasolinaPage = lazy(() => import("@/features/gasolina/GasolinaPage"));
 const GasLpPage = lazy(() => import("@/features/gasLp/GasLpPage"));
 const SupermercadosPage = lazy(() => import("@/features/supermercados/SupermercadosPage"));
-const ChatUnavailable = lazy(() => import("@/features/chat/ChatUnavailable"));
+const ChatPage = lazy(() => import("@/features/chat/ChatPage"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 function withSuspense(node: React.ReactNode) {
@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
       { path: "gasolina", element: withSuspense(<GasolinaPage />) },
       { path: "gas-lp", element: withSuspense(<GasLpPage />) },
       { path: "supermercados", element: withSuspense(<SupermercadosPage />) },
-      { path: "chat", element: withSuspense(<ChatUnavailable />) },
+      { path: "chat", element: withSuspense(<ChatPage />) },
       { path: "*", element: withSuspense(<NotFound />) },
     ],
   },

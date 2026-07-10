@@ -31,6 +31,23 @@ def require_csrf(
     return sesion
 
 
+def require_csrf_si_sesion(
+    request: Request, sesion: dict | None = Depends(sesion_actual)
+) -> dict | None:
+    """
+    CSRF condicional para endpoints públicos con persistencia opcional (chat):
+    si hay sesión, exige el double-submit; si es anónimo, deja pasar (no hay nada
+    de usuario que proteger).
+    """
+    if sesion is None:
+        return None
+    enviado = request.headers.get(CSRF_HEADER)
+    esperado = sesion.get("csrf")
+    if not enviado or not esperado or not secrets_equal(enviado, esperado):
+        raise HTTPException(status_code=403, detail="Token CSRF inválido.")
+    return sesion
+
+
 def usuario_actual(sesion: dict = Depends(require_session)) -> dict:
     """Carga el usuario de la sesión desde la DB (401 si ya no existe)."""
     u = UsuarioRepository().obtener_por_sub(sesion["sub"])
