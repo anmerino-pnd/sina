@@ -53,6 +53,24 @@ function iconoPunto(color: string, seleccionado: boolean): L.DivIcon {
   });
 }
 
+/**
+ * Corrige el tamaño del mapa. Leaflet cachea las dimensiones del contenedor al
+ * inicializar; como el mapa monta perezoso (lazy/Suspense) durante el reflow del
+ * grid, a veces mide una altura equivocada y pinta tiles en gris hasta un resize
+ * (el clásico "hay que dar F5"). Invalidamos tras el layout y en cada resize.
+ */
+function InvalidarTamano() {
+  const map = useMap();
+  useEffect(() => {
+    const fix = () => map.invalidateSize();
+    requestAnimationFrame(fix); // tras revelar el Suspense / asentar el layout
+    const ro = new ResizeObserver(fix); // cubre breakpoints md/xl + crecimiento flex-1
+    ro.observe(map.getContainer());
+    return () => ro.disconnect();
+  }, [map]);
+  return null;
+}
+
 /** Ajusta el encuadre cuando cambia el conjunto de estaciones. */
 function AjustarEncuadre({ estaciones }: { estaciones: MarcadorEstacion[] }) {
   const map = useMap();
@@ -126,7 +144,10 @@ export default function StationMap({
   }, [modoFijar]);
 
   return (
-    <div ref={contenedorRef} className="h-[420px] overflow-hidden rounded-[var(--radius-card)] border border-sand-200 md:h-full">
+    <div
+      ref={contenedorRef}
+      className="isolate size-full overflow-hidden rounded-[var(--radius-card)] border border-sand-200"
+    >
       <MapContainer
         center={CENTRO_MX}
         zoom={5}
@@ -141,6 +162,7 @@ export default function StationMap({
           maxZoom={19}
         />
 
+        <InvalidarTamano />
         <AjustarEncuadre estaciones={estaciones} />
         <CentrarSeleccion estaciones={estaciones} seleccionadoNumero={seleccionadoNumero} />
         <ClicMapa modoFijar={modoFijar} onFijarPunto={onFijarPunto} onDeselect={onDeselect} />

@@ -287,15 +287,30 @@ export default function GasolinaPage() {
                 Colapsa a 2 columnas en tablet y a 1 en móvil (el mapa va primero).
               */}
               <div className="grid gap-5 lg:grid-cols-12">
-                {/* Ranking — izquierda en desktop, debajo del mapa en móvil */}
-                <div className="order-2 lg:order-1 lg:col-span-5 xl:col-span-3">
+                {/* Ranking (+ cercanas al fijar punto) — izquierda en desktop,
+                    debajo del mapa en móvil. Al fijar punto, el Top 10 se compacta
+                    (menos filas, scroll interno) para dejar sitio a las cercanas. */}
+                <div className="order-2 flex flex-col gap-5 lg:order-1 lg:col-span-5 xl:col-span-3">
                   <RankingTable
                     titulo={`Top 10 más baratas · ${capitalizar(st.fuel)}`}
                     filas={ranking}
                     seleccionadoId={st.seleccionadoNumero}
                     onSelect={(id) => dispatch({ type: "SELECT", numero: id })}
                     mostrarCategoria={false}
+                    compacto={!!st.punto && cercanas.length > 0}
                   />
+                  {st.punto && cercanas.length > 0 && (
+                    <NearbyList
+                      titulo={
+                        cercanasDentro >= 2
+                          ? `${cercanasDentro} gasolineras en 2 km`
+                          : "Más cercanas a ti"
+                      }
+                      items={cercanas}
+                      seleccionadoId={st.seleccionadoNumero}
+                      onSelect={(n) => dispatch({ type: "SELECT", numero: n })}
+                    />
+                  )}
                 </div>
 
                 {/* Mapa — centro, el panel más grande */}
@@ -311,7 +326,10 @@ export default function GasolinaPage() {
                     }
                     onQuitarPunto={() => dispatch({ type: "CLEAR_PUNTO" })}
                   />
-                  <div className="h-[380px] flex-1 md:h-[460px] xl:h-[620px]">
+                  {/* flex-1 hace que el mapa llene la columna; como el grid estira
+                      todas las columnas a la más alta, el mapa iguala la altura de
+                      las cartas laterales. min-h evita que se aplaste en móvil. */}
+                  <div className="min-h-[420px] flex-1">
                     <Suspense fallback={<Skeleton className="size-full" />}>
                       <StationMap
                         estaciones={marcadores}
@@ -329,7 +347,7 @@ export default function GasolinaPage() {
                   </div>
                 </div>
 
-                {/* Rail derecho — calculadora + detalle + cercanas.
+                {/* Rail derecho — calculadora + detalle.
                     En tablet ocupa el ancho completo con 2 columnas internas. */}
                 <div className="order-3 grid gap-5 sm:grid-cols-2 lg:col-span-12 xl:col-span-3 xl:grid-cols-1">
                   {calc && (
@@ -350,6 +368,7 @@ export default function GasolinaPage() {
                   <StationDetail
                     estacion={seleccionada}
                     categoria={seleccionadaCat}
+                    fuel={st.fuel}
                     distanciaKm={distanciaSeleccion}
                     esBase={!!st.seleccionadoNumero && st.baseNumero === st.seleccionadoNumero}
                     onFijarBase={() =>
@@ -357,17 +376,6 @@ export default function GasolinaPage() {
                       dispatch({ type: "SET_BASE", numero: st.seleccionadoNumero })
                     }
                   />
-                  {st.punto && cercanas.length > 0 && (
-                    <NearbyList
-                      titulo={
-                        cercanasDentro >= 2
-                          ? `${cercanasDentro} gasolineras en 2 km`
-                          : "Más cercanas a ti"
-                      }
-                      items={cercanas}
-                      onSelect={(n) => dispatch({ type: "SELECT", numero: n })}
-                    />
-                  )}
                 </div>
               </div>
             </div>
