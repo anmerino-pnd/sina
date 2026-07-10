@@ -50,14 +50,16 @@ export function FuelCalculator({
   const litrosBase = tipo === "litros" ? m : m / basePrecio;
   const costoBase = tipo === "litros" ? m * basePrecio : m;
 
-  // Comparación contra la referencia (más cara o seleccionada).
-  // `favorable` = tu base sale mejor que la referencia. Nunca mostramos números
-  // negativos: cambian el verbo (Ahorras ↔ Pagas más) y el color según el sentido.
+  // El mensaje vive en la caja de la referencia (estación seleccionada / la más
+  // cara), así que describe a ESA estación respecto a tu base:
+  //   `favorable` = la referencia es más barata → cambiarte a ella te ahorra.
+  // Nunca mostramos números negativos: cambian el verbo (Ahorras ↔ Pagas más) y
+  // el color según el sentido.
   let comp: { costo: string; delta: string; pct: string; favorable: boolean } | null = null;
   if (refPrecio != null && refNombre != null && refPrecio !== basePrecio) {
     if (tipo === "litros") {
       const costoRef = m * refPrecio;
-      const ahorro = costoRef - costoBase; // > 0 → tu base es más barata
+      const ahorro = costoBase - costoRef; // > 0 → la seleccionada es más barata
       comp = {
         costo: formatearPesos(costoRef),
         delta: formatearPesos(Math.abs(ahorro)),
@@ -66,11 +68,11 @@ export function FuelCalculator({
       };
     } else {
       const litrosRef = m / refPrecio;
-      const extra = litrosBase - litrosRef; // > 0 → tu base rinde más
+      const extra = litrosRef - litrosBase; // > 0 → la seleccionada rinde más
       comp = {
         costo: `${litrosRef.toFixed(2)} L`,
         delta: `${Math.abs(extra).toFixed(2)} L`,
-        pct: `${Math.abs((extra / litrosRef) * 100).toFixed(1)}%`,
+        pct: `${Math.abs((extra / litrosBase) * 100).toFixed(1)}%`,
         favorable: extra >= 0,
       };
     }
