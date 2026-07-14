@@ -5,12 +5,12 @@
 */
 
 :root {
-  --sina-brand: #7a2492;      /* violeta de marca (brand-600) */
-  --sina-brand-dark: #611b75; /* brand-700 */
+  --sina-brand: #82269b;      /* violeta de marca (brand-600) */
+  --sina-brand-dark: #541466; /* brand-700 */
   --sina-sand: #f4eee2;       /* arena clara */
   --sina-ink: #241f1b;        /* tinta cálida */
-  --sina-flare: #c2277f;      /* magenta destello (acento medido) */
-  --sina-low: #4e7a4f;        /* barato */
+  --sina-flare: #a81568;      /* magenta destello (acento medido) */
+  --sina-low: #447745;        /* barato */
   --sina-mid: #bb8a38;        /* promedio */
   --sina-high: #b0472f;       /* caro */
 }
