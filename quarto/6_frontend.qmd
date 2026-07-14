@@ -1,0 +1,93 @@
+---
+title: "Frontend y Diseño"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 4
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 6.1. La SPA
+
+El frontend es una **SPA** en **React 19 + Vite + TypeScript + Tailwind v4**, mobile-first, servida
+por el mismo backend de FastAPI en producción (mount `/assets` + catch-all). Consume la API REST y,
+para el chat, lee **SSE** vía `fetch` + `response.body.getReader()`.
+
+```{mermaid}
+%%| label: fig-spa
+%%| fig-cap: "Rutas y consumo de datos de la SPA"
+flowchart TD
+    ROOT["App (React Router)"] --> L["/ — Landing"]
+    ROOT --> G["/gasolina"]
+    ROOT --> GL["/gas-lp"]
+    ROOT --> S["/supermercados"]
+    ROOT --> C["/chat"]
+
+    G -->|"GET /api/v1/gasolina"| API[["API REST"]]
+    GL -->|"GET /api/v1/gas-lp"| API
+    S -->|"GET /api/v1/supermercados"| API
+    C -->|"POST /api/v1/chat (SSE)"| API
+    ROOT -->|"GET /api/v1/catalogo"| API
+
+    classDef ruta fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef api  fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class ROOT,L,G,GL,S,C ruta;
+    class API api;
+```
+
+## 6.2. Sistema de diseño: "Calypte costae"
+
+El sistema de diseño toma su nombre del **colibrí de Costa** (*Calypte costae*), ave del desierto
+sonorense, en sintonía con el nombre del proyecto (el cacto *sina*). Es deliberadamente **editorial
+y sobrio**, alejado del glassmorphism morado genérico:
+
+- **Color.** Violeta de gorguera como **acento** (no como fondo); verde-bronce secundario; neutros
+  cálidos de arena/crema del desierto. El magenta destello se usa muy medido.
+- **Precio semántico.** Verde/dorado/rojo del desierto para Barato/Promedio/Caro (tonos apagados,
+  no neón), definidos como variables y con variante para modo oscuro.
+- **Tipografía.** Display humanista con carácter (Fraunces) + cuerpo neutro cálido (Public Sans),
+  ambas auto-hospedadas (sin CDN, compatibles con CSP estricta).
+- **Modo oscuro.** Se voltea toda la neutralidad sobreescribiendo variables bajo `html.dark`; marca
+  y colores de precio se ajustan para conservar contraste.
+- **Sin emojis.** Íconos SVG de línea y flechas; el tono formal evita el look "generado por IA".
+- **Vidrio esmerilado** solo en navbar sticky y controles del mapa (mejor contraste/accesibilidad).
+
+## 6.3. Páginas
+
+- **Gasolina** — mapa Leaflet + ranking Top 10 + filtro por categoría en el mapa + calculadora de
+  ahorro (comparación base/seleccionada) + "cerca de ti" (geolocalización) + estaciones cercanas.
+  Layout de tres paneles responsivo.
+- **Gas LP** — cascada estado → municipio → localidad, pills de tipo/capacidad, ranking y detalle de
+  proveedor con vigencia.
+- **Supermercados** — búsqueda con debounce + filtro por tienda + tabla de precios.
+- **Chat** — conversación contra `/api/v1/chat` (streaming SSE + botón de pausa); con login, panel
+  de conversaciones (máx 5) y "cargar mensajes anteriores" (paginación por puntero); chip de
+  ubicación no intrusivo compartido con Gasolina.
+
+## 6.4. Decisiones de UX notables
+
+- **Colores de precio robustos.** El color en mapa/ranking/detalle usa el criterio robusto
+  (mediana ± MAD) descrito en [Datos e Ingesta](3_datos.qmd#criterio),
+  no el rango mín–máx; así un outlier no distorsiona la lectura.
+- **Calculadora de ahorro.** El mensaje se expresa desde la **perspectiva de la estación
+  seleccionada** respecto a la base ("Ahorras $X" si es más barata, "Pagas $X más" si es más cara),
+  con flecha y color coherentes.
+- **Mapa Leaflet.** Se aísla el stacking context del mapa (`isolate`) para que sus controles no
+  tapen menús ni el navbar; e `invalidateSize` + `ResizeObserver` evitan los tiles en gris al
+  montar/redimensionar.
+- **Listas y scroll.** Resaltado de fila tipo "pill" redondeado (hover/seleccionado); estaciones
+  cercanas como lista con scroll propio; scrollbar afinada y cálida, consistente con el tema.
+- **Responsividad.** En pantalla partida, Top 10 y cercanas se colocan lado a lado; las cartas
+  laterales conservan su tamaño natural aunque el mapa crezca.
+
+## 6.5. Ubicación compartida
+
+La geolocalización se captura solo por acción explícita del usuario y se cachea en `localStorage`
+(`sina.ubicacion`), compartida entre **Gasolina** y **Chat**: si la usaste en una, la otra ya la
+tiene, sin volver a preguntar.
+
+:::

@@ -1,0 +1,117 @@
+---
+title: "Despliegue y Operación"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 4
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 8.1. Requisitos
+
+- **Python ≥ 3.12** con **uv** como gestor de paquetes.
+- **Podman** (para levantar PostgreSQL + pgvector y MongoDB vía `compose.yaml`).
+- **Ollama** con un modelo con tools (p. ej. `qwen2.5:7b`) para el chat.
+- **Node** (para construir la SPA en `frontend/`).
+
+## 8.2. Correr en local
+
+```bash
+uv sync                                       # instala dependencias
+podman-compose up -d                          # PostgreSQL 16 + pgvector + MongoDB
+uv run python -m sina.db.seeder               # catálogos + rutas de scraping
+uv run uvicorn sina.main:app --reload         # servidor de desarrollo en :8000
+```
+
+Para el chat (Fase 3):
+
+```bash
+ollama pull qwen2.5:7b                         # modelo con tool-calling
+# .env → ENABLE_CHAT=1
+```
+
+Frontend (SPA):
+
+```bash
+cd frontend
+npm install
+npm run dev        # desarrollo
+npm run build      # producción (la sirve FastAPI en el mismo origen)
+```
+
+> **Recordatorio (gotcha).** Define el `.env` (copiado de `.env.example`) **antes** de importar
+> cualquier módulo bajo `sina.db`: el destino de la base de datos se fija en import-time
+> (ver [Arquitectura §2.5](2_arquitectura.qmd#db-gotcha)).
+
+## 8.3. Configuración (`.env`)
+
+Variables clave (ver `.env.example` para la lista completa):
+
+| Grupo | Variables |
+| --- | --- |
+| Base de datos | `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (si faltan → SQLite fallback) |
+| Scraping (URLs base) | `SORIANA_BASE_URL`, `DELSOL_BASE_URL`, `BENAVIDES_BASE_URL`, `GUADALAJARA_BASE_URL` |
+| Chat / LLM | `ENABLE_CHAT`, `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `LLM_TEMPERATURE`, `LLM_MAX_ITERS` |
+| Embeddings | `ENABLE_EMBEDDINGS`, `EMBEDDING_MODEL` |
+| MongoDB (chat) | `MONGO_URI`, `MONGO_DB`, `CHAT_MAX_CONVERSACIONES`, `CHAT_CHUNK_SIZE` |
+| Scheduler | `ENABLE_SCHEDULER`, `ENABLE_SUPERMERCADOS_SCRAPING` |
+| Seguridad / auth | `GOOGLE_OAUTH_CLIENT_ID`, `ADMIN_API_KEY`, allowlist de CORS |
+
+## 8.4. Operación
+
+- **Scheduler** (`ENABLE_SCHEDULER=1`): gasolina diario 06:00, gas LP sábados 08:00 (hora MX);
+  supermercados semanal **opt-in** (`ENABLE_SUPERMERCADOS_SCRAPING`).
+- **Health check:** `GET /api/v1/health` reporta la última actualización y la vigencia por categoría.
+- **Degradación elegante:** si MongoDB no está, el chat funciona sin persistencia; si los datos de
+  gobierno fallan, se sirve caché vencida con aviso (`fuente = cache_vencido`).
+
+## 8.5. Empaquetado (meta)
+
+- **Podman, no Docker.** `Containerfile` para el backend; `compose.yaml` para app + PostgreSQL/pgvector
+  (+ MongoDB). *(Fase 5, pendiente.)*
+
+## 8.6. Estrategia de despliegue en GCP (objetivo)
+
+El flujo **extraer → limpiar → guardar → servir UI** encaja bien en un modelo serverless:
+
+```{mermaid}
+%%| label: fig-gcp
+%%| fig-cap: "Despliegue objetivo en GCP"
+flowchart TB
+    U["Usuario"] --> CR["Cloud Run<br/>backend FastAPI + SPA"]
+    CR --> SQL[("Cloud SQL<br/>PostgreSQL + pgvector")]
+    CR --> SM["Secret Manager<br/>credenciales / claves"]
+    SCH["Cloud Scheduler"] --> JOBS["Cloud Run Jobs<br/>scraping / refresco"]
+    JOBS --> SQL
+
+    classDef svc  fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef data fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    classDef sec  fill:#fef9c3,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    class U,CR,SCH,JOBS svc;
+    class SQL data;
+    class SM sec;
+```
+
+- **Backend + SPA:** Cloud Run.
+- **Base de datos:** Cloud SQL (PostgreSQL con pgvector).
+- **Scraping / refresco:** Cloud Scheduler → Cloud Run Jobs.
+- **Secretos:** Secret Manager.
+
+Destinos posibles: **PC local**, **servidor dedicado** (mismo contenedor) y **GCP** (meta). Falta
+conseguir patrocinador para servidor/dominio.
+
+## 8.7. Construir esta documentación
+
+El sitio se genera con Quarto (el sitio HTML sale en `../docs/`):
+
+```bash
+cd quarto
+quarto render        # genera el sitio en ../docs
+quarto preview       # vista previa con recarga en vivo
+```
+
+:::

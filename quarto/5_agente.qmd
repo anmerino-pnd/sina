@@ -1,0 +1,126 @@
+---
+title: "Agente Conversacional"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 4
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 5.1. Qué es
+
+El agente es el **asistente de ahorro** de Sina: recibe preguntas en lenguaje natural, consulta la
+base de datos mediante **tools** y responde en palabras sencillas. Vive en `src/sina/agent/` y se
+expone por `POST /api/v1/chat` (streaming SSE). Está pensado para ser accesible a personas con poca
+familiaridad digital.
+
+Ejemplos de consultas que resuelve:
+
+- **Gasolina:** "¿Dónde está la gasolina más barata cerca de mí?", "¿Cuánto cuesta la premium en Hermosillo?"
+- **Gas LP:** "¿Qué proveedor de gas es más barato en [localidad]?"
+- **Supermercados:** "¿Dónde está más barata la leche?", "Tengo esta lista […], ¿dónde me sale más barato?"
+- **General:** "¿Cuánto me ahorro si cambio de gasolinera?", "Explícame más sencillo".
+
+## 5.2. Proveedor de LLM (abstracto)
+
+`llm/base.py` define `LLMProvider` (ABC) con `chat_stream`/`chat` y dataclasses de apoyo
+(`ToolCall`, `LLMUso`, `LLMDelta`). La fábrica `llm/factory.py` (`get_llm_provider()`) es perezosa,
+gated por `ENABLE_CHAT` y elegida por `LLM_PROVIDER`.
+
+- **Hoy:** `OllamaProvider` (open-source local, con tool-calling y streaming nativos de Ollama).
+- **Futuro (patrocinio):** se agrega un `GeminiProvider` (subclase de la ABC) y una rama en la
+  fábrica; **las tools no cambian**. Mismo patrón que `EmbeddingProvider`.
+
+## 5.3. Tools internas
+
+En `agent/tools/`, cada tool envuelve una consulta a los repositorios con su **JSON Schema**.
+`registry.construir_registro(ctx)` las crea **cerrando sobre un `ContextoConsulta`**
+(estado/municipio/localidad/lat/lng). El **`lat/lng` se inyecta** desde el contexto — el LLM nunca
+lo rellena (evita que alucine coordenadas).
+
+| Tool | Función |
+| --- | --- |
+| `buscar_gasolina` | Precio o cercanía (haversine) de gasolineras. |
+| `buscar_gas_lp` | Precios de Gas LP por localidad/municipio. |
+| `listar_localidades_gas_lp` | Localidades disponibles para Gas LP. |
+| `buscar_producto` | Productos de supermercado (vectorial + filtro). |
+| `comparar_lista` | El más barato por tienda para una lista de ítems. |
+| `armar_canasta` | Canasta básica según presupuesto. |
+| `datos_disponibles` | Frescura/estado de los datos por categoría. |
+
+## 5.4. Motor de grafo y ciclo del agente
+
+`graph.py` es un **motor de grafo mínimo** (estilo LangGraph, **sin** LangChain/LangGraph): nodos
+que pueden ser generadores (ceden eventos de streaming y `return` la actualización de estado),
+aristas fijas y condicionales. `agent.py` arma el grafo **agente ↔ tools** y lo recorre hasta
+`LLM_MAX_ITERS`, cediendo eventos `paso`/`token`/`done`.
+
+```{mermaid}
+%%| label: fig-grafo
+%%| fig-cap: "Grafo del agente: iteración agente ↔ tools"
+flowchart LR
+    START(["Mensaje del usuario<br/>+ contexto (lat/lng)"]) --> AGENTE
+    AGENTE["nodo_agente<br/>LLM.chat(messages, tools)"] --> R{"¿tool_calls?<br/>¿iter &lt; MAX?"}
+    R -->|"Sí"| TOOLS["nodo_tools<br/>ejecuta tools + mide timings"]
+    TOOLS --> AGENTE
+    R -->|"No"| RESP["nodo_respuesta<br/>chat_stream → tokens (SSE)"]
+    RESP --> END(["done<br/>+ telemetría"])
+
+    classDef nodo  fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef dec   fill:#fef9c3,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    classDef term  fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class AGENTE,TOOLS,RESP nodo;
+    class R dec;
+    class START,END term;
+```
+
+## 5.5. Streaming, pausa y ubicación
+
+- `POST /api/v1/chat` responde como **SSE** (`text/event-stream`), cediendo eventos `paso`
+  (tool en curso), `token` (delta de texto) y `done` (respuesta final + metadatos).
+- **Pausa:** el cliente puede abortar la conexión; el servidor detecta el disconnect, cierra el
+  generador y **no persiste nada** de ese intercambio.
+- **Ubicación:** viaja en el body de cada request solo si el usuario la compartió; **nunca se
+  persiste en servidor**. El frontend la captura de forma no intrusiva y la cachea, compartida con
+  el tablero de Gasolina.
+- **Sesión opcional:** funciona sin login (sin persistencia) y con login (guarda en MongoDB). CSRF
+  condicional (solo si hay cookie) + rate limit.
+
+## 5.6. Historial en MongoDB {#historial}
+
+El historial usa **MongoDB** (local por ahora; al patrocinar un servidor solo cambia `MONGO_URI`).
+Máximo `CHAT_MAX_CONVERSACIONES` (5) por usuario. Se implementa con el **patrón bucket / lista
+ligada** (estilo WhatsApp/Messenger) para paginar hacia atrás sin cargar cientos de mensajes:
+
+```{mermaid}
+%%| label: fig-mongo
+%%| fig-cap: "Historial de chat: bucket + lista ligada de chunks"
+flowchart RL
+    CONV["conversaciones<br/>cabeza_chunk_id ●───▶"] --> C3
+    C3["chat_chunks (seq 3)<br/>mensajes ≤ N · más reciente"] -->|"anterior_id"| C2
+    C2["chat_chunks (seq 2)<br/>mensajes ≤ N"] -->|"anterior_id"| C1
+    C1["chat_chunks (seq 1)<br/>mensajes ≤ N · más viejo"] -->|"anterior_id = null"| FIN(["inicio"])
+
+    classDef conv  fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef chunk fill:#f4eee2,stroke:#a955c4,stroke-width:1px,color:#241f1b;
+    classDef term  fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class CONV conv;
+    class C1,C2,C3 chunk;
+    class FIN term;
+```
+
+Solo el **chunk cabeza** se muta (`$push`); los llenos quedan inmutables. Si Mongo no está
+disponible, el chat sigue funcionando **sin** persistencia (degradación elegante). La tabla
+Postgres `chat_historial` quedó deprecada.
+
+## 5.7. Telemetría por mensaje
+
+Cada respuesta agrega telemetría para optimizar después: **modelo**, **input/output/cached tokens**,
+**tokens por segundo**, **duración**, `tool_timings` (por tool) y `phase_timings`
+(`llm_ms`/`tools_ms`/`total_ms`/`iteraciones`).
+
+:::

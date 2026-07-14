@@ -1,0 +1,75 @@
+/*
+  Sina — hoja de estilo de la documentación.
+  Re-skin del navbar y acentos con la paleta "Calypte costae" de la app:
+  violeta de gorguera (marca), arena/crema del desierto y tinta cálida.
+*/
+
+:root {
+  --sina-brand: #7a2492;      /* violeta de marca (brand-600) */
+  --sina-brand-dark: #611b75; /* brand-700 */
+  --sina-sand: #f4eee2;       /* arena clara */
+  --sina-ink: #241f1b;        /* tinta cálida */
+  --sina-flare: #c2277f;      /* magenta destello (acento medido) */
+  --sina-low: #4e7a4f;        /* barato */
+  --sina-mid: #bb8a38;        /* promedio */
+  --sina-high: #b0472f;       /* caro */
+}
+
+/* Navbar: fondo arena con borde violeta (tema claro). */
+.navbar {
+  background-color: var(--sina-sand) !important;
+  border-bottom: 3px solid var(--sina-brand);
+}
+.navbar .navbar-title,
+.navbar a,
+.navbar-brand,
+.navbar-toggler {
+  color: var(--sina-brand-dark) !important;
+  font-weight: 600;
+}
+.navbar a:hover,
+.navbar .nav-link.active {
+  color: var(--sina-flare) !important;
+}
+
+/* En modo oscuro el navbar se apoya en el tema darkly, solo mantenemos el
+   borde de marca y un texto claro legible. */
+.quarto-dark .navbar {
+  background-color: #1d1811 !important;
+  border-bottom: 3px solid var(--sina-brand);
+}
+.quarto-dark .navbar .navbar-title,
+.quarto-dark .navbar a,
+.quarto-dark .navbar-brand {
+  color: #e0bff0 !important;
+}
+.quarto-dark .navbar a:hover {
+  color: var(--sina-flare) !important;
+}
+
+/* Encabezados con un acento violeta sutil. */
+h1, h2 {
+  color: var(--sina-brand-dark);
+}
+.quarto-dark h1,
+.quarto-dark h2 {
+  color: #e0bff0;
+}
+
+/* Enlaces del cuerpo en el violeta de marca. */
+a {
+  color: var(--sina-brand);
+}
+.quarto-dark a {
+  color: #d6459e;
+}
+
+/* Chips de estado usados en las tablas de progreso. */
+.estado-ok { color: var(--sina-low); font-weight: 600; }
+.estado-wip { color: var(--sina-mid); font-weight: 600; }
+.estado-no { color: var(--sina-high); font-weight: 600; }
+
+/* Tablas un poco más aireadas. */
+table {
+  font-size: 0.95rem;
+}

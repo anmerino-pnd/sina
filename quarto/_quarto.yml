@@ -1,0 +1,61 @@
+project:
+  type: website
+  output-dir: ../docs
+  render:
+    - 0_inicio.qmd
+    - 1_vision.qmd
+    - 2_arquitectura.qmd
+    - 3_datos.qmd
+    - 4_backend.qmd
+    - 5_agente.qmd
+    - 6_frontend.qmd
+    - 7_estado.qmd
+    - 8_despliegue.qmd
+
+website:
+  title: "Sina"
+  site-url: "https://github.com/anmerino-pnd/sina"
+  back-to-top-navigation: true
+  navbar:
+    title: "Sina"
+    left:
+      - href: 0_inicio.qmd
+        text: Inicio
+      - href: 1_vision.qmd
+        text: Visión
+      - href: 2_arquitectura.qmd
+        text: Arquitectura
+      - href: 3_datos.qmd
+        text: Datos e Ingesta
+      - href: 4_backend.qmd
+        text: Backend y API
+      - href: 5_agente.qmd
+        text: Agente
+      - href: 6_frontend.qmd
+        text: Frontend
+      - href: 7_estado.qmd
+        text: Estado y Roadmap
+      - href: 8_despliegue.qmd
+        text: Despliegue
+    right:
+      - icon: github
+        href: https://github.com/anmerino-pnd/sina
+        aria-label: Repositorio en GitHub
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    css: styles.css
+    toc: true
+    toc-title: "Tabla de Contenidos"
+    toc-depth: 3
+    smooth-scroll: true
+    code-copy: true
+    mermaid:
+      theme: neutral
+    execute:
+      echo: false
+
+lang: es

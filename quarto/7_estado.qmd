@@ -1,0 +1,146 @@
+---
+title: "Estado, Fases y Roadmap"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 4
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+Esta es la **página viva** del proyecto: refleja qué está logrado, qué está en curso y qué queda a
+futuro. Se actualiza conforme avanza el trabajo.
+
+> **Leyenda:** ✅ completado · 🚧 en curso / parcial · ❌ pendiente · 🗑️ deprecado.
+
+## 7.1. Estado por módulo
+
+| Módulo | Estado | Notas |
+| --- | :---: | --- |
+| Pipeline + API Gasolina | ✅ | API CRE + caché 24 h on-demand. |
+| UI Gasolina (SPA) | ✅ | Mapa, ranking, calculadora, cercanas. |
+| Scraper ubicaciones gasolineras | ✅ | Listo; se corre puntualmente. |
+| Pipeline + API Gas LP | ✅ | API CNE + caché semanal. |
+| UI Gas LP (SPA) | ✅ | Cascada estado→municipio→localidad. |
+| Scraping Soriana | ✅ | SFCC; Playwright. |
+| Scraping Del Sol | ✅ | VTEX; Playwright async. |
+| Scraping Benavides | ✅ | Magento; `curl_cffi`; paginación `?p=N`. |
+| Scraping Farmacias Guadalajara | ✅ | SFCC; `curl_cffi`; Super/Farmacia/Dermo. |
+| Embeddings de productos | ✅ | Opt-in `ENABLE_EMBEDDINGS`, requiere pgvector. |
+| Búsqueda / API Supermercados | ✅ | Vectorial + fallback de texto. |
+| Agente / Chat (tools internas) | ✅ | LLM Ollama + tools + grafo; SSE; historial Mongo. |
+| Pipeline volantes (Casa Ley) | 🚧 | Descarga + anotación manual + OCR LLM (track secundario). |
+| Scheduling automático | ✅ | APScheduler (gasolina 06:00, gas LP sáb 08:00). |
+| Logging + health check | ✅ | Logging unificado; `GET /api/v1/health`. |
+| SPA React (Landing + 4 secciones) | ✅ | Vite + React + Tailwind + modo oscuro; chat integrado. |
+| Google OAuth | ✅ | Cookie httpOnly + CSRF; requiere `GOOGLE_OAUTH_CLIENT_ID`. |
+| `GeminiProvider` (LLM patrocinado) | ❌ | Hueco listo (subclase de la ABC). |
+| Tests / CI-CD / Containerfile | ❌ | Fase 5. |
+| QQP / PROFECO | 🗑️ | **Eliminado del código** (jul 2026): modelo y repositorio borrados; la tabla `qqp_precios` puede quedar huérfana en DBs existentes. |
+
+## 7.2. Fases de desarrollo
+
+```{mermaid}
+%%| label: fig-roadmap
+%%| fig-cap: "Roadmap por fases y su estado"
+flowchart LR
+    F1["Fase 1<br/>Estabilización backend"] --> F2["Fase 2<br/>Supermercados + embeddings"]
+    F2 --> F3["Fase 3<br/>Capa de agente"]
+    F3 --> F4["Fase 4<br/>SPA React + OAuth"]
+    F4 --> F5["Fase 5<br/>Calidad y despliegue"]
+    F5 --> F6["Fase 6<br/>ML de volantes"]
+
+    classDef hecho    fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    classDef curso    fill:#fef9c3,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    classDef futuro   fill:#f4eee2,stroke:#a955c4,stroke-width:1px,color:#241f1b;
+    class F1,F2,F3,F4 hecho;
+    class F5 curso;
+    class F6 futuro;
+```
+
+### 7.2.1. Fase 1 — Estabilización del backend ✅
+
+- [x] PostgreSQL + pgvector como default; SQLite solo fallback dev (extensión `vector` auto-creada).
+- [x] Deprecar QQP/PROFECO (jul 2026: modelo/repo finalmente **eliminados** del código).
+- [x] Upserts portables SQLite/PostgreSQL (`_dialect_insert`; el constructo del dialecto SQLite
+      no compilaba bajo Postgres).
+- [x] APScheduler en el `lifespan` (gasolina 06:00, gas LP sáb 08:00, hora MX).
+- [x] Logging unificado + fallback de "datos vencidos con aviso".
+- [x] Health check `GET /api/v1/health`.
+
+### 7.2.2. Fase 2 — Supermercados + Embeddings ✅ (base)
+
+- [x] Scraping directo como fuente primaria (Soriana, Del Sol, Benavides, Guadalajara).
+- [x] Seeder genérico + URL base por tienda en `.env` + job semanal opt-in.
+- [x] Normalización básica y **dedup por `pid`** en el lote.
+- [x] Embeddings conectados en `upsert_productos` (opt-in) + búsqueda vectorial con fallback de texto.
+- [x] Endpoint `GET /api/v1/supermercados`.
+- [ ] Dedup semántico cross-tienda; ubicación por producto (filtro por municipio). *(futuro)*
+
+### 7.2.3. Fase 3 — Capa de agente ✅ (base)
+
+- [x] `LLMProvider` (ABC) + `OllamaProvider` + fábrica perezosa gated por `ENABLE_CHAT`.
+- [x] Tools internas sobre los repos; `lat/lng` inyectado (no lo alucina el LLM).
+- [x] Motor de grafo propio (sin LangChain/LangGraph); iteraciones acotadas.
+- [x] `POST /api/v1/chat` en **streaming SSE** con pausa; historial en MongoDB.
+- [x] Telemetría por mensaje.
+- [ ] `GeminiProvider` real (con `cached_tokens`) y streaming SSE "premium" (reintentos). *(futuro)*
+
+### 7.2.4. Fase 4 — SPA React + OAuth ✅ (base)
+
+- [x] Vite + React 19 + Router + Tailwind v4, mobile-first, estilo editorial + modo oscuro.
+- [x] Gasolina, Gas LP (refactor a React conservando funciones), Supermercados (nueva), Chat (nueva).
+- [x] Google OAuth 2.0 (cookie httpOnly + Secure + SameSite firmada + CSRF); sin contraseñas.
+- [x] Extra: SPA servida desde FastAPI mismo origen, `GET /api/v1/catalogo`, endurecimiento
+      (CSP/HSTS, CORS allowlist, rate limiting, `ADMIN_API_KEY` en scraping), tuning del pool.
+- [x] Auditoría de endurecimiento (jul 2026): rate limiting **global** activo
+      (`SlowAPIMiddleware`, 240/min por IP), anti path-traversal y `X-Admin-Key` en todo el flujo
+      annotator (incl. `GET /status` y `/sina/annotator`), errores 500 genéricos (detalle solo en
+      log), validación del payload del chat (rangos lat/lng y topes de longitud), timeout en la
+      llamada a CRE, catálogo en 1 query, `import cv2` perezoso y `Cache-Control` en
+      catálogo/health.
+- [x] Segunda pasada (jul 2026): **stale-while-revalidate** para CRE/CNE (datos vencidos se
+      sirven al instante y el refresco corre en background), índice **trigram** para la búsqueda
+      de productos (PostgreSQL), marcadores del mapa **memoizados** (iconos cacheados +
+      `React.memo` por marcador) y fail-fast en prod con credenciales por defecto.
+- [ ] `favoritos` y `alertas` ("avísame si baja de $X"). *(Fase 4+)*
+
+### 7.2.5. Fase 5 — Calidad y despliegue ❌
+
+- [ ] Tests con pytest (repos/tools, endpoints, mocks de scrapers y gobierno).
+- [ ] CI/CD con GitHub Actions (lint + tests en PR; build de imagen al merge).
+- [ ] Empaquetado con Podman (`Containerfile`, no Docker) + `compose` app + Postgres.
+- [ ] Deploy multi-destino: local / servidor dedicado / **GCP** (Cloud Run + Cloud SQL + Scheduler).
+- [ ] Patrocinador para servidor / dominio (p. ej. `sina.mx`).
+
+### 7.2.6. Fase 6 — Automatización ML de volantes (largo plazo) ❌
+
+- [ ] Acumular dataset del annotator (~500+ imágenes).
+- [ ] Entrenar detección de zonas (p. ej. Roboflow) e integrarla al OCR existente.
+- [ ] Expansión geográfica de volantes.
+
+## 7.3. Pendientes críticos inmediatos
+
+- [ ] Dedup semántico cross-tienda y ubicación de productos (filtro por municipio). *(Fase 2+)*
+- [ ] `GeminiProvider` real cuando haya patrocinio. *(Fase 3+)*
+- [ ] Arrancar Fase 5 (tests + CI/CD + Containerfile).
+
+## 7.4. Criterios de "listo para producción"
+
+Para presentar a un municipio / patrocinador:
+
+- [x] Los 3 tableros (Gasolina, Gas LP, Supermercados) funcionando en la SPA.
+- [x] Datos actualizándose automáticamente (scheduler).
+- [x] UI profesional, responsive (mobile-first) + modo oscuro.
+- [ ] Desplegado en servidor público con dominio propio.
+- [ ] Tests + CI/CD verdes.
+- [ ] Página "Acerca de" con el propósito del proyecto.
+- [ ] Métricas básicas (usuarios, consultas/día).
+
+**Nice to have:** chat con datos reales y un mensaje de impacto medible
+("una familia puede ahorrar $X al mes usando Sina").
+
+:::

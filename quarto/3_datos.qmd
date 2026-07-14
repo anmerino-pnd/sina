@@ -1,0 +1,158 @@
+---
+title: "Datos e Ingesta"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 5
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 3.1. Fuentes de datos
+
+Sina agrega tres familias de precios de consumo en México:
+
+| Categoría | Fuente | Técnica |
+| --- | --- | --- |
+| **Gasolina** | API de la **CRE** (Comisión Reguladora de Energía) | `requests` (API de gobierno) |
+| **Gas LP** | API de la **CNE** (precios máximos de Gas LP) | `requests` (API de gobierno) |
+| **Supermercados** | Sitios de Soriana, Del Sol, Benavides, Farmacias Guadalajara | Scraping (navegador o servidor, según la tienda) |
+| **Volantes** (secundario) | Casa Ley (Publitas) | Descarga de imágenes + anotación + OCR con LLM |
+
+Las gasolineras se llenan en **dos fases**: el scraping obtiene `latitud/longitud` y la API de la
+CRE completa los precios `magna/premium/diesel`. El Gas LP se guarda **desnormalizado** (IDs y
+nombres) para evitar JOINs.
+
+## 3.2. Estrategia de caché inteligente
+
+Cada categoría tiene su propia vigencia; el refresco es **on-demand** con
+**stale-while-revalidate** (datos vencidos se sirven de inmediato como `cache_vencido` y el
+refresco contra la fuente corre en background — ver
+[flujo en Arquitectura](2_arquitectura.qmd#flujo-de-datos-típico-caché-on-demand)) y hay un
+**scheduler** que precalienta los datos ya presentes.
+
+| Categoría | Frecuencia | Trigger |
+| --- | --- | --- |
+| Gasolina | Diaria (AM) | Usuario busca + datos > 24 h |
+| Gas LP | Semanal (sábado) | Usuario busca + datos > último sábado |
+| Supermercados | Programada (semanal opt-in) | Scraping directo |
+| Ubicaciones | Una vez + updates | Scraping inicial, luego solo cambios |
+
+Los modelos llevan métodos de vigencia (`esta_vigente()`, `necesita_actualizacion()`) apoyados en
+helpers de zona horaria de México (`config/timezone.py`).
+
+## 3.3. Pipeline de ingesta
+
+Los spiders de supermercados son **dirigidos por base de datos**: cada uno lee sus rutas activas de
+`catalogos_config` (vía `CatalogoRepository.obtener_rutas_activas`), arma cada URL como
+`base_url + url_path`, scrapea y hace `upsert` a `supermercados`. La **URL base por tienda** vive en
+`config/credentials.py`; los JSON de catálogo guardan solo el `url_path`.
+
+```{mermaid}
+%%| label: fig-ingesta
+%%| fig-cap: "Pipeline de ingesta de datos"
+flowchart LR
+    subgraph GOB["Gobierno (API)"]
+        CRE["CRE — gasolina"]
+        CNE["CNE — gas LP"]
+    end
+    subgraph SUP["Supermercados (scraping)"]
+        SOR["Soriana<br/>SFCC · Playwright"]
+        DEL["Del Sol<br/>VTEX · Playwright async"]
+        BEN["Benavides<br/>Magento · curl_cffi"]
+        GDL["Guadalajara<br/>SFCC · curl_cffi"]
+    end
+
+    CRE --> T["Transformar<br/>(pivot, normalizar)"]
+    CNE --> T
+    SOR --> N["Normalizar +<br/>dedup por pid"]
+    DEL --> N
+    BEN --> N
+    GDL --> N
+    N --> E["Embeddings<br/>(opt-in, pgvector)"]
+    T --> UP["upsert (Repository)"]
+    E --> UP
+    UP --> DB[("PostgreSQL 16<br/>+ pgvector")]
+
+    classDef gob   fill:#fdeede,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    classDef sup   fill:#f7eafb,stroke:#a955c4,stroke-width:1px,color:#3b0e48;
+    classDef paso  fill:#f4eee2,stroke:#7a2492,stroke-width:1px,color:#241f1b;
+    classDef datos fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class CRE,CNE gob;
+    class SOR,DEL,BEN,GDL sup;
+    class T,N,E,UP paso;
+    class DB datos;
+    style GOB fill:#faf7f0,stroke:#c87fdd,color:#241f1b;
+    style SUP fill:#faf7f0,stroke:#c87fdd,color:#241f1b;
+```
+
+Detalles por plataforma en [Backend y API → Scrapers](4_backend.qmd#scrapers). El seeder
+(`sina/db/seeder.py`) es **genérico**: `seed_catalogo_tienda(...)` carga cualquier `*_config.json`
+(departamento → categoría → `{url_path, prioridad}`), y `TIENDAS_CATALOGO` lista todas las tiendas.
+El `upsert` de productos **deduplica por `pid`** de forma global, así que categorías o tiendas que
+se traslapan nunca crean filas duplicadas.
+
+## 3.4. Esquema de datos
+
+### 3.4.1. PostgreSQL (tablas principales)
+
+| Tabla | Propósito |
+| --- | --- |
+| `gasolineras` | Precios + ubicaciones (PK = `numero`, el permiso CRE; `magna/premium/diesel`). |
+| `gas_lp_precios` | Precios Gas LP por permisionario/localidad (**desnormalizado**). |
+| `supermercados` | Productos + precios + **embedding** (columna pgvector). |
+| `catalogos_config` | Rutas activas de scraping por tienda. |
+| `cne_entidades` / `cne_municipios` / `cne_localidades` | Catálogos geográficos CNE. |
+| `usuarios` | Usuarios de Google OAuth (sin contraseña). |
+| `qqp_precios` | 🗑️ Legacy — el modelo/repo se **eliminaron del código** (jul 2026); la tabla puede quedar huérfana en DBs existentes (reemplazada por `supermercados`). |
+| `chat_historial` | 🗑️ Deprecada — el historial vive en MongoDB. |
+
+### 3.4.2. MongoDB (historial de chat)
+
+El chat usa MongoDB por ser documental y con paginación por punteros (detalle en
+[Agente](5_agente.qmd#historial)):
+
+| Colección | Propósito |
+| --- | --- |
+| `conversaciones` | `{google_sub, titulo, cabeza_chunk_id, num_mensajes, ultimo_preview}` |
+| `chat_chunks` | `{conversacion_id, mensajes:[…≤CHAT_CHUNK_SIZE], anterior_id, seq}` |
+
+## 3.5. Embeddings y búsqueda semántica
+
+Cuando `ENABLE_EMBEDDINGS=1` (solo PostgreSQL), `upsert_productos` invoca
+`EmbeddingService.vectorizar_productos()` en lote y puebla `Supermercado.embedding`. La búsqueda de
+productos combina **filtro duro** (tienda/departamento/categoría) con **similitud vectorial**
+(distancia coseno sobre pgvector), con **fallback de texto** (ILIKE) si no hay embeddings. El
+proveedor de embeddings es perezoso y abstracto (`EmbeddingProvider`), con modelo configurable vía
+`EMBEDDING_MODEL`.
+
+## 3.6. Criterio de precios (barato / promedio / caro) {#criterio}
+
+Los tableros clasifican cada precio en **Barato / Promedio / Caro** (color en mapas, rankings y
+badges). El criterio es **robusto a outliers** y coherente:
+
+- **Ancla = mediana** del municipio (para el combustible/categoría consultado); ningún valor
+  atípico la mueve.
+- **Dispersión = MAD** (desviación absoluta mediana) escalada a sigma robusta (`1.4826 · MAD`),
+  con un **piso relativo** (0.8 % de la mediana) para que la banda no colapse cuando muchos precios
+  son idénticos.
+- Clasificación por **z-score robusto**:
+
+```text
+z = (precio − mediana) / escala        escala = max(1.4826 · MAD, 0.008 · mediana)
+z ≤ −0.6745  → Barato
+z ≥ +0.6745  → Caro
+resto         → Promedio
+```
+
+El umbral `0.6745` equivale al rango intercuartílico de una distribución normal (± ese valor cubre
+el 50 % central), afinado con datos reales de Hermosillo. Ventajas frente al método anterior
+(partir el rango mín–máx en tercios): **un solo outlier ya no recorre los umbrales de todos**, y
+**el mismo precio siempre recibe el mismo color**. Con pocas estaciones (< 4) todo se marca como
+"Promedio" por datos insuficientes. La implementación vive en `frontend/src/lib/precios.ts` y la
+comparte Gasolina y Gas LP.
+
+:::

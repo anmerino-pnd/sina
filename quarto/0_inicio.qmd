@@ -1,0 +1,69 @@
+---
+title: "Sina — precios claros para la familia mexicana"
+format:
+  html:
+    page-layout: article
+toc: false
+author:
+  - name: "Angel Merino"
+    email: "angel.merino@ctin.com.mx"
+    url: "https://www.linkedin.com/in/anmerino-pnd"
+    affiliations:
+      - name: "Proyecto personal"
+date: last-modified
+date-format: long
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## ¿Qué es Sina?
+
+**Sina** es una plataforma pública que ayuda a las familias mexicanas a cuidar su economía:
+reúne en un solo lugar los precios de **gasolina**, **gas LP** y **despensa de supermercado**,
+y los presenta en mapas y tableros claros para que cualquiera pueda ver **dónde está más barato
+lo que necesita** y tomar mejores decisiones de compra.
+
+Además de los tableros, Sina incluye un **asistente conversacional** (chat) pensado para personas
+con poca familiaridad con la tecnología: se le puede preguntar en lenguaje natural
+—"¿dónde está la gasolina más barata cerca de mí?"— y responde consultando datos reales.
+
+## El nombre: un cacto del desierto
+
+El nombre **Sina** viene del *sina*, un cacto columnar del **desierto sonorense**. No es un
+acrónimo ni tiene otro significado: es una raíz local, del mismo desierto donde arranca el
+proyecto (Hermosillo, Sonora). Esa identidad del desierto se refleja en todo el producto —desde
+la paleta de colores cálida hasta el nombre— y le da a Sina un carácter propio, cercano a la
+región a la que sirve.
+
+## Por qué importa
+
+Los precios de primera necesidad cambian todos los días y varían mucho de un lugar a otro. Una
+familia que sabe **a dónde ir** puede ahorrar de forma consistente a lo largo del mes. Sina hace
+esa información:
+
+- **Accesible** — tableros públicos, sin necesidad de crear cuenta.
+- **Clara** — mapas, rankings y un color por precio (barato / promedio / caro).
+- **Cercana** — un chat que responde en palabras sencillas.
+
+## Cómo está organizada esta documentación
+
+Esta documentación cubre desde la visión del producto hasta el detalle técnico y el estado real
+del proyecto. Recomendamos leerla en este orden:
+
+| Sección | Para qué |
+| --- | --- |
+| [Visión y Contexto](1_vision.qmd) | Qué resuelve Sina, para quién y con qué principios. |
+| [Arquitectura](2_arquitectura.qmd) | Cómo encajan las piezas (diagramas). |
+| [Datos e Ingesta](3_datos.qmd) | De dónde salen los precios y cómo se guardan. |
+| [Backend y API](4_backend.qmd) | El servidor, los endpoints y la seguridad. |
+| [Agente Conversacional](5_agente.qmd) | El chat: modelo, tools y memoria. |
+| [Frontend y Diseño](6_frontend.qmd) | La app web y su sistema de diseño. |
+| [Estado y Roadmap](7_estado.qmd) | Qué está listo, qué falta y hacia dónde va. |
+| [Despliegue y Operación](8_despliegue.qmd) | Cómo correrlo y cómo se desplegará. |
+
+> **Nota.** Este es un proyecto personal desarrollado por **Angel Merino**. La documentación es
+> un documento vivo: la sección [Estado y Roadmap](7_estado.qmd) se actualiza conforme avanza el
+> trabajo.
+
+:::

@@ -1,0 +1,73 @@
+---
+title: "Visión y Contexto"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 3
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 1.1. Propósito y misión
+
+Sina existe para **empoderar a la familia mexicana con información clara y accesible de precios de
+primera necesidad**, para que gaste menos —o le afecte lo menos posible— en un contexto de precios
+cambiantes.
+
+La plataforma no vende nada ni intermedia compras: solo **recopila, ordena y presenta** precios
+públicos de combustibles y despensa, y ofrece herramientas (mapas, comparadores, un chat) para que
+la gente decida mejor.
+
+## 1.2. Público objetivo
+
+- **Familias y ciudadanía en general** — amas de casa, trabajadores, estudiantes.
+- **Personas con baja alfabetización digital** — de ahí el chat conversacional en lenguaje sencillo.
+- **Municipios y gobierno local** — como posibles aliados/patrocinadores y para presentación del
+  proyecto.
+
+## 1.3. Alcance geográfico (por fases)
+
+El crecimiento territorial es incremental, empezando por donde nació el proyecto:
+
+1. **Hermosillo, Sonora** (MVP).
+2. **Estado de Sonora** completo.
+3. **Zona Norte** de México.
+4. **Centro y Sur** de México.
+
+## 1.4. Modelo de acceso
+
+| Superficie | Acceso |
+| --- | --- |
+| Tableros (Gasolina, Gas LP, Supermercados) | **100 % público**, sin login. |
+| Chat | Funcional **sin login** (el historial se pierde al recargar). |
+| Chat con historial persistente | Requiere **Google OAuth 2.0**. |
+
+**Nunca se almacenan contraseñas.** El inicio de sesión es delegado a Google; Sina solo guarda el
+identificador público de la cuenta (el `sub` de Google) y un nombre opcional.
+
+## 1.5. Principios de diseño
+
+Estos principios son transversales y condicionan decisiones de producto e ingeniería:
+
+- **Privacidad por diseño.** La ubicación del usuario viaja solo cuando él la comparte y **no se
+  persiste en el servidor**; el chat solo guarda historial si hay sesión.
+- **Sin contraseñas.** Autenticación federada (Google); Sina nunca ve ni guarda credenciales.
+- **Interfaz sin emojis.** El tono es editorial, sobrio y formal; se usan íconos SVG y flechas en
+  lugar de emojis (que además delatan contenido generado automáticamente).
+- **Open-source con hueco para patrocinio.** El LLM y los embeddings viven detrás de **clases
+  abstractas** (`LLMProvider`, `EmbeddingProvider`): hoy corren en modelos open-source locales
+  (Ollama, sentence-transformers/Qwen) y, si aparece un patrocinador, se agrega una subclase
+  (p. ej. un proveedor privado en la nube) **sin tocar el resto del sistema**.
+- **Accesibilidad.** Lenguaje simple en el chat, contraste cuidado (modo claro y oscuro) y
+  responsividad mobile-first.
+
+## 1.6. Qué NO es Sina
+
+- No es una tienda ni un comparador con afiliados: no gana comisión por compras.
+- No inventa precios: el asistente solo responde con lo que devuelven las fuentes y la base de datos.
+- No es un acrónimo: el nombre viene del **cacto sina** del desierto sonorense.
+
+:::

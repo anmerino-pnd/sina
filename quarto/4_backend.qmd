@@ -1,0 +1,113 @@
+---
+title: "Backend y API"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 4
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 4.1. Aplicación FastAPI
+
+El punto de entrada es `src/sina/main.py` (la instancia `app`). En el arranque, un manejador
+`lifespan` carga **una vez** el catálogo de municipios desde la DB a variables globales
+(`_municipios_validos`, `_catalogo_js`) que sirven para validar los parámetros `estado`/`municipio`.
+La app monta `/static` y `/datos` (archivos servidos), renderiza plantillas Jinja2 heredadas y, en
+producción, sirve la **SPA React** desde el mismo origen (mount `/assets` + catch-all).
+
+## 4.2. Endpoints principales
+
+| Método + ruta | Propósito |
+| --- | --- |
+| `GET /api/v1/gasolina?estado&municipio` | Precios de gasolineras del municipio (caché 24 h). |
+| `GET /api/v1/gas-lp?estado&municipio[&localidad]` | Precios de Gas LP (caché semanal). |
+| `GET /api/v1/supermercados` | Búsqueda de productos (vectorial + filtros, fallback de texto). |
+| `POST /api/v1/chat` | Chat del agente en **streaming SSE** (ver [Agente](5_agente.qmd)). |
+| `GET/POST/DELETE /api/v1/chat/conversaciones[...]` | CRUD de conversaciones (requiere sesión). |
+| `GET /api/v1/catalogo` | Catálogo estado→municipio para los selectores de la SPA. Se sirve con `Cache-Control: public, max-age=3600`. |
+| `GET /api/v1/health` | Última actualización + vigencia por categoría. Memoizado en memoria (TTL 60 s) + `Cache-Control: public, max-age=60` para que los health-checks frecuentes no toquen la DB. |
+| Auth (Google OAuth) | Login/logout con sesión en cookie + CSRF. |
+
+Los endpoints del flujo **annotator** (`/api/v1/annotator/*`, incluido `GET /status`) y la UI legacy
+`/sina/annotator` requieren **`X-Admin-Key`**; sus parámetros de ruta (`supermarket/city/date/imagen`)
+se validan contra path traversal (`resolver_ruta_flyer` en `annotator/image_segmentation.py`, mismo
+patrón `is_relative_to` que el catch-all de la SPA). Los errores 500 devuelven un mensaje **genérico**
+("Error interno del servidor."); el detalle queda solo en el log del servidor.
+
+Los endpoints QQP/PROFECO quedaron **removidos** y el modelo/repositorio fueron **eliminados** del
+código en julio 2026 (la tabla `qqp_precios` puede quedar huérfana en DBs existentes; `create_all`
+no borra tablas).
+
+## 4.3. Capa de datos
+
+Todo el acceso a datos pasa por `src/sina/db/`:
+
+- **`models.py`** — modelos SQLAlchemy. Notables: `PrecioGasolina` (`gasolineras`, PK = `numero`,
+  llenado en dos fases), `GasLPPrecio` (**desnormalizado**), `Supermercado` (columna `embedding`
+  pgvector). Varios modelos llevan `esta_vigente()` con la lógica de frescura (24 h gasolina,
+  "desde el último sábado" gas LP).
+- **`repository.py`** — `BaseRepository[T]` genérico + una subclase por modelo. Todos comparten un
+  **engine global**; los upserts usan `on_conflict_do_update` con el **dialecto elegido según el
+  engine** (`_dialect_insert`: `postgresql.insert` o `sqlite.insert` — el constructo de un dialecto
+  no compila bajo el otro). El catálogo estado→municipio se obtiene en **una sola query con JOIN**
+  (antes 1+N por la relación lazy) y el `estado_cache` del health check vive consolidado en
+  `BaseRepository._estado_cache`, parametrizado por campo de fecha. En PostgreSQL se crea además
+  un **índice trigram** (`pg_trgm` + GIN sobre `supermercados.producto`) para que la búsqueda de
+  texto `ILIKE '%q%'` no sea un full-scan.
+- **`seeder.py`** — carga catálogos/semillas de forma **genérica e idempotente**
+  (`seed_catalogo_tienda` + `TIENDAS_CATALOGO`).
+
+## 4.4. Scrapers {#scrapers}
+
+En `src/sina/scraping/`, organizados por fuente. Los de gobierno usan `requests` con **caché
+on-demand**; los de supermercados son **dirigidos por DB** (leen sus rutas de `catalogos_config`).
+
+| Tienda | Plataforma | Técnica | Paginación |
+| --- | --- | --- | --- |
+| Soriana | Salesforce Commerce Cloud | Playwright-stealth (navegador headless) | SFCC |
+| Del Sol | VTEX | Playwright-stealth **async** | VTEX |
+| Benavides | Magento | `curl_cffi` + BeautifulSoup (server-rendered) | `?p=N` |
+| Farmacias Guadalajara | SFCC (server-rendered) | `curl_cffi` + BeautifulSoup | "Show More" `Search-UpdateGrid?start=N&sz=20` |
+| Casa Ley (secundario) | Publitas (volantes) | Selenium (descarga de imágenes) | — |
+
+Para Guadalajara se cubren las pestañas **Super / Farmacia / Dermo** (Ofertas se excluye porque
+re-lista los mismos `pid` y se traslaparía).
+
+## 4.5. Scheduling
+
+`src/sina/scheduler.py` corre **APScheduler** dentro del `lifespan`, controlado por
+`ENABLE_SCHEDULER`:
+
+- **Gasolina** — diario 06:00 (hora centro MX).
+- **Gas LP** — sábados 08:00.
+- **Supermercados** — job semanal **opt-in** (`ENABLE_SUPERMERCADOS_SCRAPING`, domingo 04:00),
+  apagado por defecto (es pesado y no debe correr en un proceso web multi-instancia).
+
+Refresca solo ubicaciones/localidades ya presentes, reutilizando la caché on-demand.
+
+## 4.6. Seguridad y observabilidad
+
+- **Cabeceras** CSP y HSTS (`sina/api/security.py`); **CORS** por allowlist.
+- **Rate limiting global** con `slowapi`: `SlowAPIMiddleware` aplica el límite por defecto
+  (**240/min por IP**, por instancia salvo backend Redis) a **toda** la API — incluidos los
+  endpoints admin, lo que frena fuerza bruta sobre `ADMIN_API_KEY` — y los decoradores estrictos
+  siguen mandando en sus rutas (`/auth/google` 10/min, `/chat` 20/min).
+- **Validación de entrada del chat**: `lat`/`lng` acotados a rangos geográficos válidos, `mensaje`
+  con tope de 4 000 caracteres e `historial` limitado a 50 mensajes de ≤8 000 caracteres cada uno.
+- **Anti path-traversal** en el flujo annotator (`resolver_ruta_flyer`) y respuestas 500 genéricas
+  (el stack trace va al log, nunca al cliente).
+- **Guardas de credenciales por defecto**: en producción (`SINA_ENV=prod`) el arranque **falla**
+  si `DB_PASSWORD` sigue siendo el valor de ejemplo del repositorio, y se advierte si `MONGO_URI`
+  apunta a una instancia sin autenticación (`config/app_settings.py`).
+- **Autenticación** Google OAuth 2.0: sesión en **cookie httpOnly + Secure + SameSite firmada** con
+  **CSRF double-submit**. Nunca se guardan contraseñas ni el token de Google.
+- Los `POST` de scraping quedan **cerrados tras `ADMIN_API_KEY`**.
+- **Logging** unificado consola + archivo rotativo (`config/logging_config.py`, `logs/sina.log`).
+- **Health check** `GET /api/v1/health` con vigencia por categoría.
+- Tuning del **pool de conexiones** de la DB.
+
+:::

@@ -1,0 +1,150 @@
+---
+title: "Arquitectura"
+format:
+  html:
+    page-layout: article
+toc: true
+toc-title: "Tabla de Contenidos"
+toc-depth: 4
+lang: es
+---
+
+::: {style="text-align: justify"}
+
+## 2.1. Panorama
+
+Sina es una aplicación **FastAPI** (Python 3.12+) que sirve una **SPA React** y una **API REST**.
+Los precios se obtienen de fuentes de gobierno y de scraping de supermercados, se guardan en
+**PostgreSQL 16 + pgvector**, y se exponen por endpoints que consumen tanto la SPA como el
+**agente conversacional**. El historial del chat vive en **MongoDB**.
+
+```{mermaid}
+%%| label: fig-arquitectura
+%%| fig-cap: "Arquitectura del sistema Sina"
+flowchart TB
+    U["Usuario<br/>(navegador)"] --> SPA["SPA React<br/>/ · /gasolina · /gas-lp<br/>/supermercados · /chat"]
+    SPA -->|"HTTP JSON / SSE"| API
+
+    subgraph BE["Backend — FastAPI"]
+        API["API REST<br/>/api/v1/gasolina · gas-lp<br/>supermercados · chat · auth · health"]
+        REPO["Repository Pattern + caché<br/>(SQLAlchemy)"]
+        AG["Capa de Agente<br/>LLM + tools + grafo"]
+        API --> REPO
+        API --> AG
+        AG --> REPO
+    end
+
+    subgraph PROV["Proveedores (abstractos)"]
+        LLM["LLMProvider<br/>Ollama (local) · Gemini (futuro)"]
+        EMB["EmbeddingProvider<br/>Qwen / ST (local) · privado (futuro)"]
+    end
+    AG --> LLM
+    REPO --> EMB
+
+    REPO --> PG[("PostgreSQL 16<br/>+ pgvector")]
+    AG --> MG[("MongoDB<br/>historial de chat")]
+
+    subgraph FUENTES["Fuentes de datos"]
+        GOB["Gobierno<br/>CRE (gasolina) · CNE (gas LP)"]
+        SUP["Supermercados<br/>Soriana · Del Sol · Benavides · Guadalajara"]
+    end
+    SCR["Scrapers"] --> PG
+    GOB --> SCR
+    SUP --> SCR
+
+    classDef cliente  fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef backend  fill:#f4eee2,stroke:#a955c4,stroke-width:1px,color:#241f1b;
+    classDef datos    fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    classDef externo  fill:#fdeede,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+
+    class U,SPA cliente;
+    class API,REPO,AG,LLM,EMB backend;
+    class PG,MG datos;
+    class GOB,SUP,SCR externo;
+    style BE fill:#faf7f0,stroke:#c87fdd,stroke-width:1px,color:#241f1b;
+    style PROV fill:#faf7f0,stroke:#c87fdd,stroke-width:1px,color:#241f1b;
+    style FUENTES fill:#faf7f0,stroke:#c87fdd,stroke-width:1px,color:#241f1b;
+```
+
+## 2.2. Stack tecnológico
+
+| Capa | Actual | Producción (meta) |
+| --- | --- | --- |
+| Backend | FastAPI (Python 3.12+) | FastAPI + jobs de scraping programados |
+| Frontend | React 19 + Vite + Tailwind v4 (SPA) | igual |
+| Base de datos | PostgreSQL 16 + pgvector | PostgreSQL 16 + pgvector (Cloud SQL en GCP) |
+| ORM | SQLAlchemy 2.0 + Repository Pattern | igual |
+| Embeddings | `EmbeddingProvider` abstracto (Qwen / sentence-transformers, local) | + proveedor privado intercambiable |
+| LLM | `LLMProvider` abstracto (Ollama, local) | + `GeminiProvider` en GCP |
+| Historial chat | MongoDB (local) | MongoDB gestionado |
+| Mapas | Leaflet.js | Leaflet.js |
+| Scheduling | APScheduler en el `lifespan` | APScheduler / Cloud Scheduler |
+| Empaquetado | uv (deps) + Podman (compose DB) | Podman / Containerfile (no Docker) |
+| Deploy | Local | PC / servidor dedicado / GCP (Cloud Run) |
+
+## 2.3. Patrones arquitectónicos
+
+- **Repository Pattern.** Todo el acceso a datos pasa por `sina/db/repository.py`: un
+  `BaseRepository[T]` genérico y una subclase por modelo (`GasolinaRepository`, `GasLPRepository`,
+  `SupermercadoRepository`, `MunicipioRepository`, `CatalogoRepository`, …). Centraliza consultas,
+  upserts y caché.
+- **Caché inteligente on-demand.** Cada fuente decide si sus datos siguen vigentes; si no, llama a
+  la fuente, guarda y responde (ver [Datos e Ingesta](3_datos.qmd)).
+- **Providers abstractos.** LLM y embeddings detrás de una ABC + fábrica perezosa, para intercambiar
+  el motor open-source por uno patrocinado sin tocar el resto.
+- **Grafo del agente propio.** Un motor de grafo mínimo (estilo LangGraph, **sin** LangChain/
+  LangGraph) orquesta las iteraciones agente ↔ tools (ver [Agente](5_agente.qmd)).
+
+## 2.4. Flujo de datos típico (caché on-demand)
+
+Ejemplo con una consulta de gasolina:
+
+```{mermaid}
+%%| label: fig-flujo
+%%| fig-cap: "Flujo de una petición con caché on-demand"
+flowchart TD
+    A["GET /api/v1/gasolina<br/>?estado&amp;municipio"] --> B["Validar ubicación<br/>(catálogo cargado al inicio)"]
+    B --> C{"¿Caché vigente?<br/>(gasolina: 24 h)"}
+    C -->|"Sí"| D["Servir desde<br/>PostgreSQL"]
+    C -->|"Vencida<br/>(hay datos)"| H["Servir stale<br/>(fuente=cache_vencido)"]
+    H -.->|"hilo en background"| E
+    C -->|"Sin datos<br/>(primera vez)"| E["Llamar API de gobierno<br/>(CRE / CNE)"]
+    E --> F["Transformar + upsert<br/>en PostgreSQL"]
+    F --> D
+    D --> G["Respuesta JSON<br/>{fuente, fecha_datos, datos[]}"]
+    H --> G
+
+    classDef paso     fill:#f4eee2,stroke:#a955c4,stroke-width:1px,color:#241f1b;
+    classDef decision fill:#fef9c3,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    classDef datos    fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class A,B,E,F,G,H paso;
+    class C decision;
+    class D datos;
+```
+
+**Regla general (stale-while-revalidate):** datos vigentes → se sirven de caché; vencidos pero
+presentes → se sirven **de inmediato** con `fuente="cache_vencido"` (el frontend muestra el aviso
+de vencido) y el refresco contra CRE/CNE corre en un **hilo en background** con dedupe por clave
+(`scraping/gobierno/refresco.py`) — el usuario solo paga la latencia de la API de gobierno la
+**primera** vez que se consulta una ubicación. Si un municipio no tiene datos, la UI muestra un
+aviso ("De momento no tenemos datos de [categoría] para [municipio]…") y filtra dinámicamente
+los selectores.
+
+## 2.5. Selección de base de datos (gotcha importante) {#db-gotcha}
+
+`sina.config.credentials.get_db_url()` devuelve una URL de **PostgreSQL** cuando están definidas
+todas las variables `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`; si falta alguna, cae a
+**SQLite** (`datos/db/sina_data.db`).
+
+Puntos a recordar:
+
+- `DB_URL` se resuelve **al importar** el módulo, y `repository.py` construye un **único engine
+  global** y llama a `Base.metadata.create_all(...)` **en import-time**. Es decir, el destino de la
+  base **queda fijado en el momento en que se importa cualquier módulo bajo `sina.db`**.
+- Por eso hay que definir el `.env` (copiado de `.env.example`) **antes** de importar cualquier cosa
+  de `sina.db`.
+- **SQLite quedó como fallback de desarrollo.** El volumen de datos de ubicaciones/localidades lo
+  hizo inviable en serio; PostgreSQL aguanta el volumen y pgvector habilita la búsqueda semántica
+  de productos.
+
+:::
