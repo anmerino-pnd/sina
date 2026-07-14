@@ -52,10 +52,13 @@
   --color-ink-700: #453e37;
   --color-ink-500: #6b635a;
 
-  /* Semánticos de precio (marcadores de mapa + leyenda) */
-  --color-price-low: #2e9e5b;
-  --color-price-mid: #d98a1f;
-  --color-price-high: #d24b3f;
+  /* Semánticos de precio (marcadores de mapa + leyenda) — tonos del desierto:
+     verde olivo oscuro (barato), dorado ocre (promedio), rojo quemado/terracota
+     (caro). Apagados, no neón, para armonizar con los neutros cálidos.
+     El tema oscuro los levanta un poco (ver html.dark) para conservar contraste. */
+  --color-price-low: #4e7a4f;
+  --color-price-mid: #bb8a38;
+  --color-price-high: #b0472f;
 
   /* Tipografía — display humanista con carácter + cuerpo neutro cálido */
   --font-display: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
@@ -71,8 +74,9 @@
 /*
   Modo noche. Las utilidades de Tailwind v4 referencian las variables del tema,
   así que sobrescribirlas bajo html.dark voltea toda la neutralidad (fondos,
-  texto, bordes, superficies) sin tocar cada componente. Marca/precio se
-  conservan porque leen bien en ambos temas.
+  texto, bordes, superficies) sin tocar cada componente. La marca se conserva
+  (lee bien en ambos temas); los colores de precio se levantan un poco para
+  mantener contraste sobre la superficie oscura, sin perder el tono desértico.
 */
 :root {
   color-scheme: light;
@@ -89,6 +93,9 @@ html.dark {
   --color-ink-500: #9c9384; /* apagado */
   --color-brand-50: #2b1636; /* fondos con tinte de marca */
   --color-brand-100: #3c2249;
+  --color-price-low: #78a768; /* verde desierto, legible sobre oscuro */
+  --color-price-mid: #cc9a45; /* dorado ocre */
+  --color-price-high: #d06a50; /* rojo quemado / terracota */
 }
 
 @layer base {
