@@ -1,8 +1,11 @@
 import os
+import logging
 from dotenv import load_dotenv
 from sina.config.paths import DB
 
 load_dotenv()
+
+log = logging.getLogger(__name__)
 
 qqp_url : str = os.getenv('QQP_DATOS_URL', "")
 datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL', "")
@@ -39,11 +42,11 @@ def get_db_url() -> str:
 
     if all([host, name, user, password]):
         url = f"postgresql://{user}:{password}@{host}:{port}/{name}"
-        print(f"🐘 Conectando a PostgreSQL: {host}:{port}/{name}")
+        log.info("Conectando a PostgreSQL: %s:%s/%s", host, port, name)
         return url
 
     db_path = DB / "sina_data.db"
-    print(f"Usando SQLite local: {db_path}")
+    log.info("Usando SQLite local: %s", db_path)
     return f"sqlite:///{db_path}"
 
 DB_URL: str = get_db_url()

@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup, Tag
 from datetime import datetime
 from sina.config.credentials import DB_URL
 from sina.db.repository import GasolinaRepository
+from sina.scraping.gobierno.refresco import refrescar_en_background
 from sina.config.credentials import (
     gasolina_api_rest,
     cne_refer,
@@ -54,7 +55,7 @@ def extract_gas_prices(entidad_id: int, municipio_id: str) -> Dict[str, Any]:
         "municipioId": municipio_id,
     }
     headers: Dict[str, str] = {"User-Agent": "Mozilla/5.0", "Referer": cne_refer}
-    response = requests.get(gasolina_api_rest, params=params, headers=headers)
+    response = requests.get(gasolina_api_rest, params=params, headers=headers, timeout=15)
     return response.json()
 
 def transform_gas_prices(estado: str, municipio: str,
@@ -238,63 +239,61 @@ def scrape_municipio(
     log.info(f"  ✅ {municipio}: {len(resultados)}/{total} exitosas")
     return resultados
 
-def get_precios_gasolina(estado: str, municipio: str,
-                         entidad_id: int, municipio_id: str) -> Dict[str, Any]:
-    """
-    Caché on-demand 24h para precios de gasolina.
-    """
-    repo = GasolinaRepository(db_url=DB_URL)
-
-    # ── 1. Verificar caché ─────────────────────────────────────
-    if not repo.necesita_actualizacion(estado, municipio):
-        print(f"Devolviendo datos en caché para {estado}/{municipio}")
-        registros = repo.obtener_por_municipio(estado, municipio)
-        fecha_datos = registros[0].get("fecha_extraccion") if registros else None
-        return {
-            "status"     : "ok",
-            "fuente"     : "cache",
-            "fecha_datos": fecha_datos,
-            "estado"     : estado,
-            "municipio"  : municipio,
-            "total"      : len(registros),
-            "datos"      : registros,
-        }
-
-    # ── 2. Llamar a CRE y actualizar DB ───────────────────────
-    try:
-        print(f"Actualizando precios de gasolina para {estado}/{municipio} desde API...")
-        nuevos = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
-        if nuevos:
-            repo.upsert_precios(nuevos)
-    except Exception as e:
-        log.error(f"Error actualizando gasolina {estado}/{municipio}: {e}")
-        # Si hay datos viejos, los devolvemos igual
-        registros = repo.obtener_por_municipio(estado, municipio)
-        if registros:
-            fecha_datos = registros[0].get("fecha_extraccion") if registros else None
-            return {
-                "status"     : "ok",
-                "fuente"     : "cache_vencido",
-                "fecha_datos": fecha_datos,
-                "estado"     : estado,
-                "municipio"  : municipio,
-                "total"      : len(registros),
-                "datos"      : registros,
-            }
-        return {
-            "status" : "error",
-            "detail" : f"API no disponible y sin datos en caché: {e}",
-        }
-
-    # ── 3. Leer de DB y devolver (consistencia) ───────────────
-    registros = repo.obtener_por_municipio(estado, municipio)
+def _respuesta_gasolina(registros: list, estado: str, municipio: str, fuente: str) -> Dict[str, Any]:
     fecha_datos = registros[0].get("fecha_extraccion") if registros else None
     return {
         "status"     : "ok",
-        "fuente"     : "api",
+        "fuente"     : fuente,
         "fecha_datos": fecha_datos,
         "estado"     : estado,
         "municipio"  : municipio,
         "total"      : len(registros),
         "datos"      : registros,
     }
+
+
+def _refrescar_gasolina(estado: str, municipio: str,
+                        entidad_id: int, municipio_id: str) -> None:
+    log.info("Actualizando precios de gasolina para %s/%s desde API...", estado, municipio)
+    nuevos = transform_gas_prices(estado, municipio, entidad_id, municipio_id)
+    if nuevos:
+        GasolinaRepository(db_url=DB_URL).upsert_precios(nuevos)
+
+
+def get_precios_gasolina(estado: str, municipio: str,
+                         entidad_id: int, municipio_id: str) -> Dict[str, Any]:
+    """
+    Caché on-demand 24h para precios de gasolina, con
+    **stale-while-revalidate**: si hay datos vencidos se devuelven de
+    inmediato (fuente="cache_vencido") y el refresco contra la CRE corre en
+    background. Solo la primera consulta de un municipio espera a la API.
+    """
+    repo = GasolinaRepository(db_url=DB_URL)
+
+    # ── 1. Caché vigente ───────────────────────────────────────
+    if not repo.necesita_actualizacion(estado, municipio):
+        log.info("Devolviendo datos en caché para %s/%s", estado, municipio)
+        registros = repo.obtener_por_municipio(estado, municipio)
+        return _respuesta_gasolina(registros, estado, municipio, "cache")
+
+    # ── 2. Vencido pero con datos → servir stale + refrescar en background ──
+    registros = repo.obtener_por_municipio(estado, municipio)
+    if registros:
+        refrescar_en_background(
+            f"gasolina:{estado}/{municipio}",
+            lambda: _refrescar_gasolina(estado, municipio, entidad_id, municipio_id),
+        )
+        return _respuesta_gasolina(registros, estado, municipio, "cache_vencido")
+
+    # ── 3. Sin datos → llamar a CRE en línea (primera vez) ────
+    try:
+        _refrescar_gasolina(estado, municipio, entidad_id, municipio_id)
+    except Exception as e:
+        log.error(f"Error actualizando gasolina {estado}/{municipio}: {e}")
+        return {
+            "status" : "error",
+            "detail" : f"API no disponible y sin datos en caché: {e}",
+        }
+
+    registros = repo.obtener_por_municipio(estado, municipio)
+    return _respuesta_gasolina(registros, estado, municipio, "api")

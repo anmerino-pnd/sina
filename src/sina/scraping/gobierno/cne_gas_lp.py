@@ -8,6 +8,7 @@ from sina.db.repository import get_session, GasLPRepository
 from sina.db.models import Localidad, EntidadFederativa, Municipio
 from sina.config.credentials import cne_localidades_url, cne_precios_gas_lp_url
 from sina.config.timezone import get_mexico_now
+from sina.scraping.gobierno.refresco import refrescar_en_background
 
 logger = logging.getLogger(__name__)
 
@@ -163,19 +164,24 @@ def get_precios_gas_lp(
     repo = GasLPRepository(db_url=DB_URL)
 
     if not repo.necesita_actualizacion(entidad_id, municipio_id, localidad_id):
-        logger.info(f"Cache hit ✅ — devolviendo datos de DB")
+        logger.info("Cache hit — devolviendo datos de DB")
         precios = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
         return _formatear_respuesta(precios, loc, fuente="cache")
 
-    logger.info(f"Cache miss / vencido — llamando a API CNE...")
+    # ── Vencido pero con datos → servir stale + refrescar en background ──
+    precios_viejos = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
+    if precios_viejos:
+        refrescar_en_background(
+            f"gas_lp:{entidad_id}/{municipio_id}/{localidad_id}",
+            lambda: _refrescar_gas_lp(loc, entidad_id, municipio_id, localidad_id),
+        )
+        return _formatear_respuesta(precios_viejos, loc, fuente="cache_vencido")
+
+    # ── Sin datos → llamar a CNE en línea (primera vez) ──────
+    logger.info("Cache miss — llamando a API CNE...")
     datos_api = _fetch_precios_api(localidad_id, entidad_id, municipio_id)
 
     if datos_api is None:
-        precios_viejos = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
-        if precios_viejos:
-            logger.warning("API falló, devolviendo datos viejos de DB")
-            return _formatear_respuesta(precios_viejos, loc, fuente="cache_vencido")
-
         return {
             "error": "No se pudieron obtener precios (API no disponible)",
             "estado": estado,
@@ -191,6 +197,21 @@ def get_precios_gas_lp(
 
     precios_nuevos = repo.obtener_por_localidad(entidad_id, municipio_id, localidad_id)
     return _formatear_respuesta(precios_nuevos, loc, fuente="api")
+
+
+def _refrescar_gas_lp(loc, entidad_id: int, municipio_id: str, localidad_id: int) -> None:
+    """Refresco contra la CNE + upsert (corre en background vía `refrescar_en_background`)."""
+    datos_api = _fetch_precios_api(localidad_id, entidad_id, municipio_id)
+    if datos_api is None:
+        logger.warning(
+            "Refresco de gas LP falló (API CNE no disponible) para localidad %s", localidad_id
+        )
+        return
+    entidad_nombre   = _get_entidad_nombre(entidad_id)
+    municipio_nombre = _get_municipio_nombre(entidad_id, municipio_id)
+    registros = _transformar_para_db(datos_api, loc, entidad_nombre, municipio_nombre)
+    GasLPRepository(db_url=DB_URL).upsert_precios_gas_lp(registros)
+    logger.info("DB de gas LP actualizada con %d registros", len(registros))
 
 def _buscar_localidad(estado: str, municipio: str, localidad: str) -> Optional[Localidad]:
     with get_session() as session:

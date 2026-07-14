@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import L from "leaflet";
 import {
   Circle,
@@ -39,19 +39,63 @@ interface Props {
 
 const CENTRO_MX: [number, number] = [23.6345, -102.5528];
 
+// Los iconos solo dependen de (color, seleccionado): pocas combinaciones, así
+// que se cachean para no crear un L.divIcon por marcador en cada render.
+const _iconos = new Map<string, L.DivIcon>();
+
 function iconoPunto(color: string, seleccionado: boolean): L.DivIcon {
+  const clave = `${color}|${seleccionado}`;
+  const cacheado = _iconos.get(clave);
+  if (cacheado) return cacheado;
+
   const sz = seleccionado ? 30 : 15;
   const bw = seleccionado ? 3 : 2;
   const sh = seleccionado
     ? `0 0 0 5px ${color}35, 0 2px 8px rgba(0,0,0,0.28)`
     : "0 1px 3px rgba(0,0,0,0.22)";
-  return L.divIcon({
+  const icono = L.divIcon({
     html: `<div style="width:${sz}px;height:${sz}px;background:${color};border-radius:50%;border:${bw}px solid white;box-shadow:${sh}"></div>`,
     className: "",
     iconSize: [sz, sz],
     iconAnchor: [sz / 2, sz / 2],
   });
+  _iconos.set(clave, icono);
+  return icono;
 }
+
+/**
+ * Marcador individual memoizado: al cambiar la selección o el filtro solo
+ * re-renderizan los marcadores cuyas props cambiaron, no todo el municipio.
+ * Requiere que `onSelect` sea estable (useCallback en la página).
+ */
+const MarcadorPunto = memo(function MarcadorPunto({
+  estacion: e,
+  sel,
+  activo,
+  onSelect,
+}: {
+  estacion: MarcadorEstacion;
+  sel: boolean;
+  activo: boolean;
+  onSelect: (numero: string) => void;
+}) {
+  return (
+    <Marker
+      position={[e.lat, e.lng]}
+      icon={iconoPunto(COLOR_CATEGORIA[e.categoria], sel)}
+      opacity={activo ? 1 : 0.18}
+      interactive={activo}
+      zIndexOffset={sel ? 999 : 0}
+      eventHandlers={{ click: () => onSelect(e.numero) }}
+    >
+      <Tooltip direction="top" offset={[0, -8]}>
+        <strong>{e.nombre}</strong>
+        <br />
+        {formatearPesos(e.precio)} · {e.categoria}
+      </Tooltip>
+    </Marker>
+  );
+});
 
 /**
  * Corrige el tamaño del mapa. Leaflet cachea las dimensiones del contenedor al
@@ -167,27 +211,15 @@ export default function StationMap({
         <CentrarSeleccion estaciones={estaciones} seleccionadoNumero={seleccionadoNumero} />
         <ClicMapa modoFijar={modoFijar} onFijarPunto={onFijarPunto} onDeselect={onDeselect} />
 
-        {estaciones.map((e) => {
-          const sel = e.numero === seleccionadoNumero;
-          const activo = filtroCategoria === null || e.categoria === filtroCategoria;
-          return (
-            <Marker
-              key={e.numero}
-              position={[e.lat, e.lng]}
-              icon={iconoPunto(COLOR_CATEGORIA[e.categoria], sel)}
-              opacity={activo ? 1 : 0.18}
-              interactive={activo}
-              zIndexOffset={sel ? 999 : 0}
-              eventHandlers={{ click: () => onSelect(e.numero) }}
-            >
-              <Tooltip direction="top" offset={[0, -8]}>
-                <strong>{e.nombre}</strong>
-                <br />
-                {formatearPesos(e.precio)} · {e.categoria}
-              </Tooltip>
-            </Marker>
-          );
-        })}
+        {estaciones.map((e) => (
+          <MarcadorPunto
+            key={e.numero}
+            estacion={e}
+            sel={e.numero === seleccionadoNumero}
+            activo={filtroCategoria === null || e.categoria === filtroCategoria}
+            onSelect={onSelect}
+          />
+        ))}
 
         {punto && (
           <>

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
@@ -47,6 +47,19 @@ export default function GasolinaPage() {
   useEffect(() => {
     dispatch({ type: "RESET" });
   }, [estadoSel, munSel, dispatch]);
+
+  // Callbacks estables para el mapa: permiten que los marcadores memoizados
+  // no se re-rendericen en cada render de la página (dispatch es estable).
+  const onSelectEstacion = useCallback(
+    (n: string) => dispatch({ type: "SELECT", numero: n }),
+    [dispatch],
+  );
+  const onDeselectEstacion = useCallback(() => dispatch({ type: "DESELECT" }), [dispatch]);
+  const onFijarPunto = useCallback(
+    (lat: number, lng: number) =>
+      dispatch({ type: "SET_PUNTO", punto: { lat, lng, manual: true } }),
+    [dispatch],
+  );
 
   const query = useQuery({
     queryKey: ["gasolina", estadoSel, munSel],
@@ -345,11 +358,9 @@ export default function GasolinaPage() {
                         filtroCategoria={st.filtroCategoria}
                         punto={st.punto}
                         modoFijar={st.modoFijar}
-                        onSelect={(n) => dispatch({ type: "SELECT", numero: n })}
-                        onDeselect={() => dispatch({ type: "DESELECT" })}
-                        onFijarPunto={(lat, lng) =>
-                          dispatch({ type: "SET_PUNTO", punto: { lat, lng, manual: true } })
-                        }
+                        onSelect={onSelectEstacion}
+                        onDeselect={onDeselectEstacion}
+                        onFijarPunto={onFijarPunto}
                       />
                     </Suspense>
                   </div>

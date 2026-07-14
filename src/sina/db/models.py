@@ -11,32 +11,9 @@ from typing import cast
 
 Base = declarative_base()
 
-class PrecioQQP(Base):
-    """
-    DEPRECADO (jun 2026): tabla de PROFECO "Quién es Quién en los Precios".
-    Reemplazada por la tabla `supermercados` (scraping directo). El modelo se
-    conserva (y la tabla se sigue creando) para no rehacerlo si se reactiva
-    PROFECO en el futuro. **No usar en código nuevo** — ver `Supermercado`.
-    """
-    __tablename__ = 'qqp_precios'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    producto = Column(String, nullable=False)
-    presentacion = Column(String, nullable=False)
-    marca = Column(String, nullable=True)
-    categoria = Column(String, nullable=True)
-    catalogo = Column(String, nullable=True)
-    precio = Column(Float, nullable=False)
-    fecha_registro = Column(DateTime, nullable=False)
-    cadena_comercial = Column(String, nullable=True)
-    giro = Column(String, nullable=True)
-    nombre_comercial = Column(String, nullable=True)
-    direccion = Column(String, nullable=True)
-    estado = Column(String, nullable=False)
-    municipio = Column(String, nullable=False)
-    latitud = Column(Float, nullable=True)
-    longitud = Column(Float, nullable=True)
-
+# PrecioQQP (PROFECO / "Quién es Quién en los Precios") fue eliminado en jul 2026:
+# la fuente se reemplazó por scraping directo (`Supermercado`). La tabla
+# `qqp_precios` puede quedar huérfana en DBs existentes (create_all no borra).
 
 class CatalogoConfig(Base):
     """

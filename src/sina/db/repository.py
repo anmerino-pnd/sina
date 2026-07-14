@@ -1,5 +1,4 @@
 import logging
-import warnings
 from typing import Generic, TypeVar
 from contextlib import contextmanager
 from typing import cast as typing_cast
@@ -13,15 +12,15 @@ from sqlalchemy import (
     event,
     text,
     update)
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sina.db.models import (
-    Base, PrecioQQP, PrecioGasolina,
+    Base, PrecioGasolina,
     EntidadFederativa, Municipio, Localidad, GasLPPrecio,
     CatalogoConfig, Supermercado, Usuario, ChatHistorial,
 )
 from sina.config.credentials import DB_URL
 from sina.config.timezone import get_mexico_now
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +66,31 @@ if DB_URL.startswith("postgresql"):
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
 
 Base.metadata.create_all(_engine)
+
+# La búsqueda de productos usa ILIKE '%q%' (comodín inicial): sin índice trigram
+# es un full-scan de `supermercados`. Solo PostgreSQL; SQLite (dev) se queda con
+# el scan, aceptable a su escala.
+if DB_URL.startswith("postgresql"):
+    with _engine.begin() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_supermercados_producto_trgm "
+            "ON supermercados USING gin (producto gin_trgm_ops)"
+        ))
+
 _SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False)
+
+
+def _dialect_insert(model):
+    """
+    INSERT con `on_conflict_do_update` según el dialecto del engine.
+    El constructo de SQLite no compila bajo PostgreSQL (y viceversa), pero
+    ambos comparten la API `on_conflict_do_update(index_elements=..., set_=...)`
+    y `.excluded`, así que los upserts no cambian de forma.
+    """
+    if _engine.dialect.name == "postgresql":
+        return pg_insert(model)
+    return sqlite_insert(model)
 
 
 class BaseRepository(Generic[T]):
@@ -93,207 +116,30 @@ class BaseRepository(Generic[T]):
         with self.engine.begin() as conn:
             conn.execute(delete(self.model))
 
-
-class QQPRepository(BaseRepository[PrecioQQP]):
-    """
-    DEPRECADO (jun 2026). PROFECO / "Quién es Quién en los Precios" (QQP) fue
-    reemplazado por el scraping directo de supermercados (ver
-    `SupermercadoRepository`). Los endpoints QQP ya se removieron de `main.py`.
-
-    Se conserva intacto por si se reactiva la fuente PROFECO en el futuro, para
-    no tener que volver a implementarlo. **No usar en código nuevo.**
-    """
-    model = PrecioQQP
-
-    def __init__(self, db_url: str = DB_URL):
-        warnings.warn(
-            "QQPRepository está deprecado; usa SupermercadoRepository "
-            "(PROFECO/QQP fue reemplazado por scraping directo).",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(db_url)
-
-    def obtener_por_municipio(self, estado: str, municipio: str) -> list[dict]:
-        """Consulta precios por estado y municipio."""
+    def _estado_cache(self, campo_fecha: str, evaluar_vigencia: bool = True) -> dict:
+        """
+        Última actualización y vigencia (para el health check), parametrizado
+        por el campo de fecha del modelo. `evaluar_vigencia=False` deja
+        `vigente` en None (sin regla de vigencia definida).
+        """
+        columna = getattr(self.model, campo_fecha)
         with self.Session() as session:
-            stmt = select(self.model).where(
-                self.model.estado    == estado,
-                self.model.municipio == municipio
+            ultimo = (
+                session.query(self.model)
+                .filter(columna.is_not(None))
+                .order_by(columna.desc())
+                .first()
             )
-            rows = session.execute(stmt).scalars().all()
-            return [
-                {
-                    "producto"        : r.producto,
-                    "presentacion"    : r.presentacion,
-                    "marca"           : r.marca,
-                    "categoria"       : r.categoria,
-                    "precio"          : r.precio,
-                    "fecha_registro"  : r.fecha_registro,
-                    "cadena_comercial": r.cadena_comercial,
-                    "nombre_comercial": r.nombre_comercial,
-                    "direccion"       : r.direccion,
-                    "estado"          : r.estado,
-                    "municipio"       : r.municipio,
-                    "latitud"         : r.latitud,
-                    "longitud"        : r.longitud,
-                }
-                for r in rows
-            ]
+        if ultimo is None:
+            return {
+                "ultima_actualizacion": None,
+                "vigente": False if evaluar_vigencia else None,
+            }
+        return {
+            "ultima_actualizacion": getattr(ultimo, campo_fecha),
+            "vigente": ultimo.esta_vigente() if evaluar_vigencia else None,
+        }
 
-    def obtener_canasta(self, estado: str, municipio: str) -> list[dict]:
-        """
-        Consulta productos de canasta básica para un estado-municipio.
-        Sin filtro de cadenas — incluye todas las tiendas.
-        Devuelve registros deduplicados.
-        """
-        from sina.config.canasta import todos_los_productos
-
-        productos = todos_los_productos()
-
-        with self.Session() as session:
-            stmt = (
-                select(self.model)
-                .where(
-                    self.model.estado == estado,
-                    self.model.municipio == municipio,
-                    self.model.producto.in_(productos),
-                )
-            )
-            rows = session.execute(stmt).scalars().all()
-
-            seen: set[tuple] = set()
-            resultado: list[dict] = []
-
-            for r in rows:
-                key = (r.producto, r.presentacion, r.marca, r.cadena_comercial, r.precio)
-                if key in seen:
-                    continue
-                seen.add(key)
-
-                resultado.append({
-                    "producto":         r.producto,
-                    "presentacion":     r.presentacion,
-                    "marca":            r.marca,
-                    "categoria":        r.categoria,
-                    "precio":           float(typing_cast(int, r.precio)),
-                    "cadena_comercial": r.cadena_comercial,
-                    "nombre_comercial": r.nombre_comercial,
-                    "direccion":        r.direccion,
-                    "estado":           r.estado,
-                    "municipio":        r.municipio,
-                })
-
-            return resultado
-
-    def obtener_catalogo_qqp(self) -> dict[str, list[str]]:
-        """
-        Devuelve { estado: [municipio, ...] } solo para combinaciones
-        que realmente tienen datos de canasta básica.
-        """
-        from sina.config.canasta import todos_los_productos
-        from sqlalchemy import distinct, func
-
-        productos = todos_los_productos()
-
-        with self.Session() as session:
-            stmt = (
-                select(
-                    self.model.estado,
-                    self.model.municipio,
-                )
-                .where(self.model.producto.in_(productos))
-                .group_by(self.model.estado, self.model.municipio)
-                .having(func.count(distinct(self.model.producto)) >= 5)
-                .order_by(self.model.estado, self.model.municipio)
-            )
-
-            rows = session.execute(stmt).all()
-
-            catalogo: dict[str, list[str]] = {}
-            for estado, municipio in rows:
-                catalogo.setdefault(estado, []).append(municipio)
-
-            return catalogo
-        
-    def obtener_tiendas_canasta(self, estado: str, municipio: str) -> list[dict]:
-        """
-        Devuelve tiendas únicas con sus productos de canasta básica
-        y coordenadas para el mapa.
-        """
-        from sina.config.canasta import todos_los_productos, producto_a_item
-
-        productos = todos_los_productos()
-
-        with self.Session() as session:
-            stmt = (
-                select(self.model)
-                .where(
-                    self.model.estado == estado,
-                    self.model.municipio == municipio,
-                    self.model.producto.in_(productos),
-                )
-            )
-            rows = session.execute(stmt).scalars().all()
-
-            tiendas_map: dict[str, dict] = {}
-
-            for r in rows:
-                # Saltar registros sin coordenadas
-                if not r.latitud or not r.longitud: # type: ignore
-                    continue
-                if not r.nombre_comercial: # type: ignore
-                    continue
-
-                try:
-                    lat = float(r.latitud) # type: ignore
-                    lng = float(r.longitud) # type: ignore
-                except (ValueError, TypeError):
-                    continue
-
-                # Saltar coordenadas inválidas
-                if lat == 0 and lng == 0:
-                    continue
-
-                key = r.nombre_comercial.strip()
-                item = producto_a_item(r.producto) # type: ignore
-                if item is None:
-                    continue
-
-                if key not in tiendas_map:
-                    tiendas_map[key] = {
-                        "nombre":    r.nombre_comercial,
-                        "cadena":    r.cadena_comercial,
-                        "direccion": r.direccion or "",
-                        "lat":       lat,
-                        "lng":       lng,
-                        "items":     {},
-                    }
-
-                # Guardar precio más bajo por item en esta tienda
-                existing = tiendas_map[key]["items"].get(item)
-                precio = float(r.precio) if r.precio else 0 # type: ignore
-                if existing is None or precio < existing["precio"]:
-                    tiendas_map[key]["items"][item] = {
-                        "precio": precio,
-                        "marca":  r.marca or "",
-                        "presentacion": r.presentacion or "",
-                    }
-
-            # Convertir a lista
-            resultado = []
-            for t in tiendas_map.values():
-                resultado.append({
-                    "nombre":    t["nombre"],
-                    "cadena":    t["cadena"],
-                    "direccion": t["direccion"],
-                    "lat":       t["lat"],
-                    "lng":       t["lng"],
-                    "n_items":   len(t["items"]),
-                    "items":     t["items"],
-                })
-
-            return resultado
 
 class GasolinaRepository(BaseRepository[PrecioGasolina]):
     model = PrecioGasolina
@@ -334,7 +180,7 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
             }
             for r in registros
         ]
-        base = sqlite_insert(self.model)
+        base = _dialect_insert(self.model)
         stmt = base.values(rows).on_conflict_do_update(
             index_elements=["numero"],
             set_={
@@ -362,7 +208,7 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
             }
             for r in registros
         ]
-        base = sqlite_insert(self.model)
+        base = _dialect_insert(self.model)
         stmt = base.values(rows).on_conflict_do_update(
             index_elements=["numero"],
             set_={
@@ -423,19 +269,7 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
 
     def estado_cache(self) -> dict:
         """Última actualización y vigencia (para el health check)."""
-        with self.Session() as session:
-            ultimo = (
-                session.query(self.model)
-                .filter(self.model.fecha_registro.is_not(None))
-                .order_by(self.model.fecha_registro.desc())
-                .first()
-            )
-        if ultimo is None:
-            return {"ultima_actualizacion": None, "vigente": False}
-        return {
-            "ultima_actualizacion": ultimo.fecha_registro,
-            "vigente": ultimo.esta_vigente(),
-        }
+        return self._estado_cache("fecha_registro")
 
 class EntidadFederativaRepository(BaseRepository[EntidadFederativa]):
     model = EntidadFederativa
@@ -447,15 +281,17 @@ class MunicipioRepository(BaseRepository[Municipio]):
         """
         Devuelve { estado_nombre: [municipio_nombre, ...] }
         para el frontend. Todo en lowercase como el JSON anterior.
+        UNA sola query con JOIN (antes: 1 + N por la relación lazy).
         """
         with self.Session() as session:
-            entidades = session.query(EntidadFederativa).all()
-            return {
-                entidad.nombre.lower(): sorted([
-                    m.nombre.lower() for m in entidad.municipios
-                ])
-                for entidad in entidades
-            }
+            rows = session.execute(
+                select(EntidadFederativa.nombre, Municipio.nombre)
+                .join(Municipio, Municipio.entidad_id == EntidadFederativa.id)
+            ).all()
+        catalogo: dict[str, list[str]] = {}
+        for entidad_nombre, municipio_nombre in rows:
+            catalogo.setdefault(entidad_nombre.lower(), []).append(municipio_nombre.lower())
+        return {estado: sorted(municipios) for estado, municipios in catalogo.items()}
 
     def obtener_ids(self, estado: str, municipio: str) -> tuple[int, str] | None:
         """
@@ -536,7 +372,7 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
     def upsert_precios_gas_lp(self, registros: list[dict]):
         if not registros:
             return
-        base = sqlite_insert(self.model)
+        base = _dialect_insert(self.model)
         stmt = base.values(registros).on_conflict_do_update(
             index_elements=[
                 "entidad_id", "municipio_id", "localidad_id",
@@ -606,18 +442,7 @@ class GasLPRepository(BaseRepository[GasLPPrecio]):
 
     def estado_cache(self) -> dict:
         """Última actualización y vigencia (para el health check)."""
-        with self.Session() as session:
-            ultimo = (
-                session.query(self.model)
-                .order_by(self.model.fecha_extraccion.desc())
-                .first()
-            )
-        if ultimo is None:
-            return {"ultima_actualizacion": None, "vigente": False}
-        return {
-            "ultima_actualizacion": ultimo.fecha_extraccion,
-            "vigente": ultimo.esta_vigente(),
-        }
+        return self._estado_cache("fecha_extraccion")
 
 # ── Repositorio para Catálogo de Rutas Soriana ─────────────────
 class SupermercadoRepository(BaseRepository[Supermercado]):
@@ -697,7 +522,7 @@ class SupermercadoRepository(BaseRepository[Supermercado]):
                 except Exception as e:
                     log.error("Error generando embeddings de productos: %s", e)
 
-        base = sqlite_insert(self.model)
+        base = _dialect_insert(self.model)
         set_ = {
             "producto":            base.excluded.producto,
             "precio":              base.excluded.precio,
@@ -785,15 +610,7 @@ class SupermercadoRepository(BaseRepository[Supermercado]):
         Última actualización (para el health check). No hay regla de vigencia
         definida para supermercados todavía, así que `vigente` queda en None.
         """
-        with self.Session() as session:
-            ultimo = (
-                session.query(self.model)
-                .order_by(self.model.fecha_actualizacion.desc())
-                .first()
-            )
-        if ultimo is None:
-            return {"ultima_actualizacion": None, "vigente": None}
-        return {"ultima_actualizacion": ultimo.fecha_actualizacion, "vigente": None}
+        return self._estado_cache("fecha_actualizacion", evaluar_vigencia=False)
 
 
 class CatalogoRepository(BaseRepository[CatalogoConfig]):

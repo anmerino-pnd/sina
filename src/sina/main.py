@@ -9,11 +9,14 @@ from typing import cast
 from sqlalchemy import select
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
-import traceback
+from slowapi.middleware import SlowAPIMiddleware
+import logging
+import time
 import json
 
 from sina.annotator.image_segmentation import (
     process_annotations,
+    resolver_ruta_flyer,
     AnnotationPayload,
     ExtractPayload,
     FlyerPayload,
@@ -56,6 +59,8 @@ from sina.api.ratelimit import limiter
 from sina.api.security import SecurityHeadersMiddleware, require_admin
 from sina.config.app_settings import settings
 
+log = logging.getLogger(__name__)
+
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 
 try:
@@ -95,6 +100,9 @@ def _rate_limit_handler(request: Request, exc: Exception) -> Response:
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
+# Sin este middleware los `default_limits` del limiter no aplican a nada:
+# solo regirían los endpoints decorados explícitamente (/auth/google, /chat).
+app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 if settings.cors_origins:
     # Solo se activa CORS si hay orígenes configurados (frontend separado).
@@ -137,27 +145,36 @@ def _validar_ubicacion(estado: str, municipio: str) -> tuple[str, str, int, str]
 # ============================================================
 #  API · SALUD
 # ============================================================
+_HEALTH_TTL = 60  # segundos; los health-checks frecuentes no deben pegar a la DB
+_health_cache: tuple[float, dict] | None = None
+
 @app.get("/api/v1/health")
-def health():
+def health(response: Response):
     """Vigencia de los datos por categoría (última actualización + vigente)."""
-    return {
-        "status"       : "ok",
-        "gasolina"     : GasolinaRepository(db_url=DB_URL).estado_cache(),
-        "gas_lp"       : GasLPRepository(db_url=DB_URL).estado_cache(),
-        "supermercados": SupermercadoRepository(db_url=DB_URL).estado_cache(),
-    }
+    global _health_cache
+    ahora = time.monotonic()
+    if _health_cache is None or ahora - _health_cache[0] > _HEALTH_TTL:
+        _health_cache = (ahora, {
+            "status"       : "ok",
+            "gasolina"     : GasolinaRepository(db_url=DB_URL).estado_cache(),
+            "gas_lp"       : GasLPRepository(db_url=DB_URL).estado_cache(),
+            "supermercados": SupermercadoRepository(db_url=DB_URL).estado_cache(),
+        })
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return _health_cache[1]
 
 
 # ============================================================
 #  API · CATÁLOGO (estado → municipios) para la SPA
 # ============================================================
 @app.get("/api/v1/catalogo")
-def get_catalogo():
+def get_catalogo(response: Response):
     """
     Catálogo { estado: [municipios] } que la SPA usa para los selectores.
     Reemplaza la inyección del catálogo en el HTML de Jinja. Se sirve desde
     el cache calentado en el lifespan; cae al repositorio si aún no está listo.
     """
+    response.headers["Cache-Control"] = "public, max-age=3600"
     if _catalogo_js:
         return {"estados": _catalogo_js}
     return {"estados": MunicipioRepository(db_url=DB_URL).obtener_catalogo()}
@@ -167,8 +184,8 @@ def get_catalogo():
 #  FRONTEND ROUTES  (HTML)
 # ============================================================
 @app.get("/sina/annotator", response_class=HTMLResponse)
-async def view_annotator(request: Request):
-    """UI de anotación de volantes."""
+async def view_annotator(request: Request, _admin: None = Depends(require_admin)):
+    """UI de anotación de volantes. Requiere clave de administrador (expone el árbol de datos/)."""
     class_config = _get_classes_config()
     return templates.TemplateResponse("annotator.html", {
         "request" : request,
@@ -218,9 +235,9 @@ def get_gasolina(estado: str, municipio: str):
 
     except HTTPException:
         raise
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        log.exception("Error obteniendo precios de gasolina")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 @app.post("/api/v1/update/gasolina")
 def update_gasolina(estado: str, municipio: str, _admin: None = Depends(require_admin)):
@@ -243,9 +260,9 @@ def update_gasolina(estado: str, municipio: str, _admin: None = Depends(require_
             "total_en_db" : repo.contar(),
         }
 
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        log.exception("Error actualizando precios de gasolina")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 @app.post("/api/v1/update/ubicacion/gasolineras")
 def update_ubicaciones_gasolineras(
@@ -266,10 +283,10 @@ def update_ubicaciones_gasolineras(
             "total_en_db" : repo.contar(),
         }
 
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-    
+    except Exception:
+        log.exception("Error actualizando ubicaciones de gasolineras")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
+
 # ============================================================
 #  API · GAS LP
 # ============================================================
@@ -290,9 +307,9 @@ def get_gas_lp(estado: str, municipio: str, localidad: str):
 
     except HTTPException:
         raise
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        log.exception("Error obteniendo precios de gas LP")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 @app.get("/api/v1/gas-lp/localidades")
 def get_localidades(estado: str, municipio: str):
@@ -367,9 +384,9 @@ def get_gas_lp_by_ids(entidad_id: int, municipio_id: str, localidad_id: int):
 
     except HTTPException:
         raise
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        log.exception("Error obteniendo precios de gas LP por IDs")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 # ============================================================
 #  API · SUPERMERCADOS
@@ -399,9 +416,9 @@ def get_supermercados(
             "total":  len(datos),
             "datos":  datos,
         }
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        log.exception("Error buscando productos de supermercado")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 
 # ============================================================
@@ -424,11 +441,13 @@ def annotate(payload: AnnotationPayload, _admin: None = Depends(require_admin)):
             bboxes     =payload.bboxes,
         )
         return {"status": "ok", "data": result}
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Parámetros de ruta no válidos.")
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Imagen no encontrada.")
+    except Exception:
+        log.exception("Error procesando anotaciones")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 
 @app.post("/api/v1/annotator/flyer")
@@ -451,7 +470,12 @@ def download_flyer_endpoint(payload: FlyerPayload, _admin: None = Depends(requir
 @app.post("/api/v1/annotator/extract")
 def extract_flyer_text(payload: ExtractPayload, _admin: None = Depends(require_admin)):
     """Extrae texto de recortes usando LLM. Usa caché si ya existe. Requiere clave de administrador."""
-    json_path = DATA / payload.supermarket / payload.city / payload.date / "flyer_data.json"
+    try:
+        json_path = resolver_ruta_flyer(
+            payload.supermarket, payload.city, payload.date, "flyer_data.json"
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Parámetros de ruta no válidos.")
 
     if not json_path.exists():
         if extract_text is None:
@@ -468,15 +492,21 @@ def extract_flyer_text(payload: ExtractPayload, _admin: None = Depends(require_a
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             return {"status": "ok", "data": json.load(f)}
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        log.exception("Error leyendo flyer_data.json")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 
 @app.get("/api/v1/annotator/status")
-def get_annotator_status(supermarket: str, city: str, date: str):
-    """Verifica si existen recortes y flyer_data.json para una fecha."""
-    base_dir     = DATA / supermarket / city / date
+def get_annotator_status(
+    supermarket: str, city: str, date: str, _admin: None = Depends(require_admin)
+):
+    """Verifica si existen recortes y flyer_data.json para una fecha. Requiere clave de administrador."""
+    try:
+        base_dir = resolver_ruta_flyer(supermarket, city, date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Parámetros de ruta no válidos.")
+
     recortes_dir = base_dir / "recortes"
 
     return {

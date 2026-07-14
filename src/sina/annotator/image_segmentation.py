@@ -1,5 +1,5 @@
-import cv2
 import json
+from pathlib import Path
 from typing import List, Any
 from pydantic import BaseModel
 # Adjust these imports according to your actual project structure
@@ -27,7 +27,31 @@ class ExtractPayload(BaseModel):
     supermarket: str
     city: str
     date: str
-    
+
+def resolver_ruta_flyer(*componentes: str) -> Path:
+    """
+    Construye una ruta bajo DATA a partir de componentes provistos por el
+    cliente, rechazando cualquier intento de path traversal. Cada componente
+    debe ser un nombre simple (sin separadores, sin `..`, sin nulos).
+    Lanza ValueError si algún componente es inválido o la ruta resuelta
+    escapa de DATA.
+    """
+    for c in componentes:
+        if (
+            not c
+            or c in (".", "..")
+            or "/" in c
+            or "\\" in c
+            or "\x00" in c
+        ):
+            raise ValueError(f"Componente de ruta no válido: {c!r}")
+
+    base = DATA.resolve()
+    candidato = base.joinpath(*componentes).resolve()
+    if not candidato.is_relative_to(base):
+        raise ValueError("La ruta resuelta escapa del directorio de datos.")
+    return candidato
+
 def hex_to_bgr(hex_color: str) -> tuple:
     """
     Converts a HEX color string (e.g., '#FF0000') to a BGR tuple for OpenCV (0, 0, 255).
@@ -43,36 +67,41 @@ def process_annotations(
         image_name: str,
         bboxes: List[Any]
 ):
-    image_path = DATA / supermarket / city / date / image_name
+    # Import perezoso: OpenCV es pesado y solo lo usa este flujo admin;
+    # no debe cargarse al importar el módulo desde el proceso web.
+    import cv2
+
+    base_dir   = resolver_ruta_flyer(supermarket, city, date)
+    image_path = resolver_ruta_flyer(supermarket, city, date, image_name)
 
     if not image_path.exists():
         raise FileNotFoundError(f"Image not found at path: {image_path}")
-    
+
     img = cv2.imread(str(image_path))
     if img is None:
         raise ValueError(f"OpenCV could not load the image: {image_path}")
-        
+
     annotated_img = img.copy()
-    base_name = image_path.stem  
-    
+    base_name = image_path.stem
+
     generated_crops = []
 
     for idx, box in enumerate(bboxes):
         label = box.label
         color_hex = getattr(box, 'color', '#00FF00') # Default to green if color is missing
         x, y, w, h = box.x, box.y, box.w, box.h
-        
+
         # 1. CROP AND SAVE
         # OpenCV slicing uses format: [y:y+h, x:x+w]
         cropped_area = img[y:y+h, x:x+w]
-        
+
         # Create subfolder for the specific class (e.g., /casa_ley/hermosillo/2026-02-26/recortes/)
-        crop_dir = DATA / supermarket / city / date / "recortes"
+        crop_dir = base_dir / "recortes"
         crop_dir.mkdir(parents=True, exist_ok=True)
-        
+
         crop_filename = f"{base_name}_crop_{idx:03d}_{label}.jpg"
         crop_filepath = crop_dir / crop_filename
-        
+
         # Save crop (only if it has valid dimensions)
         if cropped_area.size > 0:
             cv2.imwrite(str(crop_filepath), cropped_area)
@@ -80,10 +109,10 @@ def process_annotations(
 
         # 2. DRAW ON THE FULL ANNOTATED IMAGE
         bgr_color = hex_to_bgr(color_hex)
-        
+
         # Draw rectangle
         cv2.rectangle(annotated_img, (x, y), (x+w, y+h), bgr_color, thickness=3)
-        
+
         # Draw label text background and text
         font = cv2.FONT_HERSHEY_SIMPLEX
         text_size = cv2.getTextSize(label, font, 0.8, 2)[0]
@@ -91,16 +120,16 @@ def process_annotations(
         cv2.putText(annotated_img, label, (x + 5, y - 5), font, 0.8, (0, 0, 0), 2)
 
     # 3. SAVE FULL ANNOTATED IMAGE
-    annotated_dir = DATA / supermarket / city / date / "annotated" 
+    annotated_dir = base_dir / "annotated"
     annotated_dir.mkdir(parents=True, exist_ok=True)
     annotated_filepath = annotated_dir / f"{base_name}_annotated.jpg"
     cv2.imwrite(str(annotated_filepath), annotated_img)
 
     # 4. SAVE LABELS / COORDINATES AS JSON
-    labels_dir = DATA / supermarket / city / date / "labels" 
+    labels_dir = base_dir / "labels"
     labels_dir.mkdir(parents=True, exist_ok=True)
     json_filepath = labels_dir / f"{base_name}.json"
-    
+
     # Format data to save it
     boxes_dict = [b.dict() for b in bboxes]
     with open(json_filepath, "w", encoding="utf-8") as f:
@@ -111,4 +140,3 @@ def process_annotations(
         "annotated_image_path": str(annotated_filepath),
         "labels_file_path": str(json_filepath)
     }
-

@@ -13,7 +13,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from sina.agent.agent import responder_stream
 from sina.agent.llm.factory import get_llm_provider
@@ -29,18 +29,38 @@ router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
 
 
 class UbicacionIn(BaseModel):
-    estado: str | None = None
-    municipio: str | None = None
-    localidad: str | None = None
-    lat: float | None = None
-    lng: float | None = None
+    estado: str | None = Field(default=None, max_length=100)
+    municipio: str | None = Field(default=None, max_length=100)
+    localidad: str | None = Field(default=None, max_length=100)
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
+
+
+# Topes defensivos: acotan el costo en tokens/recursos de una sola petición
+# (el historial lo provee el cliente; sin límite permitiría payloads enormes).
+_MAX_MENSAJE = 4000
+_MAX_HISTORIAL = 50
+_MAX_CONTENIDO_HISTORIAL = 8000
 
 
 class ChatIn(BaseModel):
-    mensaje: str
+    mensaje: str = Field(min_length=1, max_length=_MAX_MENSAJE)
     conversacion_id: str | None = None
-    historial: list[dict] | None = None
+    historial: list[dict] | None = Field(default=None, max_length=_MAX_HISTORIAL)
     ubicacion: UbicacionIn | None = None
+
+    @field_validator("historial")
+    @classmethod
+    def _validar_historial(cls, v: list[dict] | None) -> list[dict] | None:
+        if v is None:
+            return v
+        for item in v:
+            contenido = item.get("contenido") or item.get("content") or ""
+            if isinstance(contenido, str) and len(contenido) > _MAX_CONTENIDO_HISTORIAL:
+                raise ValueError(
+                    f"El contenido de un mensaje del historial excede {_MAX_CONTENIDO_HISTORIAL} caracteres."
+                )
+        return v
 
 
 class TituloIn(BaseModel):

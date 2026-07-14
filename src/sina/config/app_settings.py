@@ -7,6 +7,7 @@ tocar el resto del arranque. En GCP estos valores llegan por Secret Manager →
 variables de entorno.
 """
 import logging
+import os
 import secrets
 
 from pydantic import Field, field_validator
@@ -94,3 +95,20 @@ class AppSettings(BaseSettings):
 settings = AppSettings()
 # Se resuelve una vez al importar para fijar la clave de firma del proceso.
 SESSION_SECRET: str = settings.resolved_secret_key()
+
+# ── Guardas de credenciales por defecto ──────────────────────────────────
+# Los valores de ejemplo de `.env.example`/`compose.yaml` son públicos (están
+# en el repo); no deben llegar a producción.
+_DEFAULT_DB_PASSWORDS = {"sina_password"}
+
+if settings.is_prod:
+    if os.getenv("DB_PASSWORD") in _DEFAULT_DB_PASSWORDS:
+        raise RuntimeError(
+            "DB_PASSWORD usa el valor de ejemplo del repositorio; "
+            "cambia la contraseña antes de arrancar en producción."
+        )
+    if settings.mongo_uri.startswith("mongodb://localhost") or "@" not in settings.mongo_uri:
+        log.warning(
+            "MONGO_URI apunta a una instancia sin autenticación; "
+            "en producción configura credenciales de MongoDB."
+        )
