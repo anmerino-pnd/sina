@@ -26,17 +26,19 @@ from sina.annotator.image_segmentation import (
 from sina.annotator.zonas import detectar_zonas
 from sina.annotator.records import df_to_dict
 from sina.scraping.supermercados.casaley_spider import download_flyer
+from sina.scraping.supermercados.abarrey_spider import download_flyer as download_flyer_abarrey
 from sina.scraping.gobierno.cre_gasolina import (
     scrape_municipio,
     transform_gas_prices,
     get_precios_gasolina
 )
 from sina.scraping.gobierno.cne_gas_lp import get_precios_gas_lp, get_localidades_by_municipio
-from sina.config.credentials import DB_URL, casa_ley_url
+from sina.config.credentials import DB_URL, casa_ley_url, abarrey_url
 from sina.config.settings import _get_classes_config, _get_flyer_ciudades, build_filesystem_tree
 from sina.config.paths import (
     TEMPLATES_DIR,
     CASA_LEY_DATA,
+    ABARREY_DATA,
     STATIC_DIR,
     DATA,
     FLYERS_DATA,
@@ -476,6 +478,12 @@ def download_flyer_endpoint(payload: FlyerPayload, _admin: None = Depends(requir
                 city    =payload.city,
                 base_url=casa_ley_url,
                 base_dir=str(CASA_LEY_DATA),
+            )
+        case "Abarrey" | "abarrey":
+            return download_flyer_abarrey(
+                city    =payload.city,
+                base_url=abarrey_url,
+                base_dir=str(ABARREY_DATA),
             )
         case _:
             raise HTTPException(

@@ -257,9 +257,9 @@ ul.task-list li input[type="checkbox"] {
 <td>LLM Ollama + tools + grafo; SSE; historial Mongo.</td>
 </tr>
 <tr class="odd">
-<td>Pipeline volantes (Ley)</td>
+<td>Pipeline volantes (Ley + Abarrey)</td>
 <td style="text-align: center;">✅</td>
-<td>Descarga → pre-anotar zonas (CV) → ajuste → VLM por zona → verificación → Postgres (<code>fuente=flyer</code>). YOLO pendiente.</td>
+<td>Descarga → pre-anotar zonas (CV: paneles Ley / bandas Abarrey) → ajuste → VLM por zona → verificación → Postgres (<code>fuente=flyer</code>). YOLO pendiente.</td>
 </tr>
 <tr class="even">
 <td>Capa VLM (<code>sina/vlm/</code>)</td>
@@ -396,8 +396,10 @@ Figura&nbsp;1: Roadmap por fases y su estado
 <li><label><input type="checkbox" checked="">Pipeline end-to-end de flyers Ley: descarga → <strong>pre-anotación de zonas (CV)</strong> → ajuste manual (mover/redimensionar) → <strong>VLM por zona</strong> (estructurado + validado) → verificación humana → <strong>upsert a Postgres</strong> (<code>supermercados</code>, <code>fuente=flyer</code> + vigencia).</label></li>
 <li><label><input type="checkbox" checked="">Capa <strong><code>VLMProvider</code></strong> abstracta (Ollama local, adaptable a nube) + salida estructurada.</label></li>
 <li><label><input type="checkbox" checked=""><strong>Export de dataset YOLO</strong> (coords normalizadas) al guardar cada anotación.</label></li>
-<li><label><input type="checkbox">Acumular dataset del annotator (~500+ imágenes) y <strong>entrenar YOLO</strong> (Roboflow) para reemplazar la pre-anotación CV.</label></li>
-<li><label><input type="checkbox">Expansión a más cadenas (p.&nbsp;ej. <strong>Abarrey</strong>, layout distinto → su propio tuning/dataset) y geográfica.</label></li>
+<li><label><input type="checkbox" checked=""><strong>Abarrey</strong> integrado al pipeline: <code>abarrey_spider</code> (curl_cffi, server-rendered, extrae <code>vigencia_texto</code>) + modo de zonas <strong>“bandas”</strong> (perfil de blancura por fila — su rejilla densa no tiene los pasillos continuos que asume el modo “paneles” de Ley).</label></li>
+<li><label><input type="checkbox" checked=""><strong>Consolidador de dataset</strong> (<code>sina/annotator/dataset.py</code>): reúne los <code>labels_yolo/*.txt</code> dispersos en <code>datos/yolo_dataset/</code> formato Ultralytics (<code>data.yaml</code>, split determinista train/val, nombres trazables <code>tienda__ciudad__fecha__page_NN</code>).</label></li>
+<li><label><input type="checkbox">Acumular ~50–150 páginas anotadas y <strong>entrenar YOLO</strong> para reemplazar la pre-anotación CV. Decisiones tomadas: <strong>YOLO11n/s</strong> (Ultralytics, detección mono-clase <code>zona</code>, fine-tuning de pesos COCO, <code>imgsz=1024</code>); modelo <strong>UNIFICADO</strong> para todas las tiendas (la diversidad de layouts generaliza mejor; un modelo por tienda se moriría de hambre con 2 pág/semana); integración estilo provider: <code>detectar_zonas</code> intenta YOLO si hay pesos (<code>ZONAS_MODEL_PATH</code>) y cae al CV clásico si no — UI, endpoints y corrección humana no cambian, y cada corrección sigue alimentando el dataset (<strong>active learning</strong>).</label></li>
+<li><label><input type="checkbox">Expansión a más cadenas y geográfica.</label></li>
 </ul>
 </section>
 </section>

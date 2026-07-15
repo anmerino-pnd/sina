@@ -12,10 +12,20 @@ y cerrar" (eso funde todo el flyer en un bloque), sino el inverso:
   2. Los **paneles** son lo que queda entre pasillos (el negativo de los pasillos).
   3. Sacar las cajas de esos paneles.
 
+Abarrey no tiene ni pasillos blancos largos ni paneles de color: es una rejilla
+densa de filas de producto separadas por listones de color y huecos blancos
+DISCONTINUOS (los empaques los interrumpen), así que ninguna "línea larga"
+sobrevive el open morfológico. Para ese layout existe un segundo modo, "bandas":
+perfil de blancura por FILA (fracción de píxeles claros en cada renglón de la
+imagen); los renglones mayormente blancos son separadores y las bandas entre
+ellos —a lo ancho de la página— son las zonas (≈ una fila/departamento de
+productos, granularidad ideal para el VLM). El modo se elige por tienda en
+`_PARAMS` ("modo": "paneles" | "bandas").
+
 Son PROPUESTAS: el humano las ajusta / fusiona / borra en el anotador. Los
-parámetros son por tienda (Ley hoy; Abarrey luego, con su propio tuning). No
-entrena nada: es el paso barato antes de YOLO, que a futuro lo reemplaza. Las
-cajas corregidas por el humano se guardan como dataset para entrenar ese YOLO.
+parámetros son por tienda. No entrena nada: es el paso barato antes de YOLO,
+que a futuro lo reemplaza. Las cajas corregidas por el humano se guardan como
+dataset para entrenar ese YOLO.
 """
 from __future__ import annotations
 
@@ -44,6 +54,14 @@ _PARAMS: dict[str, dict] = {
         "area_max_frac": 0.55,
         "w_min_frac": 0.035,
         "h_min_frac": 0.035,
+    },
+    # Rejilla densa sin pasillos continuos → modo "bandas" (perfil por fila).
+    # Tuning validado con los flyers vigentes de 2026-07-15 (6 y 4 bandas limpias).
+    "abarrey": {
+        "modo": "bandas",
+        "blanco": 185,          # brillo mínimo (0-255) para contar un píxel como claro
+        "corte": 0.75,          # frac. de píxeles claros por fila para marcar separador
+        "banda_min_frac": 0.04, # descarta bandas más bajas que esto (frac. de la altura)
     },
 }
 
@@ -76,6 +94,10 @@ def detectar_zonas(
     p = _PARAMS[_norm_tienda(tienda)]
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    if p.get("modo", "paneles") == "bandas":
+        zonas = _zonas_por_bandas(gray, W, H, p)
+        return _consolidar_y_ordenar(zonas, W, H, fusion, max_zonas, cv2, np)
 
     # 1. Pasillos = líneas claras LARGAS (horizontales y verticales).
     blanco = (gray > p["gutter"]).astype(np.uint8) * 255
@@ -113,7 +135,40 @@ def detectar_zonas(
             continue
         zonas.append({"label": "zona", "x": int(x), "y": int(y), "w": int(w), "h": int(h)})
 
-    # Fusión opcional: une cajas cercanas dilatando una máscara y re-contorneando.
+    return _consolidar_y_ordenar(zonas, W, H, fusion, max_zonas, cv2, np)
+
+
+def _zonas_por_bandas(gray, W: int, H: int, p: dict) -> list[dict]:
+    """
+    Modo "bandas": fracción de píxeles claros por fila; los renglones mayormente
+    blancos separan, y cada tramo continuo no-blanco es una zona a lo ancho.
+    """
+    blanco_por_fila = (gray > p["blanco"]).mean(axis=1)
+    es_separador = blanco_por_fila > p["corte"]
+
+    zonas: list[dict] = []
+    inicio: int | None = None
+    for y in range(H):
+        if not es_separador[y] and inicio is None:
+            inicio = y
+        elif es_separador[y] and inicio is not None:
+            zonas.append((inicio, y))
+            inicio = None
+    if inicio is not None:
+        zonas.append((inicio, H))
+
+    h_min = H * p["banda_min_frac"]
+    return [
+        {"label": "zona", "x": 0, "y": int(a), "w": int(W), "h": int(b - a)}
+        for a, b in zonas
+        if (b - a) >= h_min
+    ]
+
+
+def _consolidar_y_ordenar(
+    zonas: list[dict], W: int, H: int, fusion: float, max_zonas: int, cv2, np
+) -> list[dict]:
+    """Fusión opcional (une cajas cercanas dilatando una máscara) + orden de lectura."""
     fusion = max(0.0, min(0.05, fusion))
     if fusion > 0 and len(zonas) > 1:
         mask = np.zeros((H, W), np.uint8)

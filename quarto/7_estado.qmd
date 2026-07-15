@@ -32,7 +32,7 @@ futuro. Se actualiza conforme avanza el trabajo.
 | Embeddings de productos | ✅ | Opt-in `ENABLE_EMBEDDINGS`, requiere pgvector. |
 | Búsqueda / API Supermercados | ✅ | Vectorial + fallback de texto. |
 | Agente / Chat (tools internas) | ✅ | LLM Ollama + tools + grafo; SSE; historial Mongo. |
-| Pipeline volantes (Ley) | ✅ | Descarga → pre-anotar zonas (CV) → ajuste → VLM por zona → verificación → Postgres (`fuente=flyer`). YOLO pendiente. |
+| Pipeline volantes (Ley + Abarrey) | ✅ | Descarga → pre-anotar zonas (CV: paneles Ley / bandas Abarrey) → ajuste → VLM por zona → verificación → Postgres (`fuente=flyer`). YOLO pendiente. |
 | Capa VLM (`sina/vlm/`) | ✅ | `VLMProvider` abstracto + Ollama visión (salida estructurada); gated por `ENABLE_VLM`. |
 | Scheduling automático | ✅ | APScheduler (gasolina 06:00, gas LP sáb 08:00). |
 | Logging + health check | ✅ | Logging unificado; `GET /api/v1/health`. |
@@ -124,10 +124,20 @@ flowchart LR
       humana → **upsert a Postgres** (`supermercados`, `fuente=flyer` + vigencia).
 - [x] Capa **`VLMProvider`** abstracta (Ollama local, adaptable a nube) + salida estructurada.
 - [x] **Export de dataset YOLO** (coords normalizadas) al guardar cada anotación.
-- [ ] Acumular dataset del annotator (~500+ imágenes) y **entrenar YOLO** (Roboflow) para
-      reemplazar la pre-anotación CV.
-- [ ] Expansión a más cadenas (p. ej. **Abarrey**, layout distinto → su propio tuning/dataset) y
-      geográfica.
+- [x] **Abarrey** integrado al pipeline: `abarrey_spider` (curl_cffi, server-rendered, extrae
+      `vigencia_texto`) + modo de zonas **"bandas"** (perfil de blancura por fila — su rejilla
+      densa no tiene los pasillos continuos que asume el modo "paneles" de Ley).
+- [x] **Consolidador de dataset** (`sina/annotator/dataset.py`): reúne los `labels_yolo/*.txt`
+      dispersos en `datos/yolo_dataset/` formato Ultralytics (`data.yaml`, split determinista
+      train/val, nombres trazables `tienda__ciudad__fecha__page_NN`).
+- [ ] Acumular ~50–150 páginas anotadas y **entrenar YOLO** para reemplazar la pre-anotación CV.
+      Decisiones tomadas: **YOLO11n/s** (Ultralytics, detección mono-clase `zona`, fine-tuning de
+      pesos COCO, `imgsz=1024`); modelo **UNIFICADO** para todas las tiendas (la diversidad de
+      layouts generaliza mejor; un modelo por tienda se moriría de hambre con 2 pág/semana);
+      integración estilo provider: `detectar_zonas` intenta YOLO si hay pesos
+      (`ZONAS_MODEL_PATH`) y cae al CV clásico si no — UI, endpoints y corrección humana no
+      cambian, y cada corrección sigue alimentando el dataset (**active learning**).
+- [ ] Expansión a más cadenas y geográfica.
 
 ## 7.3. Pendientes críticos inmediatos
 

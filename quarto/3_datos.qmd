@@ -160,20 +160,32 @@ comparte Gasolina y Gas LP.
 Para tiendas cuyo sitio no es scrapeable, Sina extrae precios de sus **volantes**. El flujo
 recorta el flyer en **zonas** (paneles/bloques, no producto por producto: así el VLM recibe un
 "zoom" con texto legible y alucina menos), extrae cada zona con un **VLM** y, tras **verificación
-humana**, inserta a `supermercados`. La pre-anotación con CV clásico no busca espacios en blanco
-(los flyers de Ley usan paneles de color sin pasillos blancos anchos, que fundirían todo en un
-bloque) sino el **inverso**: detecta los **pasillos** —líneas claras largas— y propone los
-**paneles** que quedan entre ellos, como punto de partida que el humano ajusta. Una perilla de
-**fusión** (Ninguna/Media/Alta) reagrupa cajas cercanas: se deja en Ninguna para flyers de paneles
-de color y se sube para flyers de **rejilla densa** sobre fondo claro (donde la detección cruda sale
-fragmentada). Los volantes viven agrupados bajo `datos/flyers/<tienda>/…` para que el anotador liste
-solo tiendas de volantes.
+humana**, inserta a `supermercados`. La pre-anotación con CV clásico tiene **dos modos por tienda**
+(`_PARAMS` en `annotator/zonas.py`):
+
+- **Paneles** (Casa Ley): no busca espacios en blanco (los flyers de Ley usan paneles de color sin
+  pasillos blancos anchos, que fundirían todo en un bloque) sino el **inverso**: detecta los
+  **pasillos** —líneas claras largas— y propone los **paneles** que quedan entre ellos.
+- **Bandas** (Abarrey): su rejilla densa no tiene pasillos continuos (los empaques los interrumpen),
+  así que se usa el **perfil de blancura por fila**: los renglones mayormente claros separan y cada
+  tramo continuo no-blanco es una zona a lo ancho de la página (≈ una fila/departamento de
+  productos, la granularidad ideal para el VLM).
+
+Ambos son propuestas que el humano ajusta. Una perilla de **fusión** (Ninguna/Media/Alta) reagrupa
+cajas cercanas cuando la detección cruda sale fragmentada. Los volantes viven agrupados bajo
+`datos/flyers/<tienda>/…` para que el anotador liste solo tiendas de volantes.
+
+**Scrapers de volantes.** `casaley_spider` (Selenium: el visor Publitas es JS dinámico) y
+`abarrey_spider` (curl_cffi + BeautifulSoup: `ofertas.php` es server-rendered; además extrae el
+texto de vigencia de la página y lo guarda como `vigencia_texto` en `metadata.json`, de apoyo para
+llenar la vigencia al insertar). Ambos escriben la misma estructura
+`datos/flyers/<tienda>/<ciudad>/<fecha>/page_NN.jpg` + `metadata.json`.
 
 ```{mermaid}
 %%| label: fig-flyers
 %%| fig-cap: "Pipeline de volantes: descarga → zonas → VLM → verificación → Postgres"
 flowchart LR
-    D["Descargar flyer<br/>casaley_spider (Selenium)"] --> P["Pre-anotar zonas<br/>CV clásico (OpenCV)"]
+    D["Descargar flyer<br/>casaley_spider / abarrey_spider"] --> P["Pre-anotar zonas<br/>CV clásico (paneles | bandas)"]
     P --> A["Ajuste humano<br/>anotador (mover/redimensionar)"]
     A --> R["Recortes<br/>+ dataset YOLO"]
     R --> V["VLM por zona<br/>VLMProvider (Ollama)"]
@@ -196,7 +208,15 @@ el scraping, con un discriminador `fuente` (`"scraping"` vs `"flyer"`). Como los
 `pid` (la clave del scraping), `pid` es nullable y el dedup de flyer es por la **clave compuesta**
 `(tienda, producto, fuente, vigencia_inicio)`. Al ser **promos temporales**, llevan
 `vigencia_inicio/fin`; la búsqueda puede filtrar `solo_vigentes` para no mostrar ofertas vencidas.
-Cada cadena (Ley hoy; Abarrey a futuro) usa su propio tuning de zonas y queda separada por `tienda`.
+Cada cadena (Ley y Abarrey hoy) usa su propio modo/tuning de zonas y queda separada por `tienda`.
+
+**Dataset YOLO.** Cada guardado del anotador exporta las cajas corregidas por el humano a
+`labels_yolo/*.txt` (coordenadas normalizadas, clase única `zona`). El consolidador
+`sina/annotator/dataset.py` (`uv run python -m sina.annotator.dataset`) barre todos esos labels,
+los empareja con su imagen y reconstruye `datos/yolo_dataset/` en formato Ultralytics
+(`images/labels × train/val` + `data.yaml`, split determinista por hash, nombres
+`tienda__ciudad__fecha__page_NN`), listo para entrenar el YOLO **unificado** (todas las tiendas en
+un solo modelo) cuando haya volumen suficiente (~50–150 páginas anotadas).
 
 **Capa VLM abstracta** (`sina/vlm/`): `VLMProvider` (ABC) + `OllamaVLMProvider` (visión local, salida
 estructurada con `format=<json schema>`) + fábrica `get_vlm_provider()` gated por `ENABLE_VLM`.

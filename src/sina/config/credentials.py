@@ -11,6 +11,8 @@ qqp_url : str = os.getenv('QQP_DATOS_URL', "")
 datos_abiertos_url: str = os.getenv('DATOS_ABIERTOS_URL', "")
 gasolina_hmo_url: str = os.getenv('GASOLINA_HMO_URL', "")
 casa_ley_url: str = os.getenv('CASA_LEY_URL', "")
+# Pagina publica y unica de ofertas de Abarrey (server-rendered).
+abarrey_url: str = os.getenv('ABARREY_URL', "https://www.abarrey.com/ofertas.php")
 
 ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
 google_api_key: str = os.getenv('GOOGLE_API_KEY', "")
