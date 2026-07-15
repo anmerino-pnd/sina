@@ -86,10 +86,16 @@
                 <button id="btnDraw" class="tool-btn active">Dibujar</button>
                 <button id="btnPan" class="tool-btn">Mover vista</button>
             </div>
+            <label class="label" style="margin-top:10px;">Fusión de zonas</label>
+            <select id="fusionSelect" class="select">
+                <option value="0">Ninguna · paneles de color</option>
+                <option value="0.012">Media · rejilla densa</option>
+                <option value="0.02">Alta · bloques grandes</option>
+            </select>
             <button class="btn btn-outline" id="btnPreanotar" style="width:100%; margin-top:8px;">
                 Pre-anotar zonas (CV)
             </button>
-            <p class="subtitle" style="margin-top:6px;">Dibuja, arrastra el interior para mover o la esquina para redimensionar.</p>
+            <p class="subtitle" style="margin-top:6px;">Sube la fusión si las zonas salen fragmentadas. Dibuja, arrastra el interior para mover o la esquina para redimensionar.</p>
             
             <!-- NEW: Zoom Controls -->
             <div class="zoom-controls">

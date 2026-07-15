@@ -6,7 +6,7 @@ from typing import cast
 from toon import encode
 from ollama import Client
 from typing import Callable, Any
-from sina.config.paths import DATA
+from sina.config.paths import FLYERS_DATA  # (módulo legacy, superado por sina/vlm/extraccion.py)
 from sina.config.credentials import ollama_api_key
 from pydantic import ValidationError, BaseModel, Field
 from sina.config.prompt import extract_text_prompt, clean_response
@@ -21,8 +21,8 @@ def extract_text(
 ) -> bool:
 
     try:
-        input_path  = DATA / supermarket / city / date / "recortes"
-        output_path = DATA / supermarket / city / date / "flyer_data.json"
+        input_path  = FLYERS_DATA / supermarket / city / date / "recortes"
+        output_path = FLYERS_DATA / supermarket / city / date / "flyer_data.json"
         
         imgs = sorted(input_path.iterdir())
 

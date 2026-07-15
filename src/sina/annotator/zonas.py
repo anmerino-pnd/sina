@@ -53,10 +53,17 @@ def _norm_tienda(tienda: str) -> str:
     return t if t in _PARAMS else "_default"
 
 
-def detectar_zonas(image_path, tienda: str = "casa_ley", max_zonas: int = 80) -> list[dict]:
+def detectar_zonas(
+    image_path, tienda: str = "casa_ley", max_zonas: int = 80, fusion: float = 0.0
+) -> list[dict]:
     """
     Devuelve una lista de cajas `{"label": "zona", "x", "y", "w", "h"}` (píxeles)
     propuestas para el flyer. Import perezoso de OpenCV (pesado, solo este flujo).
+
+    `fusion` (0.0–0.05, fracción del ancho) consolida cajas cercanas en bloques
+    más grandes: útil en flyers de rejilla densa (fondo claro, muchas celdas), donde
+    la detección cruda deja cajas fragmentadas. 0.0 = sin fusión (mejor para flyers
+    de paneles de color grandes). Es una perilla que el humano sube por flyer.
     """
     import cv2  # noqa: PLC0415 — lazy, igual que process_annotations
     import numpy as np
@@ -105,6 +112,25 @@ def detectar_zonas(image_path, tienda: str = "casa_ley", max_zonas: int = 80) ->
         if w < w_min or h < h_min:
             continue
         zonas.append({"label": "zona", "x": int(x), "y": int(y), "w": int(w), "h": int(h)})
+
+    # Fusión opcional: une cajas cercanas dilatando una máscara y re-contorneando.
+    fusion = max(0.0, min(0.05, fusion))
+    if fusion > 0 and len(zonas) > 1:
+        mask = np.zeros((H, W), np.uint8)
+        for z in zonas:
+            cv2.rectangle(mask, (z["x"], z["y"]), (z["x"] + z["w"], z["y"] + z["h"]), 255, -1)
+        d = max(1, int(W * fusion))
+        mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (d, d)), iterations=1)
+        cont, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        pad = d // 2
+        fusionadas: list[dict] = []
+        for c in cont:
+            x, y, w, h = cv2.boundingRect(c)
+            # Revierte el margen que agregó la dilatación, acotando a la imagen.
+            x = min(W - 1, x + pad); y = min(H - 1, y + pad)
+            w = max(1, w - 2 * pad); h = max(1, h - 2 * pad)
+            fusionadas.append({"label": "zona", "x": int(x), "y": int(y), "w": int(w), "h": int(h)})
+        zonas = fusionadas
 
     # Orden de lectura: por bandas horizontales (arriba→abajo), luego izq→der.
     banda = max(1, int(H * 0.05))

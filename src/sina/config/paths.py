@@ -16,8 +16,11 @@ BASE_DIR = find_project_root(Path(__file__))
 # --- Datos existentes ---
 DATA = BASE_DIR / "datos"
 DB = DATA / "db"
-CASA_LEY_DATA = DATA / "casa_ley"
-ABARREY_DATA = DATA / "abarrey"
+# Volantes (flyers) agrupados bajo datos/flyers/ para que el anotador liste solo
+# tiendas de volantes (no db/ ni gasolineras/).
+FLYERS_DATA = DATA / "flyers"
+CASA_LEY_DATA = FLYERS_DATA / "casa_ley"
+ABARREY_DATA = FLYERS_DATA / "abarrey"
 GAS_DATA = DATA / "gasolineras"
 
 # --- Logs ---
@@ -39,6 +42,7 @@ GUADALAJARA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "guadalajara_config.
 for path in [
     DB,
     DATA,
+    FLYERS_DATA,
     CASA_LEY_DATA,
     ABARREY_DATA,
     TEMPLATES_DIR,

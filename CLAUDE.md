@@ -132,8 +132,10 @@ por espacios en blanco, no por producto) → **VLM por zona** → verificación 
   clásico** (OpenCV). Los flyers de Ley usan **paneles de color** sin pasillos blancos anchos, así
   que binarizar-y-cerrar fundía todo en un bloque; el enfoque es el **inverso**: detectar los
   **pasillos** (líneas claras largas, vía `open` morfológico con kernels alargados) y quedarse con
-  los **paneles** entre ellos. Parámetros por tienda. Propuestas que el humano ajusta; clase única
-  `zona`. YOLO (a futuro) reemplaza este paso.
+  los **paneles** entre ellos. Parámetros por tienda + una perilla **`fusion`** (0–0.05, expuesta en
+  la UI como Ninguna/Media/Alta) que dilata-y-reagrupa cajas cercanas: 0 para flyers de paneles de
+  color; súbela para flyers de **rejilla densa** sobre fondo claro (donde la detección cruda sale
+  fragmentada). Propuestas que el humano ajusta; clase única `zona`. YOLO (a futuro) reemplaza este paso.
 - `annotator/image_segmentation.py` — `process_annotations` recorta las cajas → `recortes/`,
   guarda overlay + labels JSON **y export YOLO** (`labels_yolo/*.txt`, coords normalizadas =
   dataset para entrenar). Payloads `PreanotarPayload`/`PersistirPayload`. `resolver_ruta_flyer`
@@ -172,5 +174,8 @@ GET /api/v1/gasolina?estado&municipio
                            → else: CRE API → transform → repo.upsert_precios() → return
 ```
 
-Scraped flyer/image artifacts live under `datos/<supermarket>/<city>/<date>/` and are
+Scraped flyer/image artifacts live under `datos/flyers/<tienda>/<city>/<date>/` (flyer stores
+—`casa_ley`, `abarrey`— are grouped under `datos/flyers/` so the annotator's store selector lists
+only flyer sources, not `db/`/`gasolineras/`; `resolver_ruta_flyer` and the annotator tree are
+rooted at `FLYERS_DATA`, images served at `/datos/flyers/...`) and are
 served at `/datos`.

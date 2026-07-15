@@ -3,7 +3,7 @@ __pycache__/
 __init__.py
 sina.egg-info
 chromedriver.exe
-datos/casa_ley
+datos/flyers/
 datos/db
 logs/
 frontend/node_modules

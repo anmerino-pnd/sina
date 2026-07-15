@@ -163,7 +163,11 @@ recorta el flyer en **zonas** (paneles/bloques, no producto por producto: así e
 humana**, inserta a `supermercados`. La pre-anotación con CV clásico no busca espacios en blanco
 (los flyers de Ley usan paneles de color sin pasillos blancos anchos, que fundirían todo en un
 bloque) sino el **inverso**: detecta los **pasillos** —líneas claras largas— y propone los
-**paneles** que quedan entre ellos, como punto de partida que el humano ajusta.
+**paneles** que quedan entre ellos, como punto de partida que el humano ajusta. Una perilla de
+**fusión** (Ninguna/Media/Alta) reagrupa cajas cercanas: se deja en Ninguna para flyers de paneles
+de color y se sube para flyers de **rejilla densa** sobre fondo claro (donde la detección cruda sale
+fragmentada). Los volantes viven agrupados bajo `datos/flyers/<tienda>/…` para que el anotador liste
+solo tiendas de volantes.
 
 ```{mermaid}
 %%| label: fig-flyers

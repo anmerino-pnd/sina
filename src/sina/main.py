@@ -39,6 +39,7 @@ from sina.config.paths import (
     CASA_LEY_DATA,
     STATIC_DIR,
     DATA,
+    FLYERS_DATA,
     BASE_DIR,
 )
 from sina.config.canasta import (
@@ -208,7 +209,7 @@ async def view_annotator(request: Request):
 @app.get("/api/v1/annotator/tree")
 def get_annotator_tree(_admin: None = Depends(require_admin)):
     """Árbol de datos/ (supermercado→ciudad→fecha→archivos). Requiere clave admin."""
-    return {"tree": build_filesystem_tree(DATA)}
+    return {"tree": build_filesystem_tree(FLYERS_DATA)}
 
 @app.get("/sina/gasolina", response_class=HTMLResponse)
 async def view_gasolina(request: Request):
@@ -498,7 +499,7 @@ def preanotar_zonas(payload: PreanotarPayload, _admin: None = Depends(require_ad
     if not image_path.exists():
         raise HTTPException(status_code=404, detail="Imagen no encontrada.")
     try:
-        zonas = detectar_zonas(image_path, tienda=payload.supermarket)
+        zonas = detectar_zonas(image_path, tienda=payload.supermarket, fusion=payload.fusion)
     except Exception:
         log.exception("Error en pre-anotación de zonas")
         raise HTTPException(status_code=500, detail="Error interno del servidor.")

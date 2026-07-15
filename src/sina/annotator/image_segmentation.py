@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Any
 from pydantic import BaseModel
 # Adjust these imports according to your actual project structure
-from sina.config.paths import DATA
+from sina.config.paths import FLYERS_DATA
 
 class BoundingBox(BaseModel):
     label: str
@@ -33,6 +33,7 @@ class PreanotarPayload(BaseModel):
     city: str
     date: str
     image_name: str
+    fusion: float = 0.0   # 0.0–0.05: consolida cajas cercanas (flyers de rejilla densa)
 
 class PersistirPayload(BaseModel):
     """Productos verificados por el humano, listos para insertar a Postgres."""
@@ -47,11 +48,11 @@ class PersistirPayload(BaseModel):
 
 def resolver_ruta_flyer(*componentes: str) -> Path:
     """
-    Construye una ruta bajo DATA a partir de componentes provistos por el
-    cliente, rechazando cualquier intento de path traversal. Cada componente
-    debe ser un nombre simple (sin separadores, sin `..`, sin nulos).
-    Lanza ValueError si algún componente es inválido o la ruta resuelta
-    escapa de DATA.
+    Construye una ruta bajo datos/flyers/ (FLYERS_DATA) a partir de componentes
+    provistos por el cliente (tienda/ciudad/fecha/...), rechazando cualquier
+    intento de path traversal. Cada componente debe ser un nombre simple (sin
+    separadores, sin `..`, sin nulos). Lanza ValueError si algún componente es
+    inválido o la ruta resuelta escapa del directorio de volantes.
     """
     for c in componentes:
         if (
@@ -63,7 +64,7 @@ def resolver_ruta_flyer(*componentes: str) -> Path:
         ):
             raise ValueError(f"Componente de ruta no válido: {c!r}")
 
-    base = DATA.resolve()
+    base = FLYERS_DATA.resolve()
     candidato = base.joinpath(*componentes).resolve()
     if not candidato.is_relative_to(base):
         raise ValueError("La ruta resuelta escapa del directorio de datos.")

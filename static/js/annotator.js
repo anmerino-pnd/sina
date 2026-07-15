@@ -330,7 +330,7 @@ imageSelect.addEventListener('change', (e) => {
     if (!filename) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
     document.getElementById('placeholder').style.display = 'none';
     const store = storeSelect.value, city = citySelect.value, date = dateSelect.value;
-    currentImg.src = `/datos/${store}/${city}/${date}/${filename}`;
+    currentImg.src = `/datos/flyers/${store}/${city}/${date}/${filename}`;
     currentImg.onload = () => {
         canvas.width = currentImg.width;
         canvas.height = currentImg.height;
@@ -530,9 +530,11 @@ async function preanotar() {
     const btn = document.getElementById('btnPreanotar');
     btn.disabled = true; btn.innerText = 'Detectando zonas…';
     try {
+        const fusionEl = document.getElementById('fusionSelect');
+        const fusion = fusionEl ? parseFloat(fusionEl.value) || 0 : 0;
         const r = await fetch('/api/v1/annotator/preanotar', {
             method: 'POST', headers: authHeaders(),
-            body: JSON.stringify({ supermarket: store, city, date, image_name: filename }),
+            body: JSON.stringify({ supermarket: store, city, date, image_name: filename, fusion }),
         });
         const data = await r.json();
         if (!r.ok) throw new Error(data.detail || 'HTTP ' + r.status);
