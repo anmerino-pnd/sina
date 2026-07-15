@@ -220,7 +220,52 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
-<p>Los endpoints del flujo <strong>annotator</strong> (<code>/api/v1/annotator/*</code>, incluido <code>GET /status</code>) y la UI legacy <code>/sina/annotator</code> requieren <strong><code>X-Admin-Key</code></strong>; sus parámetros de ruta (<code>supermarket/city/date/imagen</code>) se validan contra path traversal (<code>resolver_ruta_flyer</code> en <code>annotator/image_segmentation.py</code>, mismo patrón <code>is_relative_to</code> que el catch-all de la SPA). Los errores 500 devuelven un mensaje <strong>genérico</strong> (“Error interno del servidor.”); el detalle queda solo en el log del servidor.</p>
+<p>Los endpoints del flujo <strong>annotator</strong> (<code>/api/v1/annotator/*</code>) requieren <strong><code>X-Admin-Key</code></strong>; sus parámetros de ruta (<code>supermarket/city/date/imagen</code>) se validan contra path traversal (<code>resolver_ruta_flyer</code> en <code>annotator/image_segmentation.py</code>, mismo patrón <code>is_relative_to</code> que el catch-all de la SPA). Los errores 500 devuelven un mensaje <strong>genérico</strong> (“Error interno del servidor.”); el detalle queda solo en el log del servidor.</p>
+<p>Endpoints del <strong>pipeline de volantes</strong> (ver <a href="./3_datos.html">Datos §3.7</a>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Método + ruta</th>
+<th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>POST /annotator/flyer</code></td>
+<td>Descarga el volante (Casa Ley → Publitas/Selenium).</td>
+</tr>
+<tr class="even">
+<td><code>POST /annotator/preanotar</code></td>
+<td>Propone <strong>zonas</strong> de recorte con CV clásico (no persiste).</td>
+</tr>
+<tr class="odd">
+<td><code>POST /annotator/annotate</code></td>
+<td>Guarda recortes + overlay + labels JSON <strong>y YOLO</strong> (dataset).</td>
+</tr>
+<tr class="even">
+<td><code>POST /annotator/extract</code></td>
+<td>Extrae productos <strong>por zona</strong> con el VLM (estructurado + validado).</td>
+</tr>
+<tr class="odd">
+<td><code>POST /annotator/persistir</code></td>
+<td>Inserta a <code>supermercados</code> los productos <strong>verificados</strong> por el humano.</td>
+</tr>
+<tr class="even">
+<td><code>GET /annotator/tree</code></td>
+<td>Árbol de <code>datos/</code> para la UI (admin).</td>
+</tr>
+<tr class="odd">
+<td><code>GET /annotator/status</code></td>
+<td>¿Hay recortes / datos para esa fecha?</td>
+</tr>
+</tbody>
+</table>
+<p>La UI <code>GET /sina/annotator</code> sirve solo el <strong>shell</strong> (sin datos), para que el navegador la cargue; el árbol y todas las acciones pasan por los endpoints admin-gated, y la UI adjunta la <code>X-Admin-Key</code> (que el usuario pega en un campo) en cada petición.</p>
+<p>La extracción por VLM vive en el paquete <strong><code>sina/vlm/</code></strong>: <code>VLMProvider</code> (ABC) + <code>OllamaVLMProvider</code> (visión local, <code>format=&lt;json schema&gt;</code> para salida estructurada) + fábrica <code>get_vlm_provider()</code> gated por <code>ENABLE_VLM</code>. La salida se valida con <strong>Pydantic</strong> y <strong>sanidad de precio</strong> antes de mostrarse/insertar (evita que precios alucinados lleguen a la DB).</p>
 <p>Los endpoints QQP/PROFECO quedaron <strong>removidos</strong> y el modelo/repositorio fueron <strong>eliminados</strong> del código en julio 2026 (la tabla <code>qqp_precios</code> puede quedar huérfana en DBs existentes; <code>create_all</code> no borra tablas).</p>
 </section>
 <section id="capa-de-datos" class="level2">
@@ -231,6 +276,7 @@ ul.task-list li input[type="checkbox"] {
 <li><strong><code>repository.py</code></strong> — <code>BaseRepository[T]</code> genérico + una subclase por modelo. Todos comparten un <strong>engine global</strong>; los upserts usan <code>on_conflict_do_update</code> con el <strong>dialecto elegido según el engine</strong> (<code>_dialect_insert</code>: <code>postgresql.insert</code> o <code>sqlite.insert</code> — el constructo de un dialecto no compila bajo el otro). El catálogo estado→municipio se obtiene en <strong>una sola query con JOIN</strong> (antes 1+N por la relación lazy) y el <code>estado_cache</code> del health check vive consolidado en <code>BaseRepository._estado_cache</code>, parametrizado por campo de fecha. En PostgreSQL se crea además un <strong>índice trigram</strong> (<code>pg_trgm</code> + GIN sobre <code>supermercados.producto</code>) para que la búsqueda de texto <code>ILIKE '%q%'</code> no sea un full-scan.</li>
 <li><strong><code>seeder.py</code></strong> — carga catálogos/semillas de forma <strong>genérica e idempotente</strong> (<code>seed_catalogo_tienda</code> + <code>TIENDAS_CATALOGO</code>).</li>
 </ul>
+<p><strong>Origen unificado en <code>supermercados</code>.</strong> La tabla lleva un discriminador <code>fuente</code> (<code>"scraping"</code> | <code>"flyer"</code>) + <code>vigencia_inicio/fin</code> + <code>marca</code>/<code>unidad</code>. El scraping deduplica por <code>pid</code> (único); los flyer no traen <code>pid</code> (nullable) y deduplican por la clave compuesta <code>(tienda, producto, fuente, vigencia_inicio)</code> vía <code>upsert_flyer_productos</code>. Como <strong>no hay Alembic</strong> (<code>create_all</code> no altera tablas existentes), el arranque corre una <strong>migración idempotente</strong> solo en PostgreSQL (<code>ALTER TABLE ... ADD COLUMN IF NOT EXISTS</code>, <code>ALTER COLUMN pid DROP NOT NULL</code>, <code>CREATE UNIQUE INDEX IF NOT EXISTS uq_super_flyer</code>) — no-op en una DB nueva.</p>
 </section>
 <section id="scrapers" class="level2">
 <h2 class="anchored" data-anchor-id="scrapers">4.4. Scrapers</h2>

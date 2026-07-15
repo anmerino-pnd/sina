@@ -246,11 +246,20 @@ los selectores Estado/Municipio según la categoría.
     scraping vía Cloud Scheduler / Cloud Run Jobs; secretos en Secret Manager.
 - [ ] Buscar patrocinador para el servidor / dominio (p. ej. `sina.mx`).
 
-### FASE 6 — Automatización ML de Volantes (Largo Plazo)
-**Meta:** reducir la anotación manual de volantes.
-- Acumular dataset del annotator (~500+ imágenes anotadas).
-- Entrenar detección de zonas (p. ej. Roboflow) e integrarla al pipeline OCR existente.
-- Expansión geográfica de volantes (Hermosillo → Sonora → Norte → Centro/Sur).
+### FASE 6 — Volantes: recorte por zonas + VLM → Postgres 🚧 (base)
+**Meta:** convertir volantes (tiendas sin sitio scrapeable) en productos consultables.
+- [x] Pipeline end-to-end Ley: descarga (`casaley_spider`) → **pre-anotación de zonas por CV
+      clásico** (`annotator/zonas.py`) → ajuste manual en el anotador (mover/redimensionar) →
+      **VLM por zona** (`vlm/`, salida estructurada + validación Pydantic/sanidad de precio) →
+      **verificación humana** en el anotador → `upsert_flyer_productos` a `supermercados`
+      (`fuente=flyer` + vigencia). El recorte es **por ZONA** (no por producto): el VLM recibe un
+      "zoom" legible y alucina menos; devuelve un arreglo de productos por zona.
+- [x] Capa **`VLMProvider`** abstracta (Ollama visión local, adaptable a un proveedor patrocinado
+      con solo añadir subclase + API key), gated por `ENABLE_VLM`.
+- [x] **Export de dataset YOLO** (coords normalizadas, clase única `zona`) al anotar.
+- [ ] Acumular ~500+ imágenes y **entrenar YOLO** (Roboflow) para reemplazar la pre-anotación CV.
+- [ ] Más cadenas (**Abarrey**, layout distinto → su propio tuning/dataset; datos separados por
+      `tienda`/`fuente`) y expansión geográfica (Hermosillo → Sonora → Norte → Centro/Sur).
 
 ---
 

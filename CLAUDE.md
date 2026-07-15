@@ -126,12 +126,32 @@ bucket / lista ligada**: `conversaciones.cabeza_chunk_id` apunta al chunk más r
 guarda ≤`CHAT_CHUNK_SIZE` mensajes y un `anterior_id` al chunk más viejo (paginación hacia atrás O(1)).
 Tope `CHAT_MAX_CONVERSACIONES` por usuario. La tabla Postgres `chat_historial` quedó **deprecada** (no se usa).
 
-**ML / annotation:**
-- `annotator/image_segmentation.py` — flyer bounding-box annotations → crops; `records.py` —
-  dataframe→dict transforms.
-- `ollama/extract_flyer_text.py` — LLM/OCR extraction (imported defensively in `main.py`;
-  becomes `None` if its deps are missing, so guard for that).
+**ML / annotation (flyer pipeline, Fase 6):** descarga → **recorte por ZONAS** (bloques separados
+por espacios en blanco, no por producto) → **VLM por zona** → verificación humana → Postgres.
+- `annotator/zonas.py` — `detectar_zonas(image_path, tienda)`: pre-anotación de zonas con **CV
+  clásico** (OpenCV, umbral + cierre morfológico + contornos), parámetros por tienda. Propuestas
+  que el humano ajusta; el detector es clase única `zona`. YOLO (a futuro) reemplaza este paso.
+- `annotator/image_segmentation.py` — `process_annotations` recorta las cajas → `recortes/`,
+  guarda overlay + labels JSON **y export YOLO** (`labels_yolo/*.txt`, coords normalizadas =
+  dataset para entrenar). Payloads `PreanotarPayload`/`PersistirPayload`. `resolver_ruta_flyer`
+  guarda contra path traversal.
+- `vlm/` — **capa VLM abstracta** (espeja `agent/llm/`): `base.VLMProvider` (ABC),
+  `ollama_vlm.OllamaVLMProvider` (visión local; `format=<json schema>` = salida estructurada real;
+  `api_key` → nube), `factory.get_vlm_provider()` gated por `ENABLE_VLM`/`VLM_PROVIDER`/`VLM_MODEL`.
+  `extraccion.extraer_recortes()` corre el VLM **por zona**, valida con **Pydantic + sanidad de
+  precio** (`ProductoFlyer`) y devuelve productos por recorte. (El viejo `ollama/extract_flyer_text.py`
+  quedó superado por `vlm/extraccion.py`.)
+- Endpoints admin (`main.py`, `X-Admin-Key`): `POST /annotator/{flyer,preanotar,annotate,extract,
+  persistir}`, `GET /annotator/{tree,status}`. `GET /sina/annotator` sirve solo el shell (la UI
+  adjunta la key desde un campo). `persistir` → `SupermercadoRepository.upsert_flyer_productos`.
 - `embedder/` — sentence/Qwen embeddings feeding the pgvector column.
+
+**`supermercados` unifica scraping y flyer** (`db/models.py`): columna `fuente`
+(`"scraping"`|`"flyer"`) + `vigencia_inicio/fin` + `marca`/`unidad`; `pid` es **nullable** (los
+flyer no lo traen) y su dedup es por la clave compuesta `uq_super_flyer`
+(`tienda, producto, fuente, vigencia_inicio`) vía `upsert_flyer_productos`. **Sin Alembic**: el
+arranque de `repository.py` corre una migración idempotente (ALTER ... IF NOT EXISTS) solo en
+PostgreSQL para alinear DBs existentes. `buscar(..., fuente=, solo_vigentes=)` filtra promos vigentes.
 
 **Config — `src/sina/config/`:** `paths.py` (auto-detected `BASE_DIR`, `DATA`,
 `TEMPLATES_DIR`, `STATIC_DIR`, `DB`, and the `*_CONFIG_PATH` for each store catalog),

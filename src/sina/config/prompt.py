@@ -96,3 +96,45 @@ def clean_response(raw: str) -> dict:
     """Extrae el JSON de la respuesta, con o sin markdown wrapping."""
     clean = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw.strip())
     return json.loads(clean)
+
+
+# ── Extracción por ZONA (pipeline nuevo: VLM estructurado por recorte) ──────
+# JSON Schema REAL (válido para el parámetro `format=` de Ollama → salida
+# estructurada garantizada, a diferencia de `flyer_schema`, que es descriptivo).
+zona_schema_json = {
+    "type": "object",
+    "properties": {
+        "productos": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "producto": {"type": "string"},
+                    "marca": {"type": ["string", "null"]},
+                    "precio": {"type": ["number", "null"]},
+                    "unidad": {"type": ["string", "null"]},
+                    "tipo_oferta": {"type": ["string", "null"]},
+                    "descripcion_oferta": {"type": ["string", "null"]},
+                },
+                "required": ["producto"],
+            },
+        }
+    },
+    "required": ["productos"],
+}
+
+extract_zona_prompt = (
+    "Eres Sina, un sistema de visión que extrae productos de un RECORTE (zona) de "
+    "un flyer de supermercado mexicano. Analiza la imagen y devuelve TODOS los "
+    "productos visibles en ella.\n"
+    "Reglas estrictas:\n"
+    "- Extrae el texto TAL CUAL aparece; NO inventes nombres, marcas ni precios.\n"
+    "- `precio`: el número de la oferta, sin símbolo de moneda y con punto decimal "
+    "(ej. 49.90). Si no hay precio claro, usa null.\n"
+    "- `tipo_oferta`: la mecánica (ej. '3x2', '2x$precio', 'descuento', "
+    "'precio_directo') y `descripcion_oferta`: el texto literal de la promo.\n"
+    "- Cualquier campo no visible va en null.\n"
+    "Responde ÚNICAMENTE con JSON válido con la forma "
+    '{"productos": [{"producto": ..., "marca": ..., "precio": ..., "unidad": ..., '
+    '"tipo_oferta": ..., "descripcion_oferta": ...}]}.'
+)

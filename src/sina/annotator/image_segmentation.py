@@ -28,6 +28,23 @@ class ExtractPayload(BaseModel):
     city: str
     date: str
 
+class PreanotarPayload(BaseModel):
+    supermarket: str
+    city: str
+    date: str
+    image_name: str
+
+class PersistirPayload(BaseModel):
+    """Productos verificados por el humano, listos para insertar a Postgres."""
+    supermarket: str
+    city: str
+    date: str
+    tienda: str                       # etiqueta de tienda en la DB (ej. "Casa Ley")
+    fuente: str = "flyer"
+    vigencia_inicio: str | None = None  # "YYYY-MM-DD"
+    vigencia_fin: str | None = None     # "YYYY-MM-DD"
+    productos: List[dict]
+
 def resolver_ruta_flyer(*componentes: str) -> Path:
     """
     Construye una ruta bajo DATA a partir de componentes provistos por el
@@ -135,8 +152,24 @@ def process_annotations(
     with open(json_filepath, "w", encoding="utf-8") as f:
         json.dump(boxes_dict, f, indent=4)
 
+    # 5. EXPORT YOLO — coords normalizadas (clase única `zona` = 0). Esto es el
+    #    dataset que servirá para entrenar YOLO a futuro (upgrade del recorte CV).
+    h_img, w_img = img.shape[:2]
+    yolo_dir = base_dir / "labels_yolo"
+    yolo_dir.mkdir(parents=True, exist_ok=True)
+    with open(yolo_dir / f"{base_name}.txt", "w", encoding="utf-8") as f:
+        for box in bboxes:
+            if w_img <= 0 or h_img <= 0:
+                break
+            cx = (box.x + box.w / 2) / w_img
+            cy = (box.y + box.h / 2) / h_img
+            nw = box.w / w_img
+            nh = box.h / h_img
+            f.write(f"0 {cx:.6f} {cy:.6f} {nw:.6f} {nh:.6f}\n")
+
     return {
         "crops_saved": len(generated_crops),
         "annotated_image_path": str(annotated_filepath),
-        "labels_file_path": str(json_filepath)
+        "labels_file_path": str(json_filepath),
+        "yolo_labels_path": str(yolo_dir / f"{base_name}.txt"),
     }

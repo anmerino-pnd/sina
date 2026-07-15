@@ -78,6 +78,30 @@ if DB_URL.startswith("postgresql"):
             "ON supermercados USING gin (producto gin_trgm_ops)"
         ))
 
+# Migración idempotente sin Alembic: en DBs ya existentes, `create_all` NO agrega
+# columnas ni constraints nuevos. Alineamos `supermercados` con el modelo (fuente
+# de flyer + vigencia) de forma segura (columnas nullable, DROP NOT NULL en pid).
+# En una DB nueva estas sentencias son no-ops (create_all ya dejó todo). Solo PG.
+if DB_URL.startswith("postgresql"):
+    with _engine.begin() as conn:
+        conn.execute(text(
+            "ALTER TABLE supermercados "
+            "ADD COLUMN IF NOT EXISTS fuente VARCHAR NOT NULL DEFAULT 'scraping', "
+            "ADD COLUMN IF NOT EXISTS marca VARCHAR, "
+            "ADD COLUMN IF NOT EXISTS unidad VARCHAR, "
+            "ADD COLUMN IF NOT EXISTS vigencia_inicio DATE, "
+            "ADD COLUMN IF NOT EXISTS vigencia_fin DATE"
+        ))
+        conn.execute(text("ALTER TABLE supermercados ALTER COLUMN pid DROP NOT NULL"))
+        conn.execute(text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_super_flyer "
+            "ON supermercados (tienda, producto, fuente, vigencia_inicio)"
+        ))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_supermercado_fuente "
+            "ON supermercados (fuente)"
+        ))
+
 _SessionFactory = sessionmaker(bind=_engine, expire_on_commit=False)
 
 
@@ -542,20 +566,138 @@ class SupermercadoRepository(BaseRepository[Supermercado]):
             conn.execute(stmt)
         return len(filas)
 
+    @staticmethod
+    def _normalizar_flyer_producto(
+        p: dict, tienda: str, fuente: str,
+        vig_inicio, vig_fin, ahora: datetime,
+    ) -> dict | None:
+        """
+        Normaliza un producto extraído de un flyer por el VLM (claves en inglés
+        del schema: name/brand/price/unit, o sus equivalentes en español) a las
+        columnas del modelo. Los flyer NO traen `pid` (queda None) y su dedup es
+        por la clave compuesta (tienda, producto, fuente, vigencia_inicio), así
+        que `vigencia_inicio` NO puede ser None (fallback a hoy).
+        """
+        nombre = " ".join(str(p.get("producto") or p.get("name") or "").split()).strip()
+        if not nombre:
+            return None
+        try:
+            precio = float(p.get("precio", p.get("price")))
+        except (TypeError, ValueError):
+            return None
+        if precio <= 0:
+            return None
+
+        def _limpio(*claves):
+            for k in claves:
+                v = p.get(k)
+                if v not in (None, ""):
+                    return " ".join(str(v).split()).strip()
+            return None
+
+        return {
+            "pid":             None,
+            "producto":        nombre,
+            "precio":          precio,
+            "tienda":          tienda,
+            "fuente":          fuente,
+            "departamento":    _limpio("departamento", "department") or "volante",
+            "categoria":       _limpio("categoria", "category") or "volante",
+            "subcategoria":    _limpio("subcategoria", "tipo_oferta", "sale_type",
+                                       "descripcion_oferta", "sale_description"),
+            "marca":           _limpio("marca", "brand"),
+            "unidad":          _limpio("unidad", "unit"),
+            "vigencia_inicio": vig_inicio or ahora.date(),
+            "vigencia_fin":    vig_fin,
+            "fecha_actualizacion": ahora,
+        }
+
+    def upsert_flyer_productos(
+        self,
+        productos: list[dict],
+        tienda: str,
+        fuente: str = "flyer",
+        vigencia_inicio=None,
+        vigencia_fin=None,
+    ) -> int:
+        """
+        Inserta/actualiza productos provenientes de un volante (VLM).
+
+        A diferencia de `upsert_productos` (scraping, conflicto por `pid`), aquí
+        no hay `pid`: el dedup es por la clave compuesta
+        (tienda, producto, fuente, vigencia_inicio). La vigencia es a nivel flyer
+        y se aplica a todos los productos. Genera embeddings igual que el scraping.
+        """
+        if not productos:
+            return 0
+
+        ahora = get_mexico_now()
+        filas_por_clave: dict[tuple, dict] = {}
+        for p in productos:
+            fila = self._normalizar_flyer_producto(
+                p, tienda, fuente, vigencia_inicio, vigencia_fin, ahora,
+            )
+            if fila is not None:
+                clave = (fila["tienda"], fila["producto"], fila["fuente"], fila["vigencia_inicio"])
+                filas_por_clave[clave] = fila
+        filas = list(filas_por_clave.values())
+        if not filas:
+            return 0
+
+        incluir_embedding = False
+        if DB_URL.startswith("postgresql"):
+            from sina.embedder.embeddings import get_embedding_service
+            service = get_embedding_service()
+            if service is not None:
+                try:
+                    vectores = service.vectorizar_productos(filas)
+                    for fila, vec in zip(filas, vectores):
+                        fila["embedding"] = vec
+                    incluir_embedding = True
+                except Exception as e:
+                    log.error("Error generando embeddings de flyer: %s", e)
+
+        base = _dialect_insert(self.model)
+        set_ = {
+            "precio":              base.excluded.precio,
+            "departamento":        base.excluded.departamento,
+            "categoria":           base.excluded.categoria,
+            "subcategoria":        base.excluded.subcategoria,
+            "marca":               base.excluded.marca,
+            "unidad":              base.excluded.unidad,
+            "vigencia_fin":        base.excluded.vigencia_fin,
+            "fecha_actualizacion": base.excluded.fecha_actualizacion,
+        }
+        if incluir_embedding:
+            set_["embedding"] = base.excluded.embedding
+
+        stmt = base.values(filas).on_conflict_do_update(
+            index_elements=["tienda", "producto", "fuente", "vigencia_inicio"],
+            set_=set_,
+        )
+        with self.engine.begin() as conn:
+            conn.execute(stmt)
+        return len(filas)
+
     def buscar(
         self,
         q: str | None = None,
         tienda: str | None = None,
         departamento: str | None = None,
         categoria: str | None = None,
+        fuente: str | None = None,
+        solo_vigentes: bool = False,
         limit: int = 30,
     ) -> list[dict]:
         """
-        Busca productos con filtros duros (tienda/departamento/categoría).
+        Busca productos con filtros duros (tienda/departamento/categoría/fuente).
 
         Si `q` viene y hay embeddings disponibles (PostgreSQL + ENABLE_EMBEDDINGS),
         ordena por similitud coseno sobre pgvector. Si no, cae a búsqueda de texto
         (ILIKE sobre el nombre) ordenada por precio ascendente.
+
+        `solo_vigentes=True` descarta promos de flyer ya vencidas o no iniciadas;
+        las filas sin vigencia (scraping, precio permanente) siempre cuentan.
         """
         limit = max(1, min(int(limit), 100))
 
@@ -567,6 +709,14 @@ class SupermercadoRepository(BaseRepository[Supermercado]):
                 stmt = stmt.where(self.model.departamento.ilike(departamento))
             if categoria:
                 stmt = stmt.where(self.model.categoria.ilike(categoria))
+            if fuente:
+                stmt = stmt.where(self.model.fuente.ilike(fuente))
+            if solo_vigentes:
+                hoy = get_mexico_now().date()
+                stmt = stmt.where(
+                    self.model.vigencia_inicio.is_(None) | (self.model.vigencia_inicio <= hoy),
+                    self.model.vigencia_fin.is_(None) | (self.model.vigencia_fin >= hoy),
+                )
 
             usar_vector = False
             if q:
@@ -597,9 +747,14 @@ class SupermercadoRepository(BaseRepository[Supermercado]):
                     "producto":            r.producto,
                     "precio":              r.precio,
                     "tienda":              r.tienda,
+                    "fuente":              r.fuente,
                     "departamento":        r.departamento,
                     "categoria":           r.categoria,
                     "subcategoria":        r.subcategoria,
+                    "marca":               r.marca,
+                    "unidad":              r.unidad,
+                    "vigencia_inicio":     r.vigencia_inicio,
+                    "vigencia_fin":        r.vigencia_fin,
                     "fecha_actualizacion": r.fecha_actualizacion,
                 }
                 for r in rows

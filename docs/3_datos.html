@@ -408,6 +408,45 @@ z ≥ +0.6745  → Caro
 resto         → Promedio</code></pre>
 <p>El umbral <code>0.6745</code> equivale al rango intercuartílico de una distribución normal (± ese valor cubre el 50 % central), afinado con datos reales de Hermosillo. Ventajas frente al método anterior (partir el rango mín–máx en tercios): <strong>un solo outlier ya no recorre los umbrales de todos</strong>, y <strong>el mismo precio siempre recibe el mismo color</strong>. Con pocas estaciones (&lt; 4) todo se marca como “Promedio” por datos insuficientes. La implementación vive en <code>frontend/src/lib/precios.ts</code> y la comparte Gasolina y Gas LP.</p>
 </section>
+<section id="pipeline-de-volantes-flyers-recorte-por-zonas-vlm" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline-de-volantes-flyers-recorte-por-zonas-vlm">3.7. Pipeline de volantes (flyers) — recorte por zonas + VLM</h2>
+<p>Para tiendas cuyo sitio no es scrapeable, Sina extrae precios de sus <strong>volantes</strong>. El flujo recorta el flyer en <strong>zonas</strong> (bloques separados por espacios en blanco, no producto por producto: así el VLM recibe un “zoom” con texto legible y alucina menos), extrae cada zona con un <strong>VLM</strong> y, tras <strong>verificación humana</strong>, inserta a <code>supermercados</code>.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-flyers" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-flyers-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-flyers">flowchart LR
+    D["Descargar flyer&lt;br/&gt;casaley_spider (Selenium)"] --&gt; P["Pre-anotar zonas&lt;br/&gt;CV clásico (OpenCV)"]
+    P --&gt; A["Ajuste humano&lt;br/&gt;anotador (mover/redimensionar)"]
+    A --&gt; R["Recortes&lt;br/&gt;+ dataset YOLO"]
+    R --&gt; V["VLM por zona&lt;br/&gt;VLMProvider (Ollama)"]
+    V --&gt; Q["Validación&lt;br/&gt;Pydantic + sanidad de precio"]
+    Q --&gt; H["Verificación humana&lt;br/&gt;revisión/edición por zona"]
+    H --&gt; DB[("supermercados&lt;br/&gt;fuente=flyer + vigencia")]
+    R -. futuro .-&gt; Y["YOLO&lt;br/&gt;(reemplaza CV)"]
+    Y -. futuro .-&gt; V
+
+    classDef paso  fill:#f4eee2,stroke:#7a2492,stroke-width:1px,color:#241f1b;
+    classDef vlm   fill:#f7eafb,stroke:#a955c4,stroke-width:1px,color:#3b0e48;
+    classDef datos fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class D,P,A,R,H paso;
+    class V,Q,Y vlm;
+    class DB datos;
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-flyers-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2: Pipeline de volantes: descarga → zonas → VLM → verificación → Postgres
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Modelo de datos unificado.</strong> Los productos de flyer viven en la MISMA tabla <code>supermercados</code> que el scraping, con un discriminador <code>fuente</code> (<code>"scraping"</code> vs <code>"flyer"</code>). Como los flyer no traen <code>pid</code> (la clave del scraping), <code>pid</code> es nullable y el dedup de flyer es por la <strong>clave compuesta</strong> <code>(tienda, producto, fuente, vigencia_inicio)</code>. Al ser <strong>promos temporales</strong>, llevan <code>vigencia_inicio/fin</code>; la búsqueda puede filtrar <code>solo_vigentes</code> para no mostrar ofertas vencidas. Cada cadena (Ley hoy; Abarrey a futuro) usa su propio tuning de zonas y queda separada por <code>tienda</code>.</p>
+<p><strong>Capa VLM abstracta</strong> (<code>sina/vlm/</code>): <code>VLMProvider</code> (ABC) + <code>OllamaVLMProvider</code> (visión local, salida estructurada con <code>format=&lt;json schema&gt;</code>) + fábrica <code>get_vlm_provider()</code> gated por <code>ENABLE_VLM</code>. Mismo patrón que el LLM del chat: un patrocinador añade un <code>GeminiVLMProvider</code> sin tocar el pipeline.</p>
+</section>
 </div>
 
 

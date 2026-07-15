@@ -244,8 +244,18 @@ Figura&nbsp;1: Rutas y consumo de datos de la SPA
 <li><strong>Responsividad.</strong> En pantalla partida, Top 10 y cercanas se colocan lado a lado; las cartas laterales conservan su tamaño natural aunque el mapa crezca.</li>
 </ul>
 </section>
+<section id="anotador-de-volantes-herramienta-admin-aparte" class="level2">
+<h2 class="anchored" data-anchor-id="anotador-de-volantes-herramienta-admin-aparte">6.5. Anotador de volantes (herramienta admin aparte)</h2>
+<p>El anotador <strong>no</strong> es parte de la SPA React: es una herramienta interna server-rendered (Jinja <code>templates/annotator.html</code> + <code>static/js/annotator.js</code>, canvas vanilla) para el pipeline de flyers (ver <a href="./3_datos.html">Datos §3.7</a> y <a href="./4_backend.html">Backend §4.2</a>). Capacidades:</p>
+<ul>
+<li><strong>Pre-anotar zonas</strong> (CV clásico) y <strong>ajustarlas</strong>: dibujar, arrastrar el interior para mover, o la esquina para redimensionar (más borrar).</li>
+<li><strong>Extraer por zona</strong> con el VLM y <strong>revisar/editar</strong> el JSON por zona en un modal antes de insertar.</li>
+<li><strong>Verificar e insertar</strong> a Postgres con la vigencia de la promo.</li>
+<li>Todas las llamadas adjuntan la <strong><code>X-Admin-Key</code></strong> (campo en la UI, en <code>sessionStorage</code>).</li>
+</ul>
+</section>
 <section id="ubicación-compartida" class="level2">
-<h2 class="anchored" data-anchor-id="ubicación-compartida">6.5. Ubicación compartida</h2>
+<h2 class="anchored" data-anchor-id="ubicación-compartida">6.6. Ubicación compartida</h2>
 <p>La geolocalización se captura solo por acción explícita del usuario y se cachea en <code>localStorage</code> (<code>sina.ubicacion</code>), compartida entre <strong>Gasolina</strong> y <strong>Chat</strong>: si la usaste en una, la otra ya la tiene, sin volver a preguntar.</p>
 </section>
 </div>

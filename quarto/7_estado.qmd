@@ -32,7 +32,8 @@ futuro. Se actualiza conforme avanza el trabajo.
 | Embeddings de productos | ✅ | Opt-in `ENABLE_EMBEDDINGS`, requiere pgvector. |
 | Búsqueda / API Supermercados | ✅ | Vectorial + fallback de texto. |
 | Agente / Chat (tools internas) | ✅ | LLM Ollama + tools + grafo; SSE; historial Mongo. |
-| Pipeline volantes (Casa Ley) | 🚧 | Descarga + anotación manual + OCR LLM (track secundario). |
+| Pipeline volantes (Ley) | ✅ | Descarga → pre-anotar zonas (CV) → ajuste → VLM por zona → verificación → Postgres (`fuente=flyer`). YOLO pendiente. |
+| Capa VLM (`sina/vlm/`) | ✅ | `VLMProvider` abstracto + Ollama visión (salida estructurada); gated por `ENABLE_VLM`. |
 | Scheduling automático | ✅ | APScheduler (gasolina 06:00, gas LP sáb 08:00). |
 | Logging + health check | ✅ | Logging unificado; `GET /api/v1/health`. |
 | SPA React (Landing + 4 secciones) | ✅ | Vite + React + Tailwind + modo oscuro; chat integrado. |
@@ -116,11 +117,17 @@ flowchart LR
 - [ ] Deploy multi-destino: local / servidor dedicado / **GCP** (Cloud Run + Cloud SQL + Scheduler).
 - [ ] Patrocinador para servidor / dominio (p. ej. `sina.mx`).
 
-### 7.2.6. Fase 6 — Automatización ML de volantes (largo plazo) ❌
+### 7.2.6. Fase 6 — Automatización ML de volantes (largo plazo) 🚧
 
-- [ ] Acumular dataset del annotator (~500+ imágenes).
-- [ ] Entrenar detección de zonas (p. ej. Roboflow) e integrarla al OCR existente.
-- [ ] Expansión geográfica de volantes.
+- [x] Pipeline end-to-end de flyers Ley: descarga → **pre-anotación de zonas (CV)** → ajuste
+      manual (mover/redimensionar) → **VLM por zona** (estructurado + validado) → verificación
+      humana → **upsert a Postgres** (`supermercados`, `fuente=flyer` + vigencia).
+- [x] Capa **`VLMProvider`** abstracta (Ollama local, adaptable a nube) + salida estructurada.
+- [x] **Export de dataset YOLO** (coords normalizadas) al guardar cada anotación.
+- [ ] Acumular dataset del annotator (~500+ imágenes) y **entrenar YOLO** (Roboflow) para
+      reemplazar la pre-anotación CV.
+- [ ] Expansión a más cadenas (p. ej. **Abarrey**, layout distinto → su propio tuning/dataset) y
+      geográfica.
 
 ## 7.3. Pendientes críticos inmediatos
 

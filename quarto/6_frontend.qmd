@@ -84,7 +84,19 @@ y sobrio**, alejado del glassmorphism morado genérico:
 - **Responsividad.** En pantalla partida, Top 10 y cercanas se colocan lado a lado; las cartas
   laterales conservan su tamaño natural aunque el mapa crezca.
 
-## 6.5. Ubicación compartida
+## 6.5. Anotador de volantes (herramienta admin aparte)
+
+El anotador **no** es parte de la SPA React: es una herramienta interna server-rendered
+(Jinja `templates/annotator.html` + `static/js/annotator.js`, canvas vanilla) para el pipeline de
+flyers (ver [Datos §3.7](3_datos.qmd) y [Backend §4.2](4_backend.qmd)). Capacidades:
+
+- **Pre-anotar zonas** (CV clásico) y **ajustarlas**: dibujar, arrastrar el interior para mover, o
+  la esquina para redimensionar (más borrar).
+- **Extraer por zona** con el VLM y **revisar/editar** el JSON por zona en un modal antes de insertar.
+- **Verificar e insertar** a Postgres con la vigencia de la promo.
+- Todas las llamadas adjuntan la **`X-Admin-Key`** (campo en la UI, en `sessionStorage`).
+
+## 6.6. Ubicación compartida
 
 La geolocalización se captura solo por acción explícita del usuario y se cachea en `localStorage`
 (`sina.ubicacion`), compartida entre **Gasolina** y **Chat**: si la usaste en una, la otra ya la

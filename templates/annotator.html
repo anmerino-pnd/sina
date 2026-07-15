@@ -15,6 +15,17 @@
         <h1 class="logo">SINA</h1>
         <p class="subtitle">Anotador de Folletos</p>
 
+        <!-- Admin key: se adjunta como X-Admin-Key en cada petición -->
+        <div class="section">
+            <label class="label">Clave de administrador</label>
+            <input type="password" id="adminKey" class="select input-text" placeholder="X-Admin-Key">
+            <button class="btn btn-outline" id="btnCargarArbol" onclick="cargarArbol()">
+                Conectar / recargar árbol
+            </button>
+        </div>
+
+        <hr class="divider">
+
         <!-- Scraper Module -->
         <div class="section scraper-section">
             <label class="label">🌐 Obtener Nuevo Folleto</label>
@@ -62,8 +73,12 @@
             <label class="label">🛠️ Herramientas</label>
             <div class="tool-toggle">
                 <button id="btnDraw" class="tool-btn active" onclick="setTool('draw')">✏️ Dibujar</button>
-                <button id="btnPan" class="tool-btn" onclick="setTool('pan')">✋ Mover</button>
+                <button id="btnPan" class="tool-btn" onclick="setTool('pan')">✋ Mover vista</button>
             </div>
+            <button class="btn btn-outline" id="btnPreanotar" onclick="preanotar()" style="width:100%; margin-top:8px;">
+                Pre-anotar zonas (CV)
+            </button>
+            <p class="subtitle" style="margin-top:6px;">Dibuja, arrastra el interior para mover o la esquina para redimensionar.</p>
             
             <!-- NEW: Zoom Controls -->
             <div class="zoom-controls">
@@ -129,21 +144,30 @@
 
 </div>
 
-<script>
-    const FILE_TREE = {{ file_tree | tojson | safe }};
-</script>
 <script src="/static/js/annotator.js"></script>
 
-    <!-- VENTANA MODAL PARA EL JSON -->
+    <!-- VENTANA MODAL: revisión por zona + verificación e inserción -->
     <div id="jsonModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Datos extraídos del folleto</h2>
+                <h2>Revisión de productos por zona</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Aquí se inyectará el JSON -->
-                <pre id="jsonViewer">Esperando respuesta del LLM...</pre>
+                <div class="section" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                    <div>
+                        <label class="label">Vigencia inicio</label>
+                        <input type="date" id="vigInicio" class="select">
+                    </div>
+                    <div>
+                        <label class="label">Vigencia fin</label>
+                        <input type="date" id="vigFin" class="select">
+                    </div>
+                    <button class="btn btn-primary" id="btnInsertar" onclick="insertarProductos()">
+                        Verificar e insertar a la base de datos
+                    </button>
+                </div>
+                <div id="zonasReview">Esperando extracción del VLM...</div>
             </div>
         </div>
     </div>

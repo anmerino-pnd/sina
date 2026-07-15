@@ -155,4 +155,44 @@ el 50 % central), afinado con datos reales de Hermosillo. Ventajas frente al mé
 "Promedio" por datos insuficientes. La implementación vive en `frontend/src/lib/precios.ts` y la
 comparte Gasolina y Gas LP.
 
+## 3.7. Pipeline de volantes (flyers) — recorte por zonas + VLM
+
+Para tiendas cuyo sitio no es scrapeable, Sina extrae precios de sus **volantes**. El flujo
+recorta el flyer en **zonas** (bloques separados por espacios en blanco, no producto por producto:
+así el VLM recibe un "zoom" con texto legible y alucina menos), extrae cada zona con un **VLM** y,
+tras **verificación humana**, inserta a `supermercados`.
+
+```{mermaid}
+%%| label: fig-flyers
+%%| fig-cap: "Pipeline de volantes: descarga → zonas → VLM → verificación → Postgres"
+flowchart LR
+    D["Descargar flyer<br/>casaley_spider (Selenium)"] --> P["Pre-anotar zonas<br/>CV clásico (OpenCV)"]
+    P --> A["Ajuste humano<br/>anotador (mover/redimensionar)"]
+    A --> R["Recortes<br/>+ dataset YOLO"]
+    R --> V["VLM por zona<br/>VLMProvider (Ollama)"]
+    V --> Q["Validación<br/>Pydantic + sanidad de precio"]
+    Q --> H["Verificación humana<br/>revisión/edición por zona"]
+    H --> DB[("supermercados<br/>fuente=flyer + vigencia")]
+    R -. futuro .-> Y["YOLO<br/>(reemplaza CV)"]
+    Y -. futuro .-> V
+
+    classDef paso  fill:#f4eee2,stroke:#7a2492,stroke-width:1px,color:#241f1b;
+    classDef vlm   fill:#f7eafb,stroke:#a955c4,stroke-width:1px,color:#3b0e48;
+    classDef datos fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class D,P,A,R,H paso;
+    class V,Q,Y vlm;
+    class DB datos;
+```
+
+**Modelo de datos unificado.** Los productos de flyer viven en la MISMA tabla `supermercados` que
+el scraping, con un discriminador `fuente` (`"scraping"` vs `"flyer"`). Como los flyer no traen
+`pid` (la clave del scraping), `pid` es nullable y el dedup de flyer es por la **clave compuesta**
+`(tienda, producto, fuente, vigencia_inicio)`. Al ser **promos temporales**, llevan
+`vigencia_inicio/fin`; la búsqueda puede filtrar `solo_vigentes` para no mostrar ofertas vencidas.
+Cada cadena (Ley hoy; Abarrey a futuro) usa su propio tuning de zonas y queda separada por `tienda`.
+
+**Capa VLM abstracta** (`sina/vlm/`): `VLMProvider` (ABC) + `OllamaVLMProvider` (visión local, salida
+estructurada con `format=<json schema>`) + fábrica `get_vlm_provider()` gated por `ENABLE_VLM`.
+Mismo patrón que el LLM del chat: un patrocinador añade un `GeminiVLMProvider` sin tocar el pipeline.
+
 :::

@@ -257,41 +257,46 @@ ul.task-list li input[type="checkbox"] {
 <td>LLM Ollama + tools + grafo; SSE; historial Mongo.</td>
 </tr>
 <tr class="odd">
-<td>Pipeline volantes (Casa Ley)</td>
-<td style="text-align: center;">🚧</td>
-<td>Descarga + anotación manual + OCR LLM (track secundario).</td>
+<td>Pipeline volantes (Ley)</td>
+<td style="text-align: center;">✅</td>
+<td>Descarga → pre-anotar zonas (CV) → ajuste → VLM por zona → verificación → Postgres (<code>fuente=flyer</code>). YOLO pendiente.</td>
 </tr>
 <tr class="even">
+<td>Capa VLM (<code>sina/vlm/</code>)</td>
+<td style="text-align: center;">✅</td>
+<td><code>VLMProvider</code> abstracto + Ollama visión (salida estructurada); gated por <code>ENABLE_VLM</code>.</td>
+</tr>
+<tr class="odd">
 <td>Scheduling automático</td>
 <td style="text-align: center;">✅</td>
 <td>APScheduler (gasolina 06:00, gas LP sáb 08:00).</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Logging + health check</td>
 <td style="text-align: center;">✅</td>
 <td>Logging unificado; <code>GET /api/v1/health</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>SPA React (Landing + 4 secciones)</td>
 <td style="text-align: center;">✅</td>
 <td>Vite + React + Tailwind + modo oscuro; chat integrado.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Google OAuth</td>
 <td style="text-align: center;">✅</td>
 <td>Cookie httpOnly + CSRF; requiere <code>GOOGLE_OAUTH_CLIENT_ID</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>GeminiProvider</code> (LLM patrocinado)</td>
 <td style="text-align: center;">❌</td>
 <td>Hueco listo (subclase de la ABC).</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Tests / CI-CD / Containerfile</td>
 <td style="text-align: center;">❌</td>
 <td>Fase 5.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>QQP / PROFECO</td>
 <td style="text-align: center;">🗑️</td>
 <td><strong>Eliminado del código</strong> (jul 2026): modelo y repositorio borrados; la tabla <code>qqp_precios</code> puede quedar huérfana en DBs existentes.</td>
@@ -386,11 +391,13 @@ Figura&nbsp;1: Roadmap por fases y su estado
 </ul>
 </section>
 <section id="fase-6-automatización-ml-de-volantes-largo-plazo" class="level3">
-<h3 class="anchored" data-anchor-id="fase-6-automatización-ml-de-volantes-largo-plazo">7.2.6. Fase 6 — Automatización ML de volantes (largo plazo) ❌</h3>
+<h3 class="anchored" data-anchor-id="fase-6-automatización-ml-de-volantes-largo-plazo">7.2.6. Fase 6 — Automatización ML de volantes (largo plazo) 🚧</h3>
 <ul class="task-list">
-<li><label><input type="checkbox">Acumular dataset del annotator (~500+ imágenes).</label></li>
-<li><label><input type="checkbox">Entrenar detección de zonas (p.&nbsp;ej. Roboflow) e integrarla al OCR existente.</label></li>
-<li><label><input type="checkbox">Expansión geográfica de volantes.</label></li>
+<li><label><input type="checkbox" checked="">Pipeline end-to-end de flyers Ley: descarga → <strong>pre-anotación de zonas (CV)</strong> → ajuste manual (mover/redimensionar) → <strong>VLM por zona</strong> (estructurado + validado) → verificación humana → <strong>upsert a Postgres</strong> (<code>supermercados</code>, <code>fuente=flyer</code> + vigencia).</label></li>
+<li><label><input type="checkbox" checked="">Capa <strong><code>VLMProvider</code></strong> abstracta (Ollama local, adaptable a nube) + salida estructurada.</label></li>
+<li><label><input type="checkbox" checked=""><strong>Export de dataset YOLO</strong> (coords normalizadas) al guardar cada anotación.</label></li>
+<li><label><input type="checkbox">Acumular dataset del annotator (~500+ imágenes) y <strong>entrenar YOLO</strong> (Roboflow) para reemplazar la pre-anotación CV.</label></li>
+<li><label><input type="checkbox">Expansión a más cadenas (p.&nbsp;ej. <strong>Abarrey</strong>, layout distinto → su propio tuning/dataset) y geográfica.</label></li>
 </ul>
 </section>
 </section>

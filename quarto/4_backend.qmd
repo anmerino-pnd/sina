@@ -32,11 +32,32 @@ producción, sirve la **SPA React** desde el mismo origen (mount `/assets` + cat
 | `GET /api/v1/health` | Última actualización + vigencia por categoría. Memoizado en memoria (TTL 60 s) + `Cache-Control: public, max-age=60` para que los health-checks frecuentes no toquen la DB. |
 | Auth (Google OAuth) | Login/logout con sesión en cookie + CSRF. |
 
-Los endpoints del flujo **annotator** (`/api/v1/annotator/*`, incluido `GET /status`) y la UI legacy
-`/sina/annotator` requieren **`X-Admin-Key`**; sus parámetros de ruta (`supermarket/city/date/imagen`)
-se validan contra path traversal (`resolver_ruta_flyer` en `annotator/image_segmentation.py`, mismo
-patrón `is_relative_to` que el catch-all de la SPA). Los errores 500 devuelven un mensaje **genérico**
-("Error interno del servidor."); el detalle queda solo en el log del servidor.
+Los endpoints del flujo **annotator** (`/api/v1/annotator/*`) requieren **`X-Admin-Key`**; sus
+parámetros de ruta (`supermarket/city/date/imagen`) se validan contra path traversal
+(`resolver_ruta_flyer` en `annotator/image_segmentation.py`, mismo patrón `is_relative_to` que el
+catch-all de la SPA). Los errores 500 devuelven un mensaje **genérico** ("Error interno del
+servidor."); el detalle queda solo en el log del servidor.
+
+Endpoints del **pipeline de volantes** (ver [Datos §3.7](3_datos.qmd)):
+
+| Método + ruta | Propósito |
+| --- | --- |
+| `POST /annotator/flyer` | Descarga el volante (Casa Ley → Publitas/Selenium). |
+| `POST /annotator/preanotar` | Propone **zonas** de recorte con CV clásico (no persiste). |
+| `POST /annotator/annotate` | Guarda recortes + overlay + labels JSON **y YOLO** (dataset). |
+| `POST /annotator/extract` | Extrae productos **por zona** con el VLM (estructurado + validado). |
+| `POST /annotator/persistir` | Inserta a `supermercados` los productos **verificados** por el humano. |
+| `GET /annotator/tree` | Árbol de `datos/` para la UI (admin). |
+| `GET /annotator/status` | ¿Hay recortes / datos para esa fecha? |
+
+La UI `GET /sina/annotator` sirve solo el **shell** (sin datos), para que el navegador la cargue;
+el árbol y todas las acciones pasan por los endpoints admin-gated, y la UI adjunta la
+`X-Admin-Key` (que el usuario pega en un campo) en cada petición.
+
+La extracción por VLM vive en el paquete **`sina/vlm/`**: `VLMProvider` (ABC) +
+`OllamaVLMProvider` (visión local, `format=<json schema>` para salida estructurada) + fábrica
+`get_vlm_provider()` gated por `ENABLE_VLM`. La salida se valida con **Pydantic** y **sanidad de
+precio** antes de mostrarse/insertar (evita que precios alucinados lleguen a la DB).
 
 Los endpoints QQP/PROFECO quedaron **removidos** y el modelo/repositorio fueron **eliminados** del
 código en julio 2026 (la tabla `qqp_precios` puede quedar huérfana en DBs existentes; `create_all`
@@ -60,6 +81,14 @@ Todo el acceso a datos pasa por `src/sina/db/`:
   texto `ILIKE '%q%'` no sea un full-scan.
 - **`seeder.py`** — carga catálogos/semillas de forma **genérica e idempotente**
   (`seed_catalogo_tienda` + `TIENDAS_CATALOGO`).
+
+**Origen unificado en `supermercados`.** La tabla lleva un discriminador `fuente`
+(`"scraping"` | `"flyer"`) + `vigencia_inicio/fin` + `marca`/`unidad`. El scraping deduplica por
+`pid` (único); los flyer no traen `pid` (nullable) y deduplican por la clave compuesta
+`(tienda, producto, fuente, vigencia_inicio)` vía `upsert_flyer_productos`. Como **no hay Alembic**
+(`create_all` no altera tablas existentes), el arranque corre una **migración idempotente** solo en
+PostgreSQL (`ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, `ALTER COLUMN pid DROP NOT NULL`,
+`CREATE UNIQUE INDEX IF NOT EXISTS uq_super_flyer`) — no-op en una DB nueva.
 
 ## 4.4. Scrapers {#scrapers}
 

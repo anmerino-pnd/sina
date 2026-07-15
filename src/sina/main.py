@@ -20,7 +20,10 @@ from sina.annotator.image_segmentation import (
     AnnotationPayload,
     ExtractPayload,
     FlyerPayload,
+    PreanotarPayload,
+    PersistirPayload,
 )
+from sina.annotator.zonas import detectar_zonas
 from sina.annotator.records import df_to_dict
 from sina.scraping.supermercados.casaley_spider import download_flyer
 from sina.scraping.gobierno.cre_gasolina import (
@@ -63,10 +66,12 @@ log = logging.getLogger(__name__)
 
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 
+# Extracción por ZONA (VLM estructurado + validación). Import defensivo: si falta
+# alguna dependencia, el endpoint responde con error claro en vez de romper el arranque.
 try:
-    from sina.ollama.extract_flyer_text import extract_text
-except ImportError:
-    extract_text = None
+    from sina.vlm.extraccion import extraer_recortes
+except Exception:  # noqa: BLE001
+    extraer_recortes = None
 
 # ============================================================
 #  APP & MOUNTS
@@ -184,15 +189,25 @@ def get_catalogo(response: Response):
 #  FRONTEND ROUTES  (HTML)
 # ============================================================
 @app.get("/sina/annotator", response_class=HTMLResponse)
-async def view_annotator(request: Request, _admin: None = Depends(require_admin)):
-    """UI de anotación de volantes. Requiere clave de administrador (expone el árbol de datos/)."""
+async def view_annotator(request: Request):
+    """
+    Shell del anotador (sin datos sensibles). El navegador no puede mandar headers
+    en la navegación inicial, así que la página en sí no va admin-gated; el árbol de
+    archivos y todas las acciones se cargan vía endpoints que SÍ exigen `X-Admin-Key`
+    (la UI lo toma de un campo y lo adjunta en cada fetch). Clase única: `zona`.
+    """
     class_config = _get_classes_config()
     return templates.TemplateResponse("annotator.html", {
         "request" : request,
-        "file_tree": build_filesystem_tree(DATA),
-        "classes" : list(class_config.keys()),
-        "colors"  : class_config,
+        "classes" : ["zona"],
+        "colors"  : {"zona": class_config.get("zona", "#7a2492")},
     })
+
+
+@app.get("/api/v1/annotator/tree")
+def get_annotator_tree(_admin: None = Depends(require_admin)):
+    """Árbol de datos/ (supermercado→ciudad→fecha→archivos). Requiere clave admin."""
+    return {"tree": build_filesystem_tree(DATA)}
 
 @app.get("/sina/gasolina", response_class=HTMLResponse)
 async def view_gasolina(request: Request):
@@ -467,34 +482,88 @@ def download_flyer_endpoint(payload: FlyerPayload, _admin: None = Depends(requir
             )
 
 
-@app.post("/api/v1/annotator/extract")
-def extract_flyer_text(payload: ExtractPayload, _admin: None = Depends(require_admin)):
-    """Extrae texto de recortes usando LLM. Usa caché si ya existe. Requiere clave de administrador."""
+@app.post("/api/v1/annotator/preanotar")
+def preanotar_zonas(payload: PreanotarPayload, _admin: None = Depends(require_admin)):
+    """
+    Propone zonas de recorte (CV clásico) para que el humano las ajuste. NO persiste.
+    Requiere clave de administrador.
+    """
     try:
-        json_path = resolver_ruta_flyer(
-            payload.supermarket, payload.city, payload.date, "flyer_data.json"
+        image_path = resolver_ruta_flyer(
+            payload.supermarket, payload.city, payload.date, payload.image_name
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Parámetros de ruta no válidos.")
+    if not image_path.exists():
+        raise HTTPException(status_code=404, detail="Imagen no encontrada.")
+    try:
+        zonas = detectar_zonas(image_path, tienda=payload.supermarket)
+    except Exception:
+        log.exception("Error en pre-anotación de zonas")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
+    return {"status": "ok", "zonas": zonas}
 
-    if not json_path.exists():
-        if extract_text is None:
-            raise HTTPException(status_code=500, detail="Módulo de extracción no disponible.")
 
-        success = extract_text(
-            supermarket=payload.supermarket,
-            city       =payload.city,
-            date       =payload.date,
-        )
-        if not success:
-            raise HTTPException(status_code=500, detail="Error al generar documento con LLM.")
+@app.post("/api/v1/annotator/extract")
+def extract_flyer_text(payload: ExtractPayload, _admin: None = Depends(require_admin)):
+    """
+    Extrae productos POR ZONA (recorte) con el VLM, salida estructurada y validada.
+    Re-ejecutable (sin caché por archivo). Requiere clave de administrador.
+    """
+    if extraer_recortes is None:
+        raise HTTPException(status_code=500, detail="Módulo de extracción no disponible.")
+    try:
+        data = extraer_recortes(payload.supermarket, payload.city, payload.date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Parámetros de ruta no válidos.")
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        # VLM deshabilitado o no inicializado.
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception:
+        log.exception("Error extrayendo zonas del flyer")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
+    return {"status": "ok", "data": data}
+
+
+@app.post("/api/v1/annotator/persistir")
+def persistir_flyer(payload: PersistirPayload, _admin: None = Depends(require_admin)):
+    """
+    Inserta a Postgres los productos YA verificados por el humano
+    (`supermercados`, fuente=flyer + vigencia). Requiere clave de administrador.
+    """
+    from datetime import date as _date
+
+    productos = payload.productos or []
+    if not productos:
+        raise HTTPException(status_code=400, detail="No hay productos para insertar.")
+    if len(productos) > 2000:
+        raise HTTPException(status_code=413, detail="Demasiados productos en una sola inserción.")
+
+    def _parse_fecha(d: str | None):
+        if not d:
+            return None
+        try:
+            return _date.fromisoformat(d)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Fecha de vigencia inválida (YYYY-MM-DD).")
+
+    vi = _parse_fecha(payload.vigencia_inicio)
+    vf = _parse_fecha(payload.vigencia_fin)
 
     try:
-        with open(json_path, "r", encoding="utf-8") as f:
-            return {"status": "ok", "data": json.load(f)}
+        n = SupermercadoRepository(db_url=DB_URL).upsert_flyer_productos(
+            productos=productos,
+            tienda=(payload.tienda or "").strip() or "Desconocida",
+            fuente=(payload.fuente or "flyer").strip(),
+            vigencia_inicio=vi,
+            vigencia_fin=vf,
+        )
     except Exception:
-        log.exception("Error leyendo flyer_data.json")
+        log.exception("Error insertando productos de flyer")
         raise HTTPException(status_code=500, detail="Error interno del servidor.")
+    return {"status": "ok", "insertados": n}
 
 
 @app.get("/api/v1/annotator/status")

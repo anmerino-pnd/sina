@@ -1,6 +1,6 @@
 # src/sina/db/models.py
 from sqlalchemy import (
-    DateTime, ForeignKey, UniqueConstraint, Index,
+    DateTime, Date, ForeignKey, UniqueConstraint, Index,
     Column, Integer, String, Float, Boolean, Text, JSON
 )
 from sqlalchemy.orm import declarative_base, relationship, mapped_column
@@ -49,29 +49,49 @@ class CatalogoConfig(Base):
     
 
 class Supermercado(Base):
+    """
+    Productos + precios de supermercado. Unifica dos fuentes (`fuente`):
+      - "scraping": sitios de tienda (Soriana/Del Sol/Benavides/Guadalajara),
+        identidad estable por `pid` (único); precio de anaquel permanente.
+      - "flyer": volantes (Casa Ley…) extraídos por VLM; NO traen `pid` (por eso
+        `pid` es nullable) y son PROMOS temporales → llevan `vigencia_inicio/fin`.
+        Su dedup es por la clave compuesta `uq_super_flyer`.
+    """
     __tablename__ = 'supermercados'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     producto = Column(String, nullable=False)
     precio = Column(Float, nullable=False)
-    pid = Column(Integer, nullable=False, unique=True)
+    # pid: identidad del scraping. Nullable porque los flyers no lo tienen.
+    pid = Column(Integer, nullable=True, unique=True)
     tienda = Column(String, default="Soriana")
     departamento = Column(String, nullable=False)
     categoria = Column(String, nullable=False)
     subcategoria = Column(String, nullable=True)
+    # Discriminador de origen + campos propios del flyer (nullable para scraping).
+    fuente = Column(String, nullable=False, default="scraping", server_default="scraping")
+    marca = Column(String, nullable=True)
+    unidad = Column(String, nullable=True)
+    vigencia_inicio = Column(Date, nullable=True)
+    vigencia_fin = Column(Date, nullable=True)
     embedding = mapped_column(Vector(), nullable=True)
     fecha_actualizacion = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
+        # Dedup de flyer (coexiste con el unique de `pid` para scraping):
+        # un producto por tienda/fuente/inicio de vigencia.
+        UniqueConstraint("tienda", "producto", "fuente", "vigencia_inicio",
+                         name="uq_super_flyer"),
         Index("ix_supermercado_pid", "pid"),
         Index("ix_supermercado_departamento", "departamento"),
         Index("ix_supermercado_categoria", "categoria"),
+        Index("ix_supermercado_fuente", "fuente"),
     )
 
     def __repr__(self):
         return (
             f"<Supermercado(id={self.id}, producto='{self.producto}', "
-            f"precio={self.precio}, tienda='{self.tienda}', "
+            f"precio={self.precio}, tienda='{self.tienda}', fuente='{self.fuente}', "
             f"departamento='{self.departamento}', categoria='{self.categoria}')>"
             )
 

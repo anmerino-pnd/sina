@@ -49,6 +49,15 @@ class AppSettings(BaseSettings):
     # Tope de iteraciones del grafo (rondas de tool-calling) por respuesta.
     llm_max_iters: int = Field(default=6, alias="LLM_MAX_ITERS")
 
+    # ── Extracción de flyers por VLM (Fase 6) ─────────────────────────────
+    # Feature flag del extractor de volantes. Off → POST /annotator/extract 503.
+    enable_vlm: bool = Field(default=False, alias="ENABLE_VLM")
+    # Proveedor de VLM: "ollama" (local) hoy; "gemini" (GCP) futuro.
+    vlm_provider: str = Field(default="ollama", alias="VLM_PROVIDER")
+    # Modelo de visión LOCAL por defecto; adaptable a nube con OLLAMA_API_KEY.
+    vlm_model: str = Field(default="qwen2.5vl:7b", alias="VLM_MODEL")
+    vlm_host: str = Field(default="http://localhost:11434", alias="VLM_HOST")
+
     # ── Historial de chat en MongoDB (Fase 3) ─────────────────────────────
     # Local por ahora; al patrocinar un servidor solo cambia la URI.
     mongo_uri: str = Field(default="mongodb://localhost:27017", alias="MONGO_URI")
