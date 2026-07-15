@@ -13,6 +13,7 @@ from slowapi.middleware import SlowAPIMiddleware
 import logging
 import time
 import json
+from datetime import datetime
 
 from sina.annotator.image_segmentation import (
     process_annotations,
@@ -24,6 +25,7 @@ from sina.annotator.image_segmentation import (
     PersistirPayload,
 )
 from sina.annotator.zonas import detectar_zonas
+from sina.annotator.ciclo import estado_flyer, resumen_pendientes
 from sina.annotator.records import df_to_dict
 from sina.scraping.supermercados.casaley_spider import download_flyer
 from sina.scraping.supermercados.abarrey_spider import download_flyer as download_flyer_abarrey
@@ -534,6 +536,17 @@ def extract_flyer_text(payload: ExtractPayload, _admin: None = Depends(require_a
     except Exception:
         log.exception("Error extrayendo zonas del flyer")
         raise HTTPException(status_code=500, detail="Error interno del servidor.")
+
+    # Artefacto de ciclo de vida: marca la etapa "extraído" (sobrescribible al re-extraer).
+    try:
+        base_dir = resolver_ruta_flyer(payload.supermarket, payload.city, payload.date)
+        with open(base_dir / "extraccion.json", "w", encoding="utf-8") as f:
+            json.dump(
+                {"data": data, "fecha_extraccion": datetime.now().isoformat()},
+                f, ensure_ascii=False, indent=2,
+            )
+    except Exception:
+        log.exception("No se pudo escribir extraccion.json (la extracción sí se devuelve)")
     return {"status": "ok", "data": data}
 
 
@@ -573,6 +586,24 @@ def persistir_flyer(payload: PersistirPayload, _admin: None = Depends(require_ad
     except Exception:
         log.exception("Error insertando productos de flyer")
         raise HTTPException(status_code=500, detail="Error interno del servidor.")
+
+    # Artefacto de ciclo de vida: marca "persistido" y guarda la vigencia confirmada
+    # por el humano (la fuente de verdad para el monitor de vencimiento).
+    try:
+        base_dir = resolver_ruta_flyer(payload.supermarket, payload.city, payload.date)
+        with open(base_dir / "persistido.json", "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "insertados": n,
+                    "tienda": payload.tienda,
+                    "vigencia_inicio": vi.isoformat() if vi else None,
+                    "vigencia_fin": vf.isoformat() if vf else None,
+                    "fecha": datetime.now().isoformat(),
+                },
+                f, ensure_ascii=False, indent=2,
+            )
+    except Exception:
+        log.exception("No se pudo escribir persistido.json (el upsert sí se aplicó)")
     return {"status": "ok", "insertados": n}
 
 
@@ -580,18 +611,32 @@ def persistir_flyer(payload: PersistirPayload, _admin: None = Depends(require_ad
 def get_annotator_status(
     supermarket: str, city: str, date: str, _admin: None = Depends(require_admin)
 ):
-    """Verifica si existen recortes y flyer_data.json para una fecha. Requiere clave de administrador."""
+    """Estado del ciclo de vida de un flyer (etapa, avance, vigencia, vencido).
+    Mantiene has_json/has_recortes por compatibilidad con la UI. Requiere clave de administrador."""
     try:
         base_dir = resolver_ruta_flyer(supermarket, city, date)
+        estado = estado_flyer(supermarket, city, date)
     except ValueError:
         raise HTTPException(status_code=400, detail="Parámetros de ruta no válidos.")
 
     recortes_dir = base_dir / "recortes"
+    estado["has_json"] = (base_dir / "extraccion.json").exists()
+    estado["has_recortes"] = recortes_dir.exists() and any(recortes_dir.iterdir())
+    return estado
 
-    return {
-        "has_json"    : (base_dir / "flyer_data.json").exists(),
-        "has_recortes": recortes_dir.exists() and any(recortes_dir.iterdir()),
-    }
+
+@app.get("/api/v1/annotator/pendientes")
+def get_annotator_pendientes(_admin: None = Depends(require_admin)):
+    """
+    Flyer más reciente de cada (tienda, ciudad) con su etapa del ciclo de vida,
+    vigencia y acción sugerida. Alimenta el panel "Folletos" del anotador.
+    Requiere clave de administrador.
+    """
+    try:
+        return {"pendientes": resumen_pendientes()}
+    except Exception:
+        log.exception("Error calculando pendientes de flyers")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 
 # ============================================================

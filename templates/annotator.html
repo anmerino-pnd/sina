@@ -57,6 +57,16 @@
 
         <hr class="divider">
 
+        <!-- Ciclo de vida: flyer más reciente por tienda-ciudad, con acción sugerida -->
+        <div class="section">
+            <label class="label">Folletos (<span id="pendCount">0</span>)</label>
+            <div id="pendientesList" class="pend-list">
+                <p class="pend-empty">Conéctate para ver el estado de los folletos.</p>
+            </div>
+        </div>
+
+        <hr class="divider">
+
         <!-- Image Selectors -->
         <div class="section">
             <label class="label">Supermercado</label>
@@ -193,6 +203,7 @@
                     <button class="btn btn-primary" id="btnInsertar">
                         Verificar e insertar a la base de datos
                     </button>
+                    <p class="subtitle" id="vigNota" style="flex-basis:100%; margin:0;"></p>
                 </div>
                 <div id="zonasReview">Esperando extracción del VLM...</div>
             </div>

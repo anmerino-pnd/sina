@@ -201,9 +201,85 @@ async function cargarArbol() {
             storeSelect.add(new Option(store.toUpperCase().replace(/_/g, ' '), store));
         });
         notify('Árbol cargado. Selecciona supermercado, ciudad, fecha e imagen.', 'ok');
+        cargarPendientes();
     } catch (e) {
         console.error(e);
         notify('No se pudo cargar el árbol. Revisa la clave de administrador.', 'error');
+    }
+}
+
+// ==========================================
+// 0.b PANEL "FOLLETOS": ciclo de vida por tienda-ciudad
+// ==========================================
+const ETAPA_LABEL = { descargado: 'Descargado', anotado: 'Anotado', extraido: 'Extraído', persistido: 'Persistido', vacio: 'Vacío' };
+const ACCION_LABEL = {
+    'anotar': 'Anotar zonas',
+    'extraer': 'Extraer con VLM',
+    'insertar': 'Insertar a la base',
+    'capturar vigencia': 'Capturar vigencia al insertar',
+    'esperando flyer nuevo': 'Esperando folleto nuevo',
+    'al dia': 'Al día',
+    'sin imagenes': 'Sin imágenes',
+};
+
+async function cargarPendientes() {
+    const cont = document.getElementById('pendientesList');
+    if (!cont) return;
+    try {
+        const r = await fetch('/api/v1/annotator/pendientes', { headers: authHeaders() });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        renderPendientes(data.pendientes || []);
+    } catch (e) {
+        console.error(e);
+        cont.innerHTML = '<p class="pend-empty">No se pudo consultar el estado de los folletos.</p>';
+    }
+}
+
+function renderPendientes(items) {
+    const cont = document.getElementById('pendientesList');
+    const countEl = document.getElementById('pendCount');
+    const atencion = items.filter(i => i.accion !== 'al dia');
+    if (countEl) countEl.textContent = String(atencion.length);
+
+    if (items.length === 0) {
+        cont.innerHTML = '<p class="pend-empty">Sin folletos descargados todavía.</p>';
+        return;
+    }
+
+    cont.innerHTML = items.map(i => {
+        const titulo = `${i.tienda} · ${i.ciudad}`.toUpperCase().replace(/_/g, ' ');
+        const etapa = i.etapa === 'anotado' && i.anotadas < i.imagenes
+            ? `Anotado ${i.anotadas}/${i.imagenes}`
+            : (ETAPA_LABEL[i.etapa] || i.etapa);
+        const vig = i.vigencia_fin ? `vence ${esc(i.vigencia_fin)}` : 'vigencia sin capturar';
+        const chips = `<span class="chip">${esc(etapa)}</span>`
+            + (i.vencido === true ? '<span class="chip chip-warn">Vencido</span>' : '');
+        return `<button type="button" class="pend-item${i.accion === 'al dia' ? ' is-ok' : ''}"
+                    data-store="${esc(i.tienda)}" data-city="${esc(i.ciudad)}" data-date="${esc(i.fecha)}">
+                <span class="pend-title">${esc(titulo)}</span>
+                <span class="pend-meta">${esc(i.fecha)} · ${vig}</span>
+                <span class="pend-chips">${chips}</span>
+                <span class="pend-accion">${esc(ACCION_LABEL[i.accion] || i.accion)}</span>
+            </button>`;
+    }).join('');
+
+    if (atencion.length > 0) {
+        notify(`${atencion.length} folleto(s) requieren atención.`, 'info');
+    }
+}
+
+// Fija un valor en un <select> disparando 'change' (cascada + dropdown propio).
+function seleccionar(sel, value) {
+    if (!Array.from(sel.options).some(o => o.value === value)) return false;
+    sel.value = value;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+}
+
+function irAFlyer(store, city, date) {
+    if (seleccionar(storeSelect, store) && seleccionar(citySelect, city) && seleccionar(dateSelect, date)) {
+        notify('Folleto seleccionado. Elige una imagen para trabajar.', 'info');
     }
 }
 
@@ -615,6 +691,7 @@ async function extractData() {
     const cont = document.getElementById('zonasReview');
     cont.innerHTML = 'Extrayendo zonas con el VLM (puede tardar)...';
     openModal();
+    precargarVigencia(store, city, date);
 
     try {
         const r = await fetch('/api/v1/annotator/extract', {
@@ -630,6 +707,29 @@ async function extractData() {
     } finally {
         btn.innerText = 'Extraer por zona (VLM)'; btn.disabled = false;
     }
+}
+
+// Precarga la vigencia en el modal desde metadata.json (la escribe el spider si
+// la tienda la publica en su sitio, p.ej. Abarrey). Si no hay, se captura a mano
+// (en Casa Ley viene impresa en la imagen). Los campos siempre son editables.
+async function precargarVigencia(store, city, date) {
+    const vi = document.getElementById('vigInicio');
+    const vf = document.getElementById('vigFin');
+    const nota = document.getElementById('vigNota');
+    vi.value = ''; vf.value = '';
+    try {
+        const r = await fetch(`/datos/flyers/${store}/${city}/${date}/metadata.json`);
+        if (r.ok) {
+            const md = await r.json();
+            if (md.vigencia_inicio && md.vigencia_fin) {
+                vi.value = md.vigencia_inicio;
+                vf.value = md.vigencia_fin;
+                if (nota) nota.textContent = 'Vigencia leída del sitio de la tienda — verifícala antes de insertar.';
+                return;
+            }
+        }
+    } catch (e) { console.error(e); }
+    if (nota) nota.textContent = 'Vigencia no disponible: captúrala del folleto (viene impresa en la imagen).';
 }
 
 function renderZonas(data) {
@@ -783,5 +883,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (add) { agregarFila(add); return; }
         const del = e.target.closest('[data-action="del-row"]');
         if (del) { del.closest('tr').remove(); }
+    });
+
+    // Panel "Folletos": clic en una fila → preselecciona tienda/ciudad/fecha.
+    const pendList = document.getElementById('pendientesList');
+    if (pendList) pendList.addEventListener('click', (e) => {
+        const item = e.target.closest('.pend-item');
+        if (item) irAFlyer(item.dataset.store, item.dataset.city, item.dataset.date);
     });
 });

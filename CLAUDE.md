@@ -152,6 +152,15 @@ por espacios en blanco, no por producto) → **VLM por zona** → verificación 
   consolida todos los `labels_yolo/*.txt` de `datos/flyers/` en `datos/yolo_dataset/` formato
   Ultralytics (`images/labels × train/val` + `data.yaml`, split determinista por hash, nombres
   `tienda__ciudad__fecha__page_NN`). Decisión: YOLO **unificado** (todas las tiendas, mono-clase).
+- `annotator/ciclo.py` — ciclo de vida por flyer inferido de artefactos en disco: descargado
+  (`metadata.json`), anotado (`labels/`), extraído (`extraccion.json`, lo escribe `/extract`),
+  persistido (`persistido.json`, lo escribe `/persistir`). Vigencia por **prioridad** (humano
+  en persistido.json → parseada del scraping en metadata.json → desconocida) — **sin supuestos
+  de calendario**: cada tienda dura y vence distinto. `resumen_pendientes()` alimenta
+  `GET /annotator/pendientes` (panel "Folletos" de la UI, con precarga de vigencia en el modal)
+  y el job `refrescar_flyers` de `scheduler.py` (opt-in `ENABLE_FLYERS_SCRAPING`, tick cada
+  `FLYERS_INTERVALO_MIN`=20 min, barato si nada venció; descarga al vencer y limpia por hash si
+  la tienda aún publica el flyer viejo para reintentar al siguiente tick).
 - `vlm/` — **capa VLM abstracta** (espeja `agent/llm/`): `base.VLMProvider` (ABC),
   `ollama_vlm.OllamaVLMProvider` (visión local; `format=<json schema>` = salida estructurada real;
   `api_key` → nube), `factory.get_vlm_provider()` gated por `ENABLE_VLM`/`VLM_PROVIDER`/`VLM_MODEL`.

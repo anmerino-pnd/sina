@@ -14,7 +14,7 @@ import re
 import json
 import time
 import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse, quote
 
 from bs4 import BeautifulSoup
@@ -69,6 +69,63 @@ def _extraer_vigencia(html: str) -> Optional[str]:
     return m.group(1).strip() if m else None
 
 
+_MESES = {
+    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+    "julio": 7, "agosto": 8, "septiembre": 9, "setiembre": 9, "octubre": 10,
+    "noviembre": 11, "diciembre": 12,
+}
+
+# "Del 11 al 17 de Julio" | "Del 27 de Diciembre al 2 de Enero" | "11 al 17 de julio"
+_RE_VIGENCIA = re.compile(
+    r"(?:del?\s+)?(\d{1,2})(?:\s+de\s+([a-z]+))?\s+al\s+(\d{1,2})\s+de\s+([a-z]+)",
+    re.IGNORECASE,
+)
+
+
+def _sin_acentos(s: str) -> str:
+    return (s.lower()
+            .replace("á", "a").replace("é", "e").replace("í", "i")
+            .replace("ó", "o").replace("ú", "u"))
+
+
+def _parsear_vigencia_fechas(
+    texto: Optional[str], fecha_descarga: datetime.date
+) -> Tuple[Optional[datetime.date], Optional[datetime.date]]:
+    """
+    Convierte el texto de vigencia a fechas. La vigencia puede durar lo que sea
+    y vencer cualquier dia — aqui NO se asume ninguna cadencia: solo se lee lo
+    que la tienda publico. Si el texto no se entiende, devuelve (None, None)
+    (vigencia desconocida; jamas se inventa una fecha). El anio no viene en el
+    texto: se toma el mas cercano a la fecha de descarga (maneja el cruce
+    diciembre → enero).
+    """
+    if not texto:
+        return None, None
+    m = _RE_VIGENCIA.search(_sin_acentos(texto))
+    if not m:
+        return None, None
+
+    dia_ini, mes_ini_txt, dia_fin, mes_fin_txt = m.groups()
+    mes_fin = _MESES.get(mes_fin_txt)
+    mes_ini = _MESES.get(mes_ini_txt) if mes_ini_txt else mes_fin
+    if mes_ini is None or mes_fin is None:
+        return None, None
+
+    try:
+        # Inicio: el anio que deje la fecha mas cerca de la descarga.
+        candidatos = [
+            datetime.date(fecha_descarga.year + d, mes_ini, int(dia_ini))
+            for d in (-1, 0, 1)
+        ]
+        inicio = min(candidatos, key=lambda f: abs((f - fecha_descarga).days))
+        fin = datetime.date(inicio.year, mes_fin, int(dia_fin))
+        if fin < inicio:  # cruce de anio (ej. 27 dic → 2 ene)
+            fin = datetime.date(inicio.year + 1, mes_fin, int(dia_fin))
+    except ValueError:  # dia invalido para el mes (texto corrupto)
+        return None, None
+    return inicio, fin
+
+
 def _descargar_imagen(url: str, impersonate: str, timeout: int) -> Optional[bytes]:
     try:
         r = requests.get(url, impersonate=impersonate, timeout=timeout)
@@ -109,7 +166,9 @@ def download_flyer(
         return False
 
     vigencia = _extraer_vigencia(r.text)
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    hoy = datetime.date.today()
+    vig_inicio, vig_fin = _parsear_vigencia_fechas(vigencia, hoy)
+    today = hoy.strftime("%Y-%m-%d")
     timestamp = datetime.datetime.now().isoformat()
 
     clean_city = (
@@ -128,6 +187,8 @@ def download_flyer(
         "extracting_date": timestamp,
         "base_url": base_url,
         "vigencia_texto": vigencia,
+        "vigencia_inicio": vig_inicio.isoformat() if vig_inicio else None,
+        "vigencia_fin": vig_fin.isoformat() if vig_fin else None,
         "total_pages_found": len(srcs),
         "pages": {},
     }

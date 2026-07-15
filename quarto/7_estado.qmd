@@ -130,6 +130,12 @@ flowchart LR
 - [x] **Consolidador de dataset** (`sina/annotator/dataset.py`): reúne los `labels_yolo/*.txt`
       dispersos en `datos/yolo_dataset/` formato Ultralytics (`data.yaml`, split determinista
       train/val, nombres trazables `tienda__ciudad__fecha__page_NN`).
+- [x] **Ciclo de vida + monitor de vigencias** (`sina/annotator/ciclo.py` + job
+      `refrescar_flyers`): etapas descargado→anotado→extraído→persistido inferidas de
+      artefactos en disco; vigencia real por prioridad (humano → scraping → desconocida, sin
+      supuestos de calendario); panel "Folletos" en el anotador con acción sugerida y vigencia
+      precargada en el modal; descarga automática al vencer (tick cada 20 min, anti-duplicado
+      por hash, opt-in `ENABLE_FLYERS_SCRAPING`).
 - [ ] Acumular ~50–150 páginas anotadas y **entrenar YOLO** para reemplazar la pre-anotación CV.
       Decisiones tomadas: **YOLO11n/s** (Ultralytics, detección mono-clase `zona`, fine-tuning de
       pesos COCO, `imgsz=1024`); modelo **UNIFICADO** para todas las tiendas (la diversidad de

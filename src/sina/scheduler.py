@@ -14,10 +14,13 @@ llamar a la API de gobierno y refrescan la DB.
 Se controla con la variable de entorno `ENABLE_SCHEDULER` (default: activado).
 """
 import os
+import shutil
+import hashlib
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 from sina.config.timezone import MEXICO_TZ
 from sina.config.credentials import DB_URL
@@ -94,6 +97,90 @@ def refrescar_supermercados() -> None:
             log.error("[scheduler] Error scrapeando %s: %s", nombre, e)
 
 
+def _hash_imagenes(carpeta) -> frozenset:
+    """Huella del contenido de un flyer: hashes de sus imágenes (orden-agnóstico)."""
+    hashes = set()
+    for img in carpeta.glob("*.[jp][pn]*g"):
+        hashes.add(hashlib.md5(img.read_bytes()).hexdigest())
+    return frozenset(hashes)
+
+
+def refrescar_flyers() -> None:
+    """
+    Monitor de vigencias de volantes. Corre cada FLYERS_INTERVALO_MIN minutos y
+    es barato-primero: si ningún flyer está vencido, solo lee metadatos del
+    filesystem y termina. Cuando la vigencia real conocida de un flyer ya pasó
+    (cualquier día, cualquier duración — sin supuestos de calendario), intenta
+    descargar el nuevo; si la tienda aún publica el mismo (imágenes idénticas),
+    limpia la carpeta recién creada y el siguiente tick reintenta.
+    """
+    from sina.config.paths import FLYERS_DATA
+    from sina.annotator.ciclo import resumen_pendientes
+
+    spiders = _spiders_flyers()
+
+    for estado in resumen_pendientes():
+        if estado["vencido"] is not True:
+            continue  # vigente, o vigencia desconocida (sin base para actuar)
+
+        tienda, ciudad = estado["tienda"], estado["ciudad"]
+        spider = spiders.get(tienda)
+        if spider is None:
+            log.warning("[scheduler] Flyers: sin spider para '%s', omitido.", tienda)
+            continue
+
+        ciudad_dir = FLYERS_DATA / tienda / ciudad
+        anterior = ciudad_dir / estado["fecha"]
+        fechas_previas = {d.name for d in ciudad_dir.iterdir() if d.is_dir()}
+
+        log.info("[scheduler] Flyers: %s/%s vencido (%s), descargando...",
+                 tienda, ciudad, estado["vigencia_fin"])
+        try:
+            spider(ciudad)
+        except Exception as e:
+            log.error("[scheduler] Flyers: error descargando %s/%s: %s", tienda, ciudad, e)
+            continue
+
+        # Anti-duplicado: si la descarga creó una carpeta nueva pero con las
+        # mismas imágenes, la tienda aún no publica el flyer nuevo.
+        nuevas = {d.name for d in ciudad_dir.iterdir() if d.is_dir()} - fechas_previas
+        for fecha_nueva in nuevas:
+            nueva_dir = ciudad_dir / fecha_nueva
+            if _hash_imagenes(nueva_dir) == _hash_imagenes(anterior):
+                shutil.rmtree(nueva_dir)
+                log.info(
+                    "[scheduler] Flyers: %s/%s aún publica el flyer anterior; "
+                    "se limpió %s y se reintenta en el siguiente tick.",
+                    tienda, ciudad, fecha_nueva,
+                )
+            else:
+                log.info("[scheduler] Flyers: %s/%s flyer NUEVO en %s.",
+                         tienda, ciudad, fecha_nueva)
+
+
+def _spiders_flyers() -> dict:
+    """Spider por carpeta de tienda. Firma unificada: f(ciudad) -> bool."""
+    from sina.config.paths import CASA_LEY_DATA, ABARREY_DATA
+    from sina.config.credentials import casa_ley_url, abarrey_url
+
+    spiders: dict = {}
+
+    def _ley(ciudad: str) -> bool:
+        if not casa_ley_url:
+            log.warning("[scheduler] Flyers: CASA_LEY_URL vacía, Casa Ley omitida.")
+            return False
+        from sina.scraping.supermercados.casaley_spider import download_flyer
+        return download_flyer(base_url=casa_ley_url, city=ciudad, base_dir=str(CASA_LEY_DATA))
+
+    def _abarrey(ciudad: str) -> bool:
+        from sina.scraping.supermercados.abarrey_spider import download_flyer
+        return download_flyer(base_url=abarrey_url, city=ciudad, base_dir=str(ABARREY_DATA))
+
+    spiders["casa_ley"] = _ley
+    spiders["abarrey"] = _abarrey
+    return spiders
+
+
 def _scheduler_habilitado() -> bool:
     return os.getenv("ENABLE_SCHEDULER", "1").strip().lower() in ("1", "true", "yes", "on")
 
@@ -102,6 +189,19 @@ def _supermercados_habilitado() -> bool:
     # Desactivado por defecto: es un job pesado (navegador) que casi nunca quieres
     # correr dentro del proceso web. Actívalo explícitamente donde toque.
     return os.getenv("ENABLE_SUPERMERCADOS_SCRAPING", "0").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _flyers_habilitado() -> bool:
+    # Desactivado por defecto: Casa Ley abre Chrome (Selenium). Actívalo en UNA
+    # sola instancia (no hay lock multi-instancia, igual que supermercados).
+    return os.getenv("ENABLE_FLYERS_SCRAPING", "0").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _flyers_intervalo_min() -> int:
+    try:
+        return max(1, int(os.getenv("FLYERS_INTERVALO_MIN", "20")))
+    except ValueError:
+        return 20
 
 
 def iniciar_scheduler() -> BackgroundScheduler | None:
@@ -138,6 +238,21 @@ def iniciar_scheduler() -> BackgroundScheduler | None:
             replace_existing=True,
         )
         log.info("[scheduler] Job de supermercados habilitado (dom 04:00, hora MX).")
+
+    # Monitor de vigencias de volantes: intervalo corto porque los ticks son
+    # baratos cuando nada está vencido; el reintento tras un vencimiento sin
+    # flyer nuevo publicado sale gratis del propio intervalo. Opt-in por env.
+    if _flyers_habilitado():
+        minutos = _flyers_intervalo_min()
+        _scheduler.add_job(
+            refrescar_flyers,
+            IntervalTrigger(minutes=minutos, timezone=MEXICO_TZ),
+            id="flyers_monitor",
+            replace_existing=True,
+            max_instances=1,   # un tick lento (Selenium) nunca se encima con el siguiente
+            coalesce=True,
+        )
+        log.info("[scheduler] Monitor de flyers habilitado (cada %d min).", minutos)
 
     _scheduler.start()
     log.info("[scheduler] Iniciado (gasolina 06:00 diario, gas LP sáb 08:00, hora MX).")

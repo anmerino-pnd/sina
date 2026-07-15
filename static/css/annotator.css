@@ -638,3 +638,67 @@ body {
     box-shadow: 0 0 0 2px var(--accent-soft);
 }
 .professional-table .delete-btn { color: var(--text-faint); }
+
+/* ============================================================
+   PANEL "FOLLETOS" — ciclo de vida por tienda-ciudad
+   ============================================================ */
+.pend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.pend-list::-webkit-scrollbar { width: 6px; }
+.pend-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+.pend-empty { color: var(--text-faint); font-size: 0.8rem; margin: 0; }
+
+.pend-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+    text-align: left;
+    width: 100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 9px 10px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.pend-item:hover { border-color: var(--accent); background: var(--accent-soft); }
+.pend-item.is-ok { opacity: 0.7; }
+
+.pend-title { font-weight: 600; letter-spacing: 0.02em; }
+.pend-meta {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+.pend-chips { display: flex; gap: 5px; justify-self: end; grid-row: 1; grid-column: 2; }
+.pend-accion { grid-column: 1 / -1; color: var(--accent); font-weight: 500; }
+.pend-item.is-ok .pend-accion { color: var(--text-faint); }
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    white-space: nowrap;
+}
+.chip-warn {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+}
