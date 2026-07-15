@@ -47,13 +47,72 @@ npm run build      # producción (la sirve FastAPI en el mismo origen)
 > cualquier módulo bajo `sina.db`: el destino de la base de datos se fija en import-time
 > (ver [Arquitectura §2.5](2_arquitectura.qmd#db-gotcha)).
 
-## 8.3. Configuración (`.env`)
+## 8.3. Base de datos con Podman: persistencia, ciclo de vida y acceso {#db-podman}
+
+`compose.yaml` levanta dos contenedores: **PostgreSQL 16 + pgvector** (`sina_db`, puerto 5432) y
+**MongoDB** (`sina_mongo`, puerto 27017). Se usa la imagen `pgvector/pgvector:pg16` **a propósito**:
+trae la extensión `pgvector` que SINA necesita para los embeddings; un PostgreSQL instalado de forma
+nativa **no la trae** y habría que compilarla aparte. Por eso el contenedor es la vía recomendada
+sobre una instalación nativa (para la app da igual: en ambos casos se conecta a `localhost:5432`).
+
+**Tres cosas con ciclos de vida distintos.** La confusión típica es creer que apagar el contenedor
+borra los datos. No:
+
+| Cosa | Qué es | Cuándo se borra |
+| --- | --- | --- |
+| **Imagen** (`pgvector/pgvector:pg16`) | El "molde"; se descarga una sola vez | Solo con `podman rmi`. Nunca por apagar/reiniciar. |
+| **Contenedor** (`sina_db`) | La instancia en ejecución | Solo con `podman-compose down` (o `podman rm`). |
+| **Volumen** (`sina_pgdata`) | **Los datos** de PostgreSQL | Solo con `podman-compose down -v` o `podman volume rm`. |
+
+Los datos viven en el **volumen nombrado** `sina_pgdata` (y `sina_mongodata` para Mongo), no dentro
+del contenedor → sobreviven a `stop`, a `down` (sin `-v`) y a reinicios de la PC.
+
+**Comandos de operación:**
+
+```bash
+podman-compose up -d      # crea/levanta los contenedores en segundo plano
+podman-compose stop       # los pausa (conserva contenedor + datos) — lo más suave
+podman-compose start      # los vuelve a arrancar
+podman-compose down       # borra los CONTENEDORES; CONSERVA los datos (volumen)
+podman-compose down -v    # ⚠️ borra contenedores Y DATOS (volúmenes)
+podman ps                 # ver qué está corriendo ahora
+podman ps -a              # incluir los detenidos
+```
+
+**Al reiniciar la PC (Windows/WSL).** Podman corre dentro de una máquina **WSL**
+(`podman-machine-default`). Al apagar el equipo, esa máquina se detiene y con ella los contenedores.
+El `restart: unless-stopped` del `compose.yaml` los vuelve a levantar **cuando la máquina de Podman
+arranca**, pero en Windows esa máquina no siempre arranca sola tras un reinicio. Regla práctica: tras
+reiniciar, corre `podman ps`; si `sina_db` no aparece en `Up`, ejecútalo de nuevo:
+
+```bash
+podman machine start      # si la máquina WSL no arrancó sola
+podman-compose up -d       # revive los contenedores (con los datos intactos)
+```
+
+**Ver los datos con una GUI (no es solo CLI).** Como el contenedor publica el puerto a tu equipo
+(`5432:5432`), para cualquier cliente es un PostgreSQL normal en `localhost`. Sirven **pgAdmin,
+DBeaver, DataGrip, TablePlus** o la extensión **PostgreSQL de VS Code**. Parámetros de conexión (los
+mismos del `compose.yaml` / `.env`):
+
+| Campo | Valor |
+| --- | --- |
+| Host | `localhost` |
+| Puerto | `5432` |
+| Base de datos | `sina_db` |
+| Usuario | `sina_admin` |
+| Contraseña | `sina_password` |
+
+`psql` (CLI) funciona igual pero es opcional. Para Mongo, misma idea en `localhost:27017` con
+**MongoDB Compass**.
+
+## 8.4. Configuración (`.env`)
 
 Variables clave (ver `.env.example` para la lista completa):
 
 | Grupo | Variables |
 | --- | --- |
-| Base de datos | `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (si faltan → SQLite fallback) |
+| Base de datos | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (si faltan host/name/user/password → SQLite fallback). Ver [§8.3](#db-podman). |
 | Scraping (URLs base) | `SORIANA_BASE_URL`, `DELSOL_BASE_URL`, `BENAVIDES_BASE_URL`, `GUADALAJARA_BASE_URL` |
 | Chat / LLM | `ENABLE_CHAT`, `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `LLM_TEMPERATURE`, `LLM_MAX_ITERS` |
 | Embeddings | `ENABLE_EMBEDDINGS`, `EMBEDDING_MODEL` |
@@ -61,7 +120,7 @@ Variables clave (ver `.env.example` para la lista completa):
 | Scheduler | `ENABLE_SCHEDULER`, `ENABLE_SUPERMERCADOS_SCRAPING` |
 | Seguridad / auth | `GOOGLE_OAUTH_CLIENT_ID`, `ADMIN_API_KEY`, allowlist de CORS |
 
-## 8.4. Operación
+## 8.5. Operación
 
 - **Scheduler** (`ENABLE_SCHEDULER=1`): gasolina diario 06:00, gas LP sábados 08:00 (hora MX);
   supermercados semanal **opt-in** (`ENABLE_SUPERMERCADOS_SCRAPING`).
@@ -69,12 +128,12 @@ Variables clave (ver `.env.example` para la lista completa):
 - **Degradación elegante:** si MongoDB no está, el chat funciona sin persistencia; si los datos de
   gobierno fallan, se sirve caché vencida con aviso (`fuente = cache_vencido`).
 
-## 8.5. Empaquetado (meta)
+## 8.6. Empaquetado (meta)
 
 - **Podman, no Docker.** `Containerfile` para el backend; `compose.yaml` para app + PostgreSQL/pgvector
   (+ MongoDB). *(Fase 5, pendiente.)*
 
-## 8.6. Estrategia de despliegue en GCP (objetivo)
+## 8.7. Estrategia de despliegue en GCP (objetivo)
 
 El flujo **extraer → limpiar → guardar → servir UI** encaja bien en un modelo serverless:
 
@@ -104,7 +163,7 @@ flowchart TB
 Destinos posibles: **PC local**, **servidor dedicado** (mismo contenedor) y **GCP** (meta). Falta
 conseguir patrocinador para servidor/dominio.
 
-## 8.7. Construir esta documentación
+## 8.8. Construir esta documentación
 
 El sitio se genera con Quarto (el sitio HTML sale en `../docs/`):
 

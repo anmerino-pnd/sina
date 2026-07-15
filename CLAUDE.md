@@ -129,8 +129,11 @@ Tope `CHAT_MAX_CONVERSACIONES` por usuario. La tabla Postgres `chat_historial` q
 **ML / annotation (flyer pipeline, Fase 6):** descarga → **recorte por ZONAS** (bloques separados
 por espacios en blanco, no por producto) → **VLM por zona** → verificación humana → Postgres.
 - `annotator/zonas.py` — `detectar_zonas(image_path, tienda)`: pre-anotación de zonas con **CV
-  clásico** (OpenCV, umbral + cierre morfológico + contornos), parámetros por tienda. Propuestas
-  que el humano ajusta; el detector es clase única `zona`. YOLO (a futuro) reemplaza este paso.
+  clásico** (OpenCV). Los flyers de Ley usan **paneles de color** sin pasillos blancos anchos, así
+  que binarizar-y-cerrar fundía todo en un bloque; el enfoque es el **inverso**: detectar los
+  **pasillos** (líneas claras largas, vía `open` morfológico con kernels alargados) y quedarse con
+  los **paneles** entre ellos. Parámetros por tienda. Propuestas que el humano ajusta; clase única
+  `zona`. YOLO (a futuro) reemplaza este paso.
 - `annotator/image_segmentation.py` — `process_annotations` recorta las cajas → `recortes/`,
   guarda overlay + labels JSON **y export YOLO** (`labels_yolo/*.txt`, coords normalizadas =
   dataset para entrenar). Payloads `PreanotarPayload`/`PersistirPayload`. `resolver_ruta_flyer`

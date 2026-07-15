@@ -237,14 +237,90 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Recordatorio (gotcha).</strong> Define el <code>.env</code> (copiado de <code>.env.example</code>) <strong>antes</strong> de importar cualquier módulo bajo <code>sina.db</code>: el destino de la base de datos se fija en import-time (ver <a href="./2_arquitectura.html#db-gotcha">Arquitectura §2.5</a>).</p>
 </blockquote>
 </section>
-<section id="configuración-.env" class="level2">
-<h2 class="anchored" data-anchor-id="configuración-.env">8.3. Configuración (<code>.env</code>)</h2>
-<p>Variables clave (ver <code>.env.example</code> para la lista completa):</p>
+<section id="db-podman" class="level2">
+<h2 class="anchored" data-anchor-id="db-podman">8.3. Base de datos con Podman: persistencia, ciclo de vida y acceso</h2>
+<p><code>compose.yaml</code> levanta dos contenedores: <strong>PostgreSQL 16 + pgvector</strong> (<code>sina_db</code>, puerto 5432) y <strong>MongoDB</strong> (<code>sina_mongo</code>, puerto 27017). Se usa la imagen <code>pgvector/pgvector:pg16</code> <strong>a propósito</strong>: trae la extensión <code>pgvector</code> que SINA necesita para los embeddings; un PostgreSQL instalado de forma nativa <strong>no la trae</strong> y habría que compilarla aparte. Por eso el contenedor es la vía recomendada sobre una instalación nativa (para la app da igual: en ambos casos se conecta a <code>localhost:5432</code>).</p>
+<p><strong>Tres cosas con ciclos de vida distintos.</strong> La confusión típica es creer que apagar el contenedor borra los datos. No:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
+<thead>
+<tr class="header">
+<th>Cosa</th>
+<th>Qué es</th>
+<th>Cuándo se borra</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Imagen</strong> (<code>pgvector/pgvector:pg16</code>)</td>
+<td>El “molde”; se descarga una sola vez</td>
+<td>Solo con <code>podman rmi</code>. Nunca por apagar/reiniciar.</td>
+</tr>
+<tr class="even">
+<td><strong>Contenedor</strong> (<code>sina_db</code>)</td>
+<td>La instancia en ejecución</td>
+<td>Solo con <code>podman-compose down</code> (o <code>podman rm</code>).</td>
+</tr>
+<tr class="odd">
+<td><strong>Volumen</strong> (<code>sina_pgdata</code>)</td>
+<td><strong>Los datos</strong> de PostgreSQL</td>
+<td>Solo con <code>podman-compose down -v</code> o <code>podman volume rm</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Los datos viven en el <strong>volumen nombrado</strong> <code>sina_pgdata</code> (y <code>sina_mongodata</code> para Mongo), no dentro del contenedor → sobreviven a <code>stop</code>, a <code>down</code> (sin <code>-v</code>) y a reinicios de la PC.</p>
+<p><strong>Comandos de operación:</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> up <span class="at">-d</span>      <span class="co"># crea/levanta los contenedores en segundo plano</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> stop       <span class="co"># los pausa (conserva contenedor + datos) — lo más suave</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> start      <span class="co"># los vuelve a arrancar</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> down       <span class="co"># borra los CONTENEDORES; CONSERVA los datos (volumen)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> down <span class="at">-v</span>    <span class="co"># ⚠️ borra contenedores Y DATOS (volúmenes)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps                 <span class="co"># ver qué está corriendo ahora</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps <span class="at">-a</span>              <span class="co"># incluir los detenidos</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Al reiniciar la PC (Windows/WSL).</strong> Podman corre dentro de una máquina <strong>WSL</strong> (<code>podman-machine-default</code>). Al apagar el equipo, esa máquina se detiene y con ella los contenedores. El <code>restart: unless-stopped</code> del <code>compose.yaml</code> los vuelve a levantar <strong>cuando la máquina de Podman arranca</strong>, pero en Windows esa máquina no siempre arranca sola tras un reinicio. Regla práctica: tras reiniciar, corre <code>podman ps</code>; si <code>sina_db</code> no aparece en <code>Up</code>, ejecútalo de nuevo:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> machine start      <span class="co"># si la máquina WSL no arrancó sola</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> up <span class="at">-d</span>       <span class="co"># revive los contenedores (con los datos intactos)</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Ver los datos con una GUI (no es solo CLI).</strong> Como el contenedor publica el puerto a tu equipo (<code>5432:5432</code>), para cualquier cliente es un PostgreSQL normal en <code>localhost</code>. Sirven <strong>pgAdmin, DBeaver, DataGrip, TablePlus</strong> o la extensión <strong>PostgreSQL de VS Code</strong>. Parámetros de conexión (los mismos del <code>compose.yaml</code> / <code>.env</code>):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Host</td>
+<td><code>localhost</code></td>
+</tr>
+<tr class="even">
+<td>Puerto</td>
+<td><code>5432</code></td>
+</tr>
+<tr class="odd">
+<td>Base de datos</td>
+<td><code>sina_db</code></td>
+</tr>
+<tr class="even">
+<td>Usuario</td>
+<td><code>sina_admin</code></td>
+</tr>
+<tr class="odd">
+<td>Contraseña</td>
+<td><code>sina_password</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>psql</code> (CLI) funciona igual pero es opcional. Para Mongo, misma idea en <code>localhost:27017</code> con <strong>MongoDB Compass</strong>.</p>
+</section>
+<section id="configuración-.env" class="level2">
+<h2 class="anchored" data-anchor-id="configuración-.env">8.4. Configuración (<code>.env</code>)</h2>
+<p>Variables clave (ver <code>.env.example</code> para la lista completa):</p>
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Grupo</th>
@@ -254,7 +330,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>Base de datos</td>
-<td><code>DB_HOST</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code> (si faltan → SQLite fallback)</td>
+<td><code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code> (si faltan host/name/user/password → SQLite fallback). Ver <a href="#db-podman">§8.3</a>.</td>
 </tr>
 <tr class="even">
 <td>Scraping (URLs base)</td>
@@ -284,7 +360,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 <section id="operación" class="level2">
-<h2 class="anchored" data-anchor-id="operación">8.4. Operación</h2>
+<h2 class="anchored" data-anchor-id="operación">8.5. Operación</h2>
 <ul>
 <li><strong>Scheduler</strong> (<code>ENABLE_SCHEDULER=1</code>): gasolina diario 06:00, gas LP sábados 08:00 (hora MX); supermercados semanal <strong>opt-in</strong> (<code>ENABLE_SUPERMERCADOS_SCRAPING</code>).</li>
 <li><strong>Health check:</strong> <code>GET /api/v1/health</code> reporta la última actualización y la vigencia por categoría.</li>
@@ -292,13 +368,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 </section>
 <section id="empaquetado-meta" class="level2">
-<h2 class="anchored" data-anchor-id="empaquetado-meta">8.5. Empaquetado (meta)</h2>
+<h2 class="anchored" data-anchor-id="empaquetado-meta">8.6. Empaquetado (meta)</h2>
 <ul>
 <li><strong>Podman, no Docker.</strong> <code>Containerfile</code> para el backend; <code>compose.yaml</code> para app + PostgreSQL/pgvector (+ MongoDB). <em>(Fase 5, pendiente.)</em></li>
 </ul>
 </section>
 <section id="estrategia-de-despliegue-en-gcp-objetivo" class="level2">
-<h2 class="anchored" data-anchor-id="estrategia-de-despliegue-en-gcp-objetivo">8.6. Estrategia de despliegue en GCP (objetivo)</h2>
+<h2 class="anchored" data-anchor-id="estrategia-de-despliegue-en-gcp-objetivo">8.7. Estrategia de despliegue en GCP (objetivo)</h2>
 <p>El flujo <strong>extraer → limpiar → guardar → servir UI</strong> encaja bien en un modelo serverless:</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
@@ -338,11 +414,11 @@ Figura&nbsp;1: Despliegue objetivo en GCP
 <p>Destinos posibles: <strong>PC local</strong>, <strong>servidor dedicado</strong> (mismo contenedor) y <strong>GCP</strong> (meta). Falta conseguir patrocinador para servidor/dominio.</p>
 </section>
 <section id="construir-esta-documentación" class="level2">
-<h2 class="anchored" data-anchor-id="construir-esta-documentación">8.7. Construir esta documentación</h2>
+<h2 class="anchored" data-anchor-id="construir-esta-documentación">8.8. Construir esta documentación</h2>
 <p>El sitio se genera con Quarto (el sitio HTML sale en <code>../docs/</code>):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> quarto</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render        <span class="co"># genera el sitio en ../docs</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview       <span class="co"># vista previa con recarga en vivo</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> quarto</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render        <span class="co"># genera el sitio en ../docs</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview       <span class="co"># vista previa con recarga en vivo</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </div>
 

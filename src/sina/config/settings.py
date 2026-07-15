@@ -1,12 +1,24 @@
-from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES
+from sina.config.paths import TEMPLATES_DIR, STATIC_DIR, DATA, CLASSES, FLYER_CIUDADES
 from pathlib import Path
-import json 
+import json
 
 def _get_classes_config() -> dict:
     """Reads the classes and colors from the JSON configuration file."""
-       
+
     with open(CLASSES, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def _get_flyer_ciudades() -> list[str]:
+    """Lista de ciudades disponibles para descargar volantes (desde flyer_ciudades.json).
+    Falla suave a una lista mínima si el archivo no existe o está mal formado."""
+    try:
+        with open(FLYER_CIUDADES, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        ciudades = data.get("ciudades", [])
+        return [c for c in ciudades if isinstance(c, str) and c.strip()]
+    except (FileNotFoundError, json.JSONDecodeError):
+        return ["Hermosillo"]
 
 def build_filesystem_tree(base_path: Path) -> dict:
     """

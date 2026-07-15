@@ -30,6 +30,7 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 
 CLASSES = BASE_DIR / "src" / "sina" / "config" / "classes.json"
+FLYER_CIUDADES = BASE_DIR / "src" / "sina" / "config" / "flyer_ciudades.json"
 SORIANA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "soriana_config.json"
 DELSOL_CONFIG = BASE_DIR / "src" / "sina" / "config" / "delsol_config.json"
 BENAVIDES_CONFIG = BASE_DIR / "src" / "sina" / "config" / "benavides_config.json"

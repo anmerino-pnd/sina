@@ -1,15 +1,21 @@
 """
 Pre-anotación de ZONAS de un flyer con visión clásica (OpenCV).
 
-Idea: las zonas de producto están separadas por espacios en blanco. Binarizamos
-el contenido (lo que NO es fondo claro), lo cerramos morfológicamente para unir lo
-que está dentro de una misma zona sin cruzar los pasillos en blanco, y sacamos las
-cajas de los blobs resultantes. Son PROPUESTAS: el humano las ajusta/agrega/borra
-en el anotador. Los parámetros son por tienda (Ley hoy; Abarrey luego, con su
-propio tuning), porque cada cadena tiene un layout distinto.
+Los volantes de Casa Ley NO tienen pasillos anchos en blanco entre productos:
+usan **paneles de color** (verde en frutas, blanco en carnes, etc.) separados por
+**líneas-pasillo delgadas y claras**. Por eso el enfoque no es "binarizar contenido
+y cerrar" (eso funde todo el flyer en un bloque), sino el inverso:
 
-No entrena nada: es el paso barato antes de YOLO. Las cajas corregidas por el
-humano se guardan como dataset para entrenar YOLO a futuro.
+  1. Detectar los **pasillos** = líneas claras LARGAS (horizontales y verticales),
+     quedándonos solo con lo lineal (un `open` morfológico con kernels alargados
+     descarta los reflejos/empaques blancos, que son manchas, no líneas).
+  2. Los **paneles** son lo que queda entre pasillos (el negativo de los pasillos).
+  3. Sacar las cajas de esos paneles.
+
+Son PROPUESTAS: el humano las ajusta / fusiona / borra en el anotador. Los
+parámetros son por tienda (Ley hoy; Abarrey luego, con su propio tuning). No
+entrena nada: es el paso barato antes de YOLO, que a futuro lo reemplaza. Las
+cajas corregidas por el humano se guardan como dataset para entrenar ese YOLO.
 """
 from __future__ import annotations
 
@@ -20,20 +26,24 @@ log = logging.getLogger(__name__)
 # Parámetros por tienda (fracciones del tamaño de la imagen → resolución-agnósticos).
 _PARAMS: dict[str, dict] = {
     "_default": {
-        "umbral": 235,          # > esto se considera fondo claro
-        "kx": 0.020,            # cierre horizontal (frac. del ancho)
-        "ky": 0.020,            # cierre vertical (frac. del alto)
-        "area_min_frac": 0.004, # descarta blobs muy chicos (ruido)
-        "w_min_frac": 0.03,
-        "h_min_frac": 0.02,
+        "gutter": 222,          # brillo mínimo (0-255) para considerar "pasillo claro"
+        "lin": 0.05,            # longitud mínima de línea-pasillo (frac. del lado)
+        "sep_dilate": 0.003,    # engrosado del pasillo antes de cortar (frac. del ancho)
+        "panel_open": 0.01,     # apertura para limpiar ruido dentro del panel (frac.)
+        "area_min_frac": 0.006, # descarta paneles muy chicos (ruido)
+        "area_max_frac": 0.55,  # descarta el marco/fondo casi completo
+        "w_min_frac": 0.035,
+        "h_min_frac": 0.035,
     },
     "casa_ley": {
-        "umbral": 235,
-        "kx": 0.018,
-        "ky": 0.016,
-        "area_min_frac": 0.004,
-        "w_min_frac": 0.03,
-        "h_min_frac": 0.02,
+        "gutter": 222,
+        "lin": 0.05,
+        "sep_dilate": 0.003,
+        "panel_open": 0.01,
+        "area_min_frac": 0.006,
+        "area_max_frac": 0.55,
+        "w_min_frac": 0.035,
+        "h_min_frac": 0.035,
     },
 }
 
@@ -59,27 +69,40 @@ def detectar_zonas(image_path, tienda: str = "casa_ley", max_zonas: int = 80) ->
     p = _PARAMS[_norm_tienda(tienda)]
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # Contenido = lo que NO es fondo claro (INV: contenido → 255).
-    _, binaria = cv2.threshold(gray, p["umbral"], 255, cv2.THRESH_BINARY_INV)
 
-    kx = max(1, int(W * p["kx"]))
-    ky = max(1, int(H * p["ky"]))
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kx, ky))
-    cerrada = cv2.morphologyEx(binaria, cv2.MORPH_CLOSE, kernel, iterations=1)
+    # 1. Pasillos = líneas claras LARGAS (horizontales y verticales).
+    blanco = (gray > p["gutter"]).astype(np.uint8) * 255
+    hk = cv2.getStructuringElement(cv2.MORPH_RECT, (max(1, int(W * p["lin"])), 1))
+    vk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, max(1, int(H * p["lin"]))))
+    horiz = cv2.morphologyEx(blanco, cv2.MORPH_OPEN, hk)
+    vert = cv2.morphologyEx(blanco, cv2.MORPH_OPEN, vk)
+    pasillos = cv2.bitwise_or(horiz, vert)
+    d = max(1, int(W * p["sep_dilate"]))
+    pasillos = cv2.dilate(pasillos, cv2.getStructuringElement(cv2.MORPH_RECT, (d, d)), iterations=1)
 
-    contornos, _ = cv2.findContours(cerrada, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # 2. Paneles = negativo de los pasillos, limpiado de ruido chico.
+    paneles = cv2.bitwise_not(pasillos)
+    ok = max(1, int(W * p["panel_open"]))
+    ov = max(1, int(H * p["panel_open"]))
+    paneles = cv2.morphologyEx(
+        paneles, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (ok, ov))
+    )
+
+    # 3. Cajas de los paneles.
+    contornos, _ = cv2.findContours(paneles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     area_min = W * H * p["area_min_frac"]
+    area_max = W * H * p["area_max_frac"]
     w_min = W * p["w_min_frac"]
     h_min = H * p["h_min_frac"]
 
     zonas: list[dict] = []
     for c in contornos:
         x, y, w, h = cv2.boundingRect(c)
-        if w * h < area_min or w < w_min or h < h_min:
+        area = w * h
+        if area < area_min or area > area_max:
             continue
-        # Descarta cajas que abarcan casi toda la imagen (marco/fondo completo).
-        if w > W * 0.98 and h > H * 0.98:
+        if w < w_min or h < h_min:
             continue
         zonas.append({"label": "zona", "x": int(x), "y": int(y), "w": int(w), "h": int(h)})
 

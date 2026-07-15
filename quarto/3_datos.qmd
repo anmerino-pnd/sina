@@ -158,9 +158,12 @@ comparte Gasolina y Gas LP.
 ## 3.7. Pipeline de volantes (flyers) — recorte por zonas + VLM
 
 Para tiendas cuyo sitio no es scrapeable, Sina extrae precios de sus **volantes**. El flujo
-recorta el flyer en **zonas** (bloques separados por espacios en blanco, no producto por producto:
-así el VLM recibe un "zoom" con texto legible y alucina menos), extrae cada zona con un **VLM** y,
-tras **verificación humana**, inserta a `supermercados`.
+recorta el flyer en **zonas** (paneles/bloques, no producto por producto: así el VLM recibe un
+"zoom" con texto legible y alucina menos), extrae cada zona con un **VLM** y, tras **verificación
+humana**, inserta a `supermercados`. La pre-anotación con CV clásico no busca espacios en blanco
+(los flyers de Ley usan paneles de color sin pasillos blancos anchos, que fundirían todo en un
+bloque) sino el **inverso**: detecta los **pasillos** —líneas claras largas— y propone los
+**paneles** que quedan entre ellos, como punto de partida que el humano ajusta.
 
 ```{mermaid}
 %%| label: fig-flyers

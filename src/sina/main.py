@@ -33,7 +33,7 @@ from sina.scraping.gobierno.cre_gasolina import (
 )
 from sina.scraping.gobierno.cne_gas_lp import get_precios_gas_lp, get_localidades_by_municipio
 from sina.config.credentials import DB_URL, casa_ley_url
-from sina.config.settings import _get_classes_config, build_filesystem_tree
+from sina.config.settings import _get_classes_config, _get_flyer_ciudades, build_filesystem_tree
 from sina.config.paths import (
     TEMPLATES_DIR,
     CASA_LEY_DATA,
@@ -201,6 +201,7 @@ async def view_annotator(request: Request):
         "request" : request,
         "classes" : ["zona"],
         "colors"  : {"zona": class_config.get("zona", "#7a2492")},
+        "ciudades": _get_flyer_ciudades(),
     })
 
 

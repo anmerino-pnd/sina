@@ -12,14 +12,19 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <h1 class="logo">SINA</h1>
-        <p class="subtitle">Anotador de Folletos</p>
+        <div class="sidebar-head">
+            <div>
+                <h1 class="logo">SINA</h1>
+                <p class="subtitle">Anotador de Folletos</p>
+            </div>
+            <button class="theme-toggle" id="btnTheme" aria-label="Cambiar tema (claro/oscuro)" title="Cambiar tema"></button>
+        </div>
 
         <!-- Admin key: se adjunta como X-Admin-Key en cada petición -->
         <div class="section">
             <label class="label">Clave de administrador</label>
             <input type="password" id="adminKey" class="select input-text" placeholder="X-Admin-Key">
-            <button class="btn btn-outline" id="btnCargarArbol" onclick="cargarArbol()">
+            <button class="btn btn-outline" id="btnCargarArbol">
                 Conectar / recargar árbol
             </button>
         </div>
@@ -28,7 +33,7 @@
 
         <!-- Scraper Module -->
         <div class="section scraper-section">
-            <label class="label">🌐 Obtener Nuevo Folleto</label>
+            <label class="label">Obtener nuevo folleto</label>
             <div class="scraper-controls">
                 <select id="scrapeStore" class="select">
                     <option value="Casa Ley">Casa Ley</option>
@@ -36,10 +41,16 @@
                     <option value="Bodega Aurrera" disabled>Bodega Aurrera (Pronto)</option>
                     <option value="Soriana" disabled>Soriana (Pronto)</option>
                 </select>
-                <input type="text" id="scrapeCity" class="select input-text" placeholder="Ciudad (ej. Hermosillo)" value="Hermosillo">
+                <select id="scrapeCity" class="select">
+                    {% for c in ciudades %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                    <option value="__add__">Añadir otra…</option>
+                </select>
             </div>
-            <button class="btn btn-outline" id="btnScrape" onclick="downloadFlyer()">
-                📥 Descargar Ahora
+            <input type="text" id="scrapeCityNew" class="select input-text" placeholder="Nombre de la nueva ciudad" style="display:none; margin-top:8px;">
+            <button class="btn btn-outline" id="btnScrape" style="margin-top:8px;">
+                Descargar ahora
             </button>
         </div>
 
@@ -47,22 +58,22 @@
 
         <!-- Image Selectors -->
         <div class="section">
-            <label class="label">🏪 Supermercado</label>
+            <label class="label">Supermercado</label>
             <select id="storeSelect" class="select">
                 <option value="">-- Seleccionar --</option>
             </select>
             
-            <label class="label">🏙️ Ciudad</label>
+            <label class="label">Ciudad</label>
             <select id="citySelect" class="select" disabled>
                 <option value="">-- Seleccionar --</option>
             </select>
             
-            <label class="label">📅 Fecha (Últimas 10)</label>
+            <label class="label">Fecha (últimas 10)</label>
             <select id="dateSelect" class="select" disabled>
                 <option value="">-- Seleccionar --</option>
             </select>
             
-            <label class="label">📁 Imagen</label>
+            <label class="label">Imagen</label>
             <select id="imageSelect" class="select" disabled>
                 <option value="">-- Seleccionar --</option>
             </select>
@@ -70,44 +81,50 @@
 
         <!-- Tools (Draw, Pan, Zoom) -->
         <div class="section">
-            <label class="label">🛠️ Herramientas</label>
+            <label class="label">Herramientas</label>
             <div class="tool-toggle">
-                <button id="btnDraw" class="tool-btn active" onclick="setTool('draw')">✏️ Dibujar</button>
-                <button id="btnPan" class="tool-btn" onclick="setTool('pan')">✋ Mover vista</button>
+                <button id="btnDraw" class="tool-btn active">Dibujar</button>
+                <button id="btnPan" class="tool-btn">Mover vista</button>
             </div>
-            <button class="btn btn-outline" id="btnPreanotar" onclick="preanotar()" style="width:100%; margin-top:8px;">
+            <button class="btn btn-outline" id="btnPreanotar" style="width:100%; margin-top:8px;">
                 Pre-anotar zonas (CV)
             </button>
             <p class="subtitle" style="margin-top:6px;">Dibuja, arrastra el interior para mover o la esquina para redimensionar.</p>
             
             <!-- NEW: Zoom Controls -->
             <div class="zoom-controls">
-                <button class="zoom-btn" onclick="changeZoom(-0.1)" title="Alejar (Ctrl + Rueda Abajo)">➖</button>
+                <button class="zoom-btn" id="btnZoomOut" title="Alejar (Ctrl + Rueda Abajo)" aria-label="Alejar">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
                 <span id="zoomLabel" class="zoom-label">100%</span>
-                <button class="zoom-btn" onclick="changeZoom(0.1)" title="Acercar (Ctrl + Rueda Arriba)">➕</button>
-                <button class="zoom-btn" onclick="resetZoom()" title="Restablecer">⟲</button>
+                <button class="zoom-btn" id="btnZoomIn" title="Acercar (Ctrl + Rueda Arriba)" aria-label="Acercar">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <button class="zoom-btn" id="btnZoomReset" title="Restablecer zoom" aria-label="Restablecer zoom">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 6 6 6"/></svg>
+                </button>
             </div>
         </div>
 
-        <!-- NUEVA SECCIÓN: Procesamiento LLM -->
+        <!-- Extracción por zona (VLM) -->
         <hr class="divider">
         <div class="section">
-            <label class="label">Extracción de Datos</label>
-            <button class="btn btn-outline" id="btnExtract" onclick="extractData()" style="width: 100%; border-color: #9c27b0; color: #9c27b0;">
-                Procesar con Ollama y ver JSON
+            <label class="label">Extracción de datos</label>
+            <button class="btn btn-outline" id="btnExtract" style="width: 100%;">
+                Extraer por zona (VLM)
             </button>
         </div>
 
         <!-- Active Class -->
         <div class="section">
-            <label class="label">🏷️ Clase activa</label>
+            <label class="label">Clase activa</label>
             <div class="class-buttons">
                 {% for cls in classes %}
                 <button
                     class="class-btn"
                     data-class="{{ cls }}"
-                    style="border-left: 4px solid {{ colors[cls] }}"
-                    onclick="setActiveClass('{{ cls }}', '{{ colors[cls] }}')"
+                    data-color="{{ colors[cls] }}"
+                    style="--cls-color: {{ colors[cls] }}"
                 >
                     {{ cls }}
                 </button>
@@ -117,17 +134,17 @@
 
         <!-- Annotations -->
         <div class="section">
-            <label class="label">📐 Anotaciones (<span id="annotCount">0</span>)</label>
+            <label class="label">Anotaciones (<span id="annotCount">0</span>)</label>
             <div id="annotationList" class="annotation-list"></div>
         </div>
 
         <!-- Actions -->
         <div class="section actions">
-            <button class="btn btn-primary" onclick="saveAll()">
-                💾 Guardar Todo
+            <button class="btn btn-primary" id="btnSaveAll">
+                Guardar todo
             </button>
-            <button class="btn btn-secondary" onclick="clearAll()">
-                🗑️ Limpiar
+            <button class="btn btn-secondary" id="btnClearAll">
+                Limpiar
             </button>
         </div>
     </aside>
@@ -144,6 +161,9 @@
 
 </div>
 
+<!-- Notificaciones dentro de la página (sin popups nativos del navegador) -->
+<div id="toast" class="toast-stack" aria-live="polite"></div>
+
 <script src="/static/js/annotator.js"></script>
 
     <!-- VENTANA MODAL: revisión por zona + verificación e inserción -->
@@ -151,7 +171,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Revisión de productos por zona</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <button class="close-btn" id="btnCloseModal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="section" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
@@ -163,7 +183,7 @@
                         <label class="label">Vigencia fin</label>
                         <input type="date" id="vigFin" class="select">
                     </div>
-                    <button class="btn btn-primary" id="btnInsertar" onclick="insertarProductos()">
+                    <button class="btn btn-primary" id="btnInsertar">
                         Verificar e insertar a la base de datos
                     </button>
                 </div>

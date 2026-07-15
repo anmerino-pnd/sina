@@ -1,0 +1,13 @@
+{
+  "_comentario": "Ciudades disponibles para descargar volantes desde el anotador. Edita esta lista para agregar/quitar ciudades; la UI las lee de aquí para evitar erratas al teclear.",
+  "ciudades": [
+    "Hermosillo",
+    "Ciudad Obregón",
+    "Navojoa",
+    "Guaymas",
+    "Culiacán",
+    "Los Mochis",
+    "Guasave",
+    "Mazatlán"
+  ]
+}
