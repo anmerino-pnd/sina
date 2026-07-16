@@ -316,6 +316,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <p><code>psql</code> (CLI) funciona igual pero es opcional. Para Mongo, misma idea en <code>localhost:27017</code> con <strong>MongoDB Compass</strong>.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+¿A cuál instancia está conectada la app realmente?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>La app se conecta a <strong>lo que responda en <code>localhost:5432</code> / <code>localhost:27017</code></strong> — que puede NO ser el contenedor de Podman. Caso real detectado en desarrollo (jul 2026): otro MongoDB (v8) y otro PostgreSQL corriendo en WSL ya ocupaban esos puertos, así que los datos de SINA viven ahí y los contenedores <code>sina_db</code>/<code>sina_mongo</code> quedan “sombreados” (vacíos). Antes de consultar o respaldar, verifica cuál instancia sirve el puerto:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ¿Qué proceso escucha? (PowerShell) — si sale "wslrelay" con contenedores DETENIDOS,</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># hay servicios en otra distro WSL sirviendo esos puertos.</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Get-NetTCPConnection</span> <span class="at">-LocalPort</span> 27017,5432 <span class="at">-State</span> Listen <span class="kw">|</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ForEach-Object</span> { <span class="er">(</span><span class="ex">Get-Process</span> <span class="at">-Id</span> <span class="va">$_</span>.OwningProcess<span class="kw">)</span><span class="ex">.ProcessName</span> }</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ¿Qué versión responde? (el contenedor es mongo:7 / pgvector-pg16; si difiere, es otra instancia)</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_mongo mongosh <span class="at">--quiet</span> <span class="at">--eval</span> <span class="st">"db.version()"</span>   <span class="co"># versión DEL CONTENEDOR</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">&amp;</span> <span class="ex">.venv\Scripts\python.exe</span> <span class="at">-c</span> <span class="st">"from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27017').server_info()['version'])"</span>  <span class="co"># versión que VE LA APP</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Si las versiones difieren, los comandos <code>podman exec …</code> de abajo consultan el contenedor (no los datos reales de la app); usa entonces un cliente contra <code>localhost</code> directo (Compass/DBeaver o <code>mongosh mongodb://localhost:27017/sina</code> si lo tienes instalado).</p>
+</div>
+</div>
+<p><strong>Consultas rápidas sin instalar clientes</strong> (usando los CLI que ya traen los contenedores — válido cuando los contenedores SON quienes sirven los puertos):</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ── PostgreSQL (psql dentro del contenedor) ──────────────────────────</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec <span class="at">-it</span> sina_db psql <span class="at">-U</span> sina_admin <span class="at">-d</span> sina_db</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   \dt                             → listar tablas</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   SELECT COUNT(*) FROM supermercados WHERE fuente='flyer';</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   SELECT tienda, COUNT(*) FROM supermercados GROUP BY tienda;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ── MongoDB (mongosh dentro del contenedor) ──────────────────────────</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec <span class="at">-it</span> sina_mongo mongosh sina</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   show collections                → conversaciones, chat_chunks, flyer_ciudades, registro_jobs</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.conversaciones.find().sort({actualizado_en:-1}).limit(5)     → últimos chats</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.chat_chunks.countDocuments()                                 → volumen de mensajes</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.flyer_ciudades.find().sort({nombre:1})                       → ciudades añadidas en la UI</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.registro_jobs.find().sort({inicio:-1}).limit(10)             → últimas corridas de jobs</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.registro_jobs.find({ok:false})                               → corridas fallidas</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.registro_jobs.find({job:"flyers"}).sort({inicio:-1})         → historial del monitor de flyers</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">#   db.stats()                                                      → tamaño de la base</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ── Respaldos ────────────────────────────────────────────────────────</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_db pg_dump <span class="at">-U</span> sina_admin sina_db <span class="op">&gt;</span> respaldo_sina.sql</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_mongo mongodump <span class="at">--db</span> sina <span class="at">--archive</span> <span class="op">&gt;</span> respaldo_mongo.archive</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># restaurar:</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#   Get-Content respaldo_sina.sql | podman exec -i sina_db psql -U sina_admin -d sina_db</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#   Get-Content respaldo_mongo.archive -Raw -Encoding Byte | podman exec -i sina_mongo mongorestore --archive</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>El mapa completo de <strong>qué dato vive en qué backend</strong> (Postgres/Mongo/filesystem/git/navegador) y por qué, está en <a href="./3_datos.html#mapa-almacenamiento">Datos §3.8</a>.</p>
 </section>
 <section id="configuración-.env" class="level2">
 <h2 class="anchored" data-anchor-id="configuración-.env">8.4. Configuración (<code>.env</code>)</h2>
@@ -416,9 +463,9 @@ Figura&nbsp;1: Despliegue objetivo en GCP
 <section id="construir-esta-documentación" class="level2">
 <h2 class="anchored" data-anchor-id="construir-esta-documentación">8.8. Construir esta documentación</h2>
 <p>El sitio se genera con Quarto (el sitio HTML sale en <code>../docs/</code>):</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> quarto</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render        <span class="co"># genera el sitio en ../docs</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview       <span class="co"># vista previa con recarga en vivo</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> quarto</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render        <span class="co"># genera el sitio en ../docs</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview       <span class="co"># vista previa con recarga en vivo</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </div>
 

@@ -110,15 +110,19 @@ se traslapan nunca crean filas duplicadas.
 | `qqp_precios` | 🗑️ Legacy — el modelo/repo se **eliminaron del código** (jul 2026); la tabla puede quedar huérfana en DBs existentes (reemplazada por `supermercados`). |
 | `chat_historial` | 🗑️ Deprecada — el historial vive en MongoDB. |
 
-### 3.4.2. MongoDB (historial de chat)
+### 3.4.2. MongoDB (colecciones)
 
-El chat usa MongoDB por ser documental y con paginación por punteros (detalle en
-[Agente](5_agente.qmd#historial)):
+Mongo guarda lo **documental que cambia en runtime** y siempre con **degradación suave**: si el
+contenedor está caído, la app sigue (el chat sin historial, el selector de ciudades con la
+semilla del JSON, la auditoría como no-op). El chat usa paginación por punteros (detalle en
+[Agente](5_agente.qmd#historial)); los stores chicos viven en `sina/db/stores.py`.
 
 | Colección | Propósito |
 | --- | --- |
 | `conversaciones` | `{google_sub, titulo, cabeza_chunk_id, num_mensajes, ultimo_preview}` |
 | `chat_chunks` | `{conversacion_id, mensajes:[…≤CHAT_CHUNK_SIZE], anterior_id, seq}` |
+| `flyer_ciudades` | Ciudades añadidas desde la UI del anotador ("Añadir otra…"). Antes se usaban al vuelo y se perdían; el JSON versionado queda como **semilla** de solo lectura y el selector muestra semilla ∪ Mongo (dedup por clave normalizada). |
+| `registro_jobs` | Auditoría de corridas del scheduler `{job, inicio, fin, duracion_s, ok, detalles, error}` con **TTL de 90 días**. Antes solo logs. El monitor de flyers solo registra ticks **con actividad** (los no-op cada 20 min no ensucian). Consultable en `GET /api/v1/annotator/jobs` (admin). |
 
 ## 3.5. Embeddings y búsqueda semántica
 
@@ -241,3 +245,30 @@ estructurada con `format=<json schema>`) + fábrica `get_vlm_provider()` gated p
 Mismo patrón que el LLM del chat: un patrocinador añade un `GeminiVLMProvider` sin tocar el pipeline.
 
 :::
+
+## 3.8. Mapa de almacenamiento — dónde vive cada dato {#mapa-almacenamiento}
+
+Cuatro backends conviven, cada uno con un criterio claro. Regla general: **Postgres** para el
+dominio relacional/consultable, **Mongo** para lo documental que cambia en runtime (siempre
+degradable — la app funciona con Mongo caído), **filesystem** para artefactos que acompañan a
+archivos (imágenes de flyers) y **git** para configuración que es parte del código.
+
+| Dato | Dónde vive | Quién escribe | Notas |
+| --- | --- | --- | --- |
+| Precios (gasolina, gas LP, supermercados) | Postgres | Scrapers + scheduler + anotador (`persistir`) | Fuente de verdad del dominio. |
+| Catálogos geográficos CNE | Postgres | `sina.db.seeder` (manual) | Seed desde `datos/gasolineras/catalogo_municipios.json` (estático, generado en notebook). |
+| Rutas de scraping por tienda | Postgres (`catalogos_config`) | Seeder desde `config/*_config.json` | Los JSON son la semilla versionada; el runtime lee Postgres. |
+| Usuarios (Google OAuth) | Postgres (`usuarios`) | Login / `PATCH /me` | Sin contraseñas ni tokens. |
+| Sesiones | Cookie firmada (`sina_session`, HMAC) | Backend al login | **Stateless**: no hay tabla ni colección de sesiones. |
+| Historial de chat + telemetría por mensaje | Mongo (`conversaciones`, `chat_chunks`) | `POST /chat` al completar el stream | Solo usuarios con sesión; anónimos no persisten. |
+| Ciudades de flyers añadidas en la UI | Mongo (`flyer_ciudades`) | `POST /annotator/flyer` (si la descarga funcionó) | Semilla de solo lectura: `config/flyer_ciudades.json`. |
+| Auditoría de jobs del scheduler | Mongo (`registro_jobs`, TTL 90 días) | Wrapper `_con_registro` en `scheduler.py` | `GET /api/v1/annotator/jobs` (admin). |
+| Artefactos de flyers (imágenes, `metadata/labels/extraccion/persistido.json`, `labels_yolo/`) | Filesystem `datos/flyers/<tienda>/<ciudad>/<fecha>/` | Spiders + endpoints del anotador | **A propósito NO van a Mongo**: acompañan a las imágenes que describen y el ciclo de vida debe funcionar aunque Mongo esté caído. |
+| Dataset YOLO consolidado | Filesystem `datos/yolo_dataset/` | `python -m sina.annotator.dataset` | Derivado; se reconstruye completo en cada corrida. |
+| Configs (clases, ciudades semilla, rutas de tiendas) | Git (`src/sina/config/*.json`) | El desarrollador (commit) | Configuración = código; no se muta en runtime. |
+| Preferencias del visitante (tema, ubicación) | Navegador (`localStorage`: `sina.theme`, `sina.ubicacion`) | La SPA | Por-dispositivo. Migrarlas a Mongo por usuario es candidato futuro, igual que una "lista de compras" persistente (feature nueva, no migración). |
+| Clave admin del anotador | Navegador (`sessionStorage`) | La UI del anotador | Secreto de dispositivo; jamás se persiste server-side. |
+
+**Deprecado/legacy** (documentado para no confundir): tabla Postgres `chat_historial` (el chat
+vive en Mongo) y `sina/ollama/extract_flyer_text.py` → `flyer_data.json` (sustituido por
+`vlm/extraccion.py` → `extraccion.json`).

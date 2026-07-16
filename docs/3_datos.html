@@ -150,8 +150,14 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Tabla de Contenidos</h2>
+   
+  <ul>
+  <li><a href="#mapa-almacenamiento" id="toc-mapa-almacenamiento" class="nav-link active" data-scroll-target="#mapa-almacenamiento">3.8. Mapa de almacenamiento — dónde vive cada dato</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -363,9 +369,9 @@ Figura&nbsp;1: Pipeline de ingesta de datos
 </tbody>
 </table>
 </section>
-<section id="mongodb-historial-de-chat" class="level3">
-<h3 class="anchored" data-anchor-id="mongodb-historial-de-chat">3.4.2. MongoDB (historial de chat)</h3>
-<p>El chat usa MongoDB por ser documental y con paginación por punteros (detalle en <a href="./5_agente.html#historial">Agente</a>):</p>
+<section id="mongodb-colecciones" class="level3">
+<h3 class="anchored" data-anchor-id="mongodb-colecciones">3.4.2. MongoDB (colecciones)</h3>
+<p>Mongo guarda lo <strong>documental que cambia en runtime</strong> y siempre con <strong>degradación suave</strong>: si el contenedor está caído, la app sigue (el chat sin historial, el selector de ciudades con la semilla del JSON, la auditoría como no-op). El chat usa paginación por punteros (detalle en <a href="./5_agente.html#historial">Agente</a>); los stores chicos viven en <code>sina/db/stores.py</code>.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
@@ -385,6 +391,14 @@ Figura&nbsp;1: Pipeline de ingesta de datos
 <tr class="even">
 <td><code>chat_chunks</code></td>
 <td><code>{conversacion_id, mensajes:[…≤CHAT_CHUNK_SIZE], anterior_id, seq}</code></td>
+</tr>
+<tr class="odd">
+<td><code>flyer_ciudades</code></td>
+<td>Ciudades añadidas desde la UI del anotador (“Añadir otra…”). Antes se usaban al vuelo y se perdían; el JSON versionado queda como <strong>semilla</strong> de solo lectura y el selector muestra semilla ∪ Mongo (dedup por clave normalizada).</td>
+</tr>
+<tr class="even">
+<td><code>registro_jobs</code></td>
+<td>Auditoría de corridas del scheduler <code>{job, inicio, fin, duracion_s, ok, detalles, error}</code> con <strong>TTL de 90 días</strong>. Antes solo logs. El monitor de flyers solo registra ticks <strong>con actividad</strong> (los no-op cada 20 min no ensucian). Consultable en <code>GET /api/v1/annotator/jobs</code> (admin).</td>
 </tr>
 </tbody>
 </table>
@@ -457,8 +471,109 @@ Figura&nbsp;2: Pipeline de volantes: descarga → zonas → VLM → verificació
 <p><strong>Capa VLM abstracta</strong> (<code>sina/vlm/</code>): <code>VLMProvider</code> (ABC) + <code>OllamaVLMProvider</code> (visión local, salida estructurada con <code>format=&lt;json schema&gt;</code>) + fábrica <code>get_vlm_provider()</code> gated por <code>ENABLE_VLM</code>. Mismo patrón que el LLM del chat: un patrocinador añade un <code>GeminiVLMProvider</code> sin tocar el pipeline.</p>
 </section>
 </div>
+<section id="mapa-almacenamiento" class="level2">
+<h2 class="anchored" data-anchor-id="mapa-almacenamiento">3.8. Mapa de almacenamiento — dónde vive cada dato</h2>
+<p>Cuatro backends conviven, cada uno con un criterio claro. Regla general: <strong>Postgres</strong> para el dominio relacional/consultable, <strong>Mongo</strong> para lo documental que cambia en runtime (siempre degradable — la app funciona con Mongo caído), <strong>filesystem</strong> para artefactos que acompañan a archivos (imágenes de flyers) y <strong>git</strong> para configuración que es parte del código.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dato</th>
+<th>Dónde vive</th>
+<th>Quién escribe</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Precios (gasolina, gas LP, supermercados)</td>
+<td>Postgres</td>
+<td>Scrapers + scheduler + anotador (<code>persistir</code>)</td>
+<td>Fuente de verdad del dominio.</td>
+</tr>
+<tr class="even">
+<td>Catálogos geográficos CNE</td>
+<td>Postgres</td>
+<td><code>sina.db.seeder</code> (manual)</td>
+<td>Seed desde <code>datos/gasolineras/catalogo_municipios.json</code> (estático, generado en notebook).</td>
+</tr>
+<tr class="odd">
+<td>Rutas de scraping por tienda</td>
+<td>Postgres (<code>catalogos_config</code>)</td>
+<td>Seeder desde <code>config/*_config.json</code></td>
+<td>Los JSON son la semilla versionada; el runtime lee Postgres.</td>
+</tr>
+<tr class="even">
+<td>Usuarios (Google OAuth)</td>
+<td>Postgres (<code>usuarios</code>)</td>
+<td>Login / <code>PATCH /me</code></td>
+<td>Sin contraseñas ni tokens.</td>
+</tr>
+<tr class="odd">
+<td>Sesiones</td>
+<td>Cookie firmada (<code>sina_session</code>, HMAC)</td>
+<td>Backend al login</td>
+<td><strong>Stateless</strong>: no hay tabla ni colección de sesiones.</td>
+</tr>
+<tr class="even">
+<td>Historial de chat + telemetría por mensaje</td>
+<td>Mongo (<code>conversaciones</code>, <code>chat_chunks</code>)</td>
+<td><code>POST /chat</code> al completar el stream</td>
+<td>Solo usuarios con sesión; anónimos no persisten.</td>
+</tr>
+<tr class="odd">
+<td>Ciudades de flyers añadidas en la UI</td>
+<td>Mongo (<code>flyer_ciudades</code>)</td>
+<td><code>POST /annotator/flyer</code> (si la descarga funcionó)</td>
+<td>Semilla de solo lectura: <code>config/flyer_ciudades.json</code>.</td>
+</tr>
+<tr class="even">
+<td>Auditoría de jobs del scheduler</td>
+<td>Mongo (<code>registro_jobs</code>, TTL 90 días)</td>
+<td>Wrapper <code>_con_registro</code> en <code>scheduler.py</code></td>
+<td><code>GET /api/v1/annotator/jobs</code> (admin).</td>
+</tr>
+<tr class="odd">
+<td>Artefactos de flyers (imágenes, <code>metadata/labels/extraccion/persistido.json</code>, <code>labels_yolo/</code>)</td>
+<td>Filesystem <code>datos/flyers/&lt;tienda&gt;/&lt;ciudad&gt;/&lt;fecha&gt;/</code></td>
+<td>Spiders + endpoints del anotador</td>
+<td><strong>A propósito NO van a Mongo</strong>: acompañan a las imágenes que describen y el ciclo de vida debe funcionar aunque Mongo esté caído.</td>
+</tr>
+<tr class="even">
+<td>Dataset YOLO consolidado</td>
+<td>Filesystem <code>datos/yolo_dataset/</code></td>
+<td><code>python -m sina.annotator.dataset</code></td>
+<td>Derivado; se reconstruye completo en cada corrida.</td>
+</tr>
+<tr class="odd">
+<td>Configs (clases, ciudades semilla, rutas de tiendas)</td>
+<td>Git (<code>src/sina/config/*.json</code>)</td>
+<td>El desarrollador (commit)</td>
+<td>Configuración = código; no se muta en runtime.</td>
+</tr>
+<tr class="even">
+<td>Preferencias del visitante (tema, ubicación)</td>
+<td>Navegador (<code>localStorage</code>: <code>sina.theme</code>, <code>sina.ubicacion</code>)</td>
+<td>La SPA</td>
+<td>Por-dispositivo. Migrarlas a Mongo por usuario es candidato futuro, igual que una “lista de compras” persistente (feature nueva, no migración).</td>
+</tr>
+<tr class="odd">
+<td>Clave admin del anotador</td>
+<td>Navegador (<code>sessionStorage</code>)</td>
+<td>La UI del anotador</td>
+<td>Secreto de dispositivo; jamás se persiste server-side.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deprecado/legacy</strong> (documentado para no confundir): tabla Postgres <code>chat_historial</code> (el chat vive en Mongo) y <code>sina/ollama/extract_flyer_text.py</code> → <code>flyer_data.json</code> (sustituido por <code>vlm/extraccion.py</code> → <code>extraccion.json</code>).</p>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Volver arriba</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

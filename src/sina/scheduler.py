@@ -105,7 +105,7 @@ def _hash_imagenes(carpeta) -> frozenset:
     return frozenset(hashes)
 
 
-def refrescar_flyers() -> None:
+def refrescar_flyers() -> dict:
     """
     Monitor de vigencias de volantes. Corre cada FLYERS_INTERVALO_MIN minutos y
     es barato-primero: si ningún flyer está vencido, solo lee metadatos del
@@ -113,20 +113,25 @@ def refrescar_flyers() -> None:
     (cualquier día, cualquier duración — sin supuestos de calendario), intenta
     descargar el nuevo; si la tienda aún publica el mismo (imágenes idénticas),
     limpia la carpeta recién creada y el siguiente tick reintenta.
+
+    Devuelve un resumen de acciones (queda en la auditoría `registro_jobs`).
     """
     from sina.config.paths import FLYERS_DATA
     from sina.annotator.ciclo import resumen_pendientes
 
     spiders = _spiders_flyers()
+    detalles: dict = {"vencidos": 0, "nuevos": [], "duplicados": [], "errores": []}
 
     for estado in resumen_pendientes():
         if estado["vencido"] is not True:
             continue  # vigente, o vigencia desconocida (sin base para actuar)
 
+        detalles["vencidos"] += 1
         tienda, ciudad = estado["tienda"], estado["ciudad"]
         spider = spiders.get(tienda)
         if spider is None:
             log.warning("[scheduler] Flyers: sin spider para '%s', omitido.", tienda)
+            detalles["errores"].append(f"{tienda}/{ciudad}: sin spider")
             continue
 
         ciudad_dir = FLYERS_DATA / tienda / ciudad
@@ -139,6 +144,7 @@ def refrescar_flyers() -> None:
             spider(ciudad)
         except Exception as e:
             log.error("[scheduler] Flyers: error descargando %s/%s: %s", tienda, ciudad, e)
+            detalles["errores"].append(f"{tienda}/{ciudad}: {e}")
             continue
 
         # Anti-duplicado: si la descarga creó una carpeta nueva pero con las
@@ -148,14 +154,17 @@ def refrescar_flyers() -> None:
             nueva_dir = ciudad_dir / fecha_nueva
             if _hash_imagenes(nueva_dir) == _hash_imagenes(anterior):
                 shutil.rmtree(nueva_dir)
+                detalles["duplicados"].append(f"{tienda}/{ciudad}")
                 log.info(
                     "[scheduler] Flyers: %s/%s aún publica el flyer anterior; "
                     "se limpió %s y se reintenta en el siguiente tick.",
                     tienda, ciudad, fecha_nueva,
                 )
             else:
+                detalles["nuevos"].append(f"{tienda}/{ciudad}/{fecha_nueva}")
                 log.info("[scheduler] Flyers: %s/%s flyer NUEVO en %s.",
                          tienda, ciudad, fecha_nueva)
+    return detalles
 
 
 def _spiders_flyers() -> dict:
@@ -179,6 +188,39 @@ def _spiders_flyers() -> dict:
     spiders["casa_ley"] = _ley
     spiders["abarrey"] = _abarrey
     return spiders
+
+
+def _con_registro(nombre: str, fn, solo_con_actividad: bool = False):
+    """
+    Envuelve un job para auditar cada corrida en Mongo (`registro_jobs`): job,
+    inicio/fin, duración, éxito y detalles (si el job devuelve un dict). Con
+    Mongo caído el registro degrada a no-op — la auditoría jamás tumba al job.
+
+    `solo_con_actividad=True` (para jobs de intervalo corto, ej. el monitor de
+    flyers): los ticks cuyo dict de detalles viene todo vacío/cero NO se
+    registran — sin él serían ~72 documentos-ruido al día.
+    """
+    def _job() -> None:
+        from sina.config.timezone import get_mexico_now
+        from sina.db.stores import RegistroJobsStore
+
+        inicio = get_mexico_now()
+        try:
+            resultado = fn()
+        except Exception as e:
+            RegistroJobsStore().registrar(
+                nombre, inicio, get_mexico_now(), ok=False, error=str(e)
+            )
+            raise
+        detalles = resultado if isinstance(resultado, dict) else {}
+        if solo_con_actividad and not any(detalles.values()):
+            return
+        RegistroJobsStore().registrar(
+            nombre, inicio, get_mexico_now(), ok=True, detalles=detalles
+        )
+
+    _job.__name__ = f"registro_{nombre}"
+    return _job
 
 
 def _scheduler_habilitado() -> bool:
@@ -217,13 +259,13 @@ def iniciar_scheduler() -> BackgroundScheduler | None:
 
     _scheduler = BackgroundScheduler(timezone=MEXICO_TZ)
     _scheduler.add_job(
-        refrescar_gasolina,
+        _con_registro("gasolina", refrescar_gasolina),
         CronTrigger(hour=6, minute=0, timezone=MEXICO_TZ),
         id="gasolina_diario",
         replace_existing=True,
     )
     _scheduler.add_job(
-        refrescar_gas_lp,
+        _con_registro("gas_lp", refrescar_gas_lp),
         CronTrigger(day_of_week="sat", hour=8, minute=0, timezone=MEXICO_TZ),
         id="gas_lp_semanal",
         replace_existing=True,
@@ -232,7 +274,7 @@ def iniciar_scheduler() -> BackgroundScheduler | None:
     # Scraping de supermercados: pesado (navegador), opt-in por env aparte.
     if _supermercados_habilitado():
         _scheduler.add_job(
-            refrescar_supermercados,
+            _con_registro("supermercados", refrescar_supermercados),
             CronTrigger(day_of_week="sun", hour=4, minute=0, timezone=MEXICO_TZ),
             id="supermercados_semanal",
             replace_existing=True,
@@ -245,7 +287,7 @@ def iniciar_scheduler() -> BackgroundScheduler | None:
     if _flyers_habilitado():
         minutos = _flyers_intervalo_min()
         _scheduler.add_job(
-            refrescar_flyers,
+            _con_registro("flyers", refrescar_flyers, solo_con_actividad=True),
             IntervalTrigger(minutes=minutos, timezone=MEXICO_TZ),
             id="flyers_monitor",
             replace_existing=True,

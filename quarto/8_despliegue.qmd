@@ -106,6 +106,63 @@ mismos del `compose.yaml` / `.env`):
 `psql` (CLI) funciona igual pero es opcional. Para Mongo, misma idea en `localhost:27017` con
 **MongoDB Compass**.
 
+::: {.callout-warning}
+## ¿A cuál instancia está conectada la app realmente?
+
+La app se conecta a **lo que responda en `localhost:5432` / `localhost:27017`** — que puede NO
+ser el contenedor de Podman. Caso real detectado en desarrollo (jul 2026): otro MongoDB (v8) y
+otro PostgreSQL corriendo en WSL ya ocupaban esos puertos, así que los datos de SINA viven ahí y
+los contenedores `sina_db`/`sina_mongo` quedan "sombreados" (vacíos). Antes de consultar o
+respaldar, verifica cuál instancia sirve el puerto:
+
+```bash
+# ¿Qué proceso escucha? (PowerShell) — si sale "wslrelay" con contenedores DETENIDOS,
+# hay servicios en otra distro WSL sirviendo esos puertos.
+Get-NetTCPConnection -LocalPort 27017,5432 -State Listen |
+  ForEach-Object { (Get-Process -Id $_.OwningProcess).ProcessName }
+
+# ¿Qué versión responde? (el contenedor es mongo:7 / pgvector-pg16; si difiere, es otra instancia)
+podman exec sina_mongo mongosh --quiet --eval "db.version()"   # versión DEL CONTENEDOR
+& .venv\Scripts\python.exe -c "from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27017').server_info()['version'])"  # versión que VE LA APP
+```
+
+Si las versiones difieren, los comandos `podman exec …` de abajo consultan el contenedor (no los
+datos reales de la app); usa entonces un cliente contra `localhost` directo (Compass/DBeaver o
+`mongosh mongodb://localhost:27017/sina` si lo tienes instalado).
+:::
+
+**Consultas rápidas sin instalar clientes** (usando los CLI que ya traen los contenedores —
+válido cuando los contenedores SON quienes sirven los puertos):
+
+```bash
+# ── PostgreSQL (psql dentro del contenedor) ──────────────────────────
+podman exec -it sina_db psql -U sina_admin -d sina_db
+#   \dt                             → listar tablas
+#   SELECT COUNT(*) FROM supermercados WHERE fuente='flyer';
+#   SELECT tienda, COUNT(*) FROM supermercados GROUP BY tienda;
+
+# ── MongoDB (mongosh dentro del contenedor) ──────────────────────────
+podman exec -it sina_mongo mongosh sina
+#   show collections                → conversaciones, chat_chunks, flyer_ciudades, registro_jobs
+#   db.conversaciones.find().sort({actualizado_en:-1}).limit(5)     → últimos chats
+#   db.chat_chunks.countDocuments()                                 → volumen de mensajes
+#   db.flyer_ciudades.find().sort({nombre:1})                       → ciudades añadidas en la UI
+#   db.registro_jobs.find().sort({inicio:-1}).limit(10)             → últimas corridas de jobs
+#   db.registro_jobs.find({ok:false})                               → corridas fallidas
+#   db.registro_jobs.find({job:"flyers"}).sort({inicio:-1})         → historial del monitor de flyers
+#   db.stats()                                                      → tamaño de la base
+
+# ── Respaldos ────────────────────────────────────────────────────────
+podman exec sina_db pg_dump -U sina_admin sina_db > respaldo_sina.sql
+podman exec sina_mongo mongodump --db sina --archive > respaldo_mongo.archive
+# restaurar:
+#   Get-Content respaldo_sina.sql | podman exec -i sina_db psql -U sina_admin -d sina_db
+#   Get-Content respaldo_mongo.archive -Raw -Encoding Byte | podman exec -i sina_mongo mongorestore --archive
+```
+
+El mapa completo de **qué dato vive en qué backend** (Postgres/Mongo/filesystem/git/navegador) y
+por qué, está en [Datos §3.8](3_datos.qmd#mapa-almacenamiento).
+
 ## 8.4. Configuración (`.env`)
 
 Variables clave (ver `.env.example` para la lista completa):

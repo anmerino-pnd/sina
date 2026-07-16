@@ -56,6 +56,7 @@ from sina.db.repository import (
     MunicipioRepository,
 )
 from sina.db.models import EntidadFederativa, Municipio, Localidad
+from sina.db.stores import FlyerCiudadesStore, RegistroJobsStore, ciudades_flyers
 from sina.config.logging_config import configurar_logging
 from sina.scheduler import iniciar_scheduler, detener_scheduler
 
@@ -206,7 +207,7 @@ async def view_annotator(request: Request):
         "request" : request,
         "classes" : ["zona"],
         "colors"  : {"zona": class_config.get("zona", "#7a2492")},
-        "ciudades": _get_flyer_ciudades(),
+        "ciudades": ciudades_flyers(_get_flyer_ciudades()),
     })
 
 
@@ -476,13 +477,13 @@ def download_flyer_endpoint(payload: FlyerPayload, _admin: None = Depends(requir
     """Descarga el volante del supermercado indicado. Requiere clave de administrador."""
     match payload.supermarket:
         case "Casa Ley" | "casa_ley":
-            return download_flyer(
+            ok = download_flyer(
                 city    =payload.city,
                 base_url=casa_ley_url,
                 base_dir=str(CASA_LEY_DATA),
             )
         case "Abarrey" | "abarrey":
-            return download_flyer_abarrey(
+            ok = download_flyer_abarrey(
                 city    =payload.city,
                 base_url=abarrey_url,
                 base_dir=str(ABARREY_DATA),
@@ -492,6 +493,12 @@ def download_flyer_endpoint(payload: FlyerPayload, _admin: None = Depends(requir
                 status_code=501,
                 detail=f"Supermercado '{payload.supermarket}' no implementado aún."
             )
+    # Ciudad añadida desde la UI ("Añadir otra…"): persistirla en Mongo para que
+    # aparezca en el selector la próxima vez (antes se usaba al vuelo y se perdía).
+    # Solo si la descarga funcionó — así un typo fallido no ensucia el catálogo.
+    if ok:
+        FlyerCiudadesStore().agregar(payload.city)
+    return ok
 
 
 @app.post("/api/v1/annotator/preanotar")
@@ -637,6 +644,18 @@ def get_annotator_pendientes(_admin: None = Depends(require_admin)):
     except Exception:
         log.exception("Error calculando pendientes de flyers")
         raise HTTPException(status_code=500, detail="Error interno del servidor.")
+
+
+@app.get("/api/v1/annotator/jobs")
+def get_annotator_jobs(
+    job: str | None = None, limit: int = 30, _admin: None = Depends(require_admin)
+):
+    """
+    Últimas corridas de los jobs del scheduler (auditoría en Mongo, TTL 90 días).
+    Con Mongo caído devuelve lista vacía. Requiere clave de administrador.
+    """
+    limit = max(1, min(100, limit))
+    return {"corridas": RegistroJobsStore().ultimos(job=job, limit=limit)}
 
 
 # ============================================================

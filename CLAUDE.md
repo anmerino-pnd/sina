@@ -123,11 +123,19 @@ chat (Fase 3), auth/users, and annotator.
   (`require_csrf_si_sesion` en `deps.py`), rate-limited; **solo persiste al completar** el stream (pausa = no
   guarda). CRUD de conversaciones con paginación por puntero.
 
-**Historial de chat en MongoDB — `src/sina/db/mongo.py` + `chat_store.py`:** `get_mongo_db()` perezoso
-(devuelve `None` si Mongo no está → el chat degrada sin persistencia). `ChatStore` implementa el **patrón
-bucket / lista ligada**: `conversaciones.cabeza_chunk_id` apunta al chunk más reciente; cada `chat_chunks`
-guarda ≤`CHAT_CHUNK_SIZE` mensajes y un `anterior_id` al chunk más viejo (paginación hacia atrás O(1)).
-Tope `CHAT_MAX_CONVERSACIONES` por usuario. La tabla Postgres `chat_historial` quedó **deprecada** (no se usa).
+**MongoDB — `src/sina/db/mongo.py` + `chat_store.py` + `stores.py`:** `get_mongo_db()` perezoso
+(devuelve `None` si Mongo no está → TODO lo de Mongo degrada suave, nunca es dependencia dura).
+`ChatStore` implementa el **patrón bucket / lista ligada**: `conversaciones.cabeza_chunk_id` apunta
+al chunk más reciente; cada `chat_chunks` guarda ≤`CHAT_CHUNK_SIZE` mensajes y un `anterior_id` al
+chunk más viejo (paginación hacia atrás O(1)). Tope `CHAT_MAX_CONVERSACIONES` por usuario.
+`stores.py` añade stores chicos con el mismo patrón degradable: `FlyerCiudadesStore` (colección
+`flyer_ciudades`: ciudades añadidas desde la UI del anotador; el JSON `flyer_ciudades.json` queda
+como **semilla** de solo lectura y el selector muestra semilla ∪ Mongo vía `ciudades_flyers()`) y
+`RegistroJobsStore` (colección `registro_jobs`, TTL 90 días: auditoría de corridas del scheduler
+vía el wrapper `_con_registro` — el monitor de flyers solo registra ticks con actividad; consulta
+en `GET /api/v1/annotator/jobs`, admin). El **mapa de almacenamiento** completo (qué dato vive en
+Postgres/Mongo/filesystem/git/navegador y por qué) está en `quarto/3_datos.qmd` §3.8. La tabla
+Postgres `chat_historial` quedó **deprecada** (no se usa).
 
 **ML / annotation (flyer pipeline, Fase 6):** descarga → **recorte por ZONAS** (bloques separados
 por espacios en blanco, no por producto) → **VLM por zona** → verificación humana → Postgres.
