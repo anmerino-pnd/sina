@@ -281,9 +281,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> down <span class="at">-v</span>    <span class="co"># ⚠️ borra contenedores Y DATOS (volúmenes)</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps                 <span class="co"># ver qué está corriendo ahora</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps <span class="at">-a</span>              <span class="co"># incluir los detenidos</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Al reiniciar la PC (Windows/WSL).</strong> Podman corre dentro de una máquina <strong>WSL</strong> (<code>podman-machine-default</code>). Al apagar el equipo, esa máquina se detiene y con ella los contenedores. El <code>restart: unless-stopped</code> del <code>compose.yaml</code> los vuelve a levantar <strong>cuando la máquina de Podman arranca</strong>, pero en Windows esa máquina no siempre arranca sola tras un reinicio. Regla práctica: tras reiniciar, corre <code>podman ps</code>; si <code>sina_db</code> no aparece en <code>Up</code>, ejecútalo de nuevo:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> machine start      <span class="co"># si la máquina WSL no arrancó sola</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman-compose</span> up <span class="at">-d</span>       <span class="co"># revive los contenedores (con los datos intactos)</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Al reiniciar la PC (Windows/WSL).</strong> Podman corre dentro de una máquina <strong>WSL</strong> (<code>podman-machine-default</code>). Al apagar el equipo, esa máquina se detiene y con ella los contenedores. El servicio <code>podman-restart</code> está <strong>habilitado dentro de la máquina</strong> (jul 2026: <code>podman machine ssh "sudo systemctl enable --now podman-restart"</code>), así que el <code>restart: unless-stopped</code> del <code>compose.yaml</code> revive los contenedores solo con que la máquina arranque. En Windows esa máquina no siempre arranca sola tras un reinicio; regla práctica: tras reiniciar, corre <code>podman ps</code>; si <code>sina_db</code>/<code>sina_mongo</code> no aparecen en <code>Up</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> machine start      <span class="co"># arranca la máquina WSL; podman-restart revive los contenedores</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps                 <span class="co"># confirmar sina_db (5432) y sina_mongo (27018) en Up</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Ver los datos con una GUI (no es solo CLI).</strong> Como el contenedor publica el puerto a tu equipo (<code>5432:5432</code>), para cualquier cliente es un PostgreSQL normal en <code>localhost</code>. Sirven <strong>pgAdmin, DBeaver, DataGrip, TablePlus</strong> o la extensión <strong>PostgreSQL de VS Code</strong>. Parámetros de conexión (los mismos del <code>compose.yaml</code> / <code>.env</code>):</p>
 <table class="caption-top table">
 <thead>
@@ -315,27 +315,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p><code>psql</code> (CLI) funciona igual pero es opcional. Para Mongo, misma idea en <code>localhost:27017</code> con <strong>MongoDB Compass</strong>.</p>
-<div class="callout callout-style-default callout-warning callout-titled">
+<p><code>psql</code> (CLI) funciona igual pero es opcional. Para Mongo, misma idea en <strong><code>localhost:27018</code></strong> (el puerto del contenedor de SINA — ver el aviso de arriba) con <strong>MongoDB Compass</strong>.</p>
+<div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-¿A cuál instancia está conectada la app realmente?
+Puertos en la máquina de desarrollo: por qué Mongo va en 27018
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>La app se conecta a <strong>lo que responda en <code>localhost:5432</code> / <code>localhost:27017</code></strong> — que puede NO ser el contenedor de Podman. Caso real detectado en desarrollo (jul 2026): otro MongoDB (v8) y otro PostgreSQL corriendo en WSL ya ocupaban esos puertos, así que los datos de SINA viven ahí y los contenedores <code>sina_db</code>/<code>sina_mongo</code> quedan “sombreados” (vacíos). Antes de consultar o respaldar, verifica cuál instancia sirve el puerto:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ¿Qué proceso escucha? (PowerShell) — si sale "wslrelay" con contenedores DETENIDOS,</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># hay servicios en otra distro WSL sirviendo esos puertos.</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Get-NetTCPConnection</span> <span class="at">-LocalPort</span> 27017,5432 <span class="at">-State</span> Listen <span class="kw">|</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ForEach-Object</span> { <span class="er">(</span><span class="ex">Get-Process</span> <span class="at">-Id</span> <span class="va">$_</span>.OwningProcess<span class="kw">)</span><span class="ex">.ProcessName</span> }</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ¿Qué versión responde? (el contenedor es mongo:7 / pgvector-pg16; si difiere, es otra instancia)</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_mongo mongosh <span class="at">--quiet</span> <span class="at">--eval</span> <span class="st">"db.version()"</span>   <span class="co"># versión DEL CONTENEDOR</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">&amp;</span> <span class="ex">.venv\Scripts\python.exe</span> <span class="at">-c</span> <span class="st">"from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27017').server_info()['version'])"</span>  <span class="co"># versión que VE LA APP</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Si las versiones difieren, los comandos <code>podman exec …</code> de abajo consultan el contenedor (no los datos reales de la app); usa entonces un cliente contra <code>localhost</code> directo (Compass/DBeaver o <code>mongosh mongodb://localhost:27017/sina</code> si lo tienes instalado).</p>
+<p>SINA está <strong>basado en sus contenedores</strong>, pero la app se conecta a <em>lo que responda</em> en el puerto de <code>localhost</code> — y en esta máquina el <strong>27017 lo ocupa un MongoDB 8 nativo de Windows</strong> (servicio “MongoDB Server”, usado por otros proyectos): con ambos corriendo, el nativo sombrea al contenedor y los datos acabarían en el lugar equivocado (pasó en jul 2026; la base <code>sina</code> se migró al contenedor). Resolución permanente, sin tocar el Mongo nativo:</p>
+<ul>
+<li><strong>PostgreSQL</strong> = contenedor <code>sina_db</code> en <code>5432</code> (nadie más usa ese puerto).</li>
+<li><strong>MongoDB</strong> = contenedor <code>sina_mongo</code> publicado en <strong><code>27018</code></strong> (<code>compose.yaml</code>), y <code>MONGO_URI=mongodb://localhost:27018</code> en el <code>.env</code>. El nativo conserva 27017.</li>
+</ul>
+<p>Si algo se ve raro (datos que “no aparecen”), verifica qué instancia responde:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_mongo mongosh <span class="at">--quiet</span> <span class="at">--eval</span> <span class="st">"db.version()"</span>   <span class="co"># contenedor → 7.x</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">&amp;</span> <span class="ex">.venv\Scripts\python.exe</span> <span class="at">-c</span> <span class="st">"from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27018').server_info()['version'])"</span>  <span class="co"># lo que ve la app → debe ser 7.x</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <p><strong>Consultas rápidas sin instalar clientes</strong> (usando los CLI que ya traen los contenedores — válido cuando los contenedores SON quienes sirven los puertos):</p>

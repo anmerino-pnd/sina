@@ -15,11 +15,14 @@ services:
 
   # Historial de chat (Fase 3). Local por ahora; al patrocinar un servidor solo
   # cambia MONGO_URI en el .env.
+  # Puerto host 27018 A PROPÓSITO: en esta máquina hay un MongoDB nativo de
+  # Windows en 27017 (otros proyectos) que sombrearía al contenedor. SINA usa
+  # SU contenedor vía MONGO_URI=mongodb://localhost:27018.
   mongo:
     image: mongo:7
     container_name: sina_mongo
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - sina_mongodata:/data/db
     restart: unless-stopped

@@ -81,13 +81,15 @@ podman ps -a              # incluir los detenidos
 
 **Al reiniciar la PC (Windows/WSL).** Podman corre dentro de una máquina **WSL**
 (`podman-machine-default`). Al apagar el equipo, esa máquina se detiene y con ella los contenedores.
-El `restart: unless-stopped` del `compose.yaml` los vuelve a levantar **cuando la máquina de Podman
-arranca**, pero en Windows esa máquina no siempre arranca sola tras un reinicio. Regla práctica: tras
-reiniciar, corre `podman ps`; si `sina_db` no aparece en `Up`, ejecútalo de nuevo:
+El servicio `podman-restart` está **habilitado dentro de la máquina** (jul 2026:
+`podman machine ssh "sudo systemctl enable --now podman-restart"`), así que el
+`restart: unless-stopped` del `compose.yaml` revive los contenedores solo con que la máquina
+arranque. En Windows esa máquina no siempre arranca sola tras un reinicio; regla práctica: tras
+reiniciar, corre `podman ps`; si `sina_db`/`sina_mongo` no aparecen en `Up`:
 
 ```bash
-podman machine start      # si la máquina WSL no arrancó sola
-podman-compose up -d       # revive los contenedores (con los datos intactos)
+podman machine start      # arranca la máquina WSL; podman-restart revive los contenedores
+podman ps                 # confirmar sina_db (5432) y sina_mongo (27018) en Up
 ```
 
 **Ver los datos con una GUI (no es solo CLI).** Como el contenedor publica el puerto a tu equipo
@@ -103,32 +105,28 @@ mismos del `compose.yaml` / `.env`):
 | Usuario | `sina_admin` |
 | Contraseña | `sina_password` |
 
-`psql` (CLI) funciona igual pero es opcional. Para Mongo, misma idea en `localhost:27017` con
-**MongoDB Compass**.
+`psql` (CLI) funciona igual pero es opcional. Para Mongo, misma idea en **`localhost:27018`**
+(el puerto del contenedor de SINA — ver el aviso de arriba) con **MongoDB Compass**.
 
-::: {.callout-warning}
-## ¿A cuál instancia está conectada la app realmente?
+::: {.callout-important}
+## Puertos en la máquina de desarrollo: por qué Mongo va en 27018
 
-La app se conecta a **lo que responda en `localhost:5432` / `localhost:27017`** — que puede NO
-ser el contenedor de Podman. Caso real detectado en desarrollo (jul 2026): otro MongoDB (v8) y
-otro PostgreSQL corriendo en WSL ya ocupaban esos puertos, así que los datos de SINA viven ahí y
-los contenedores `sina_db`/`sina_mongo` quedan "sombreados" (vacíos). Antes de consultar o
-respaldar, verifica cuál instancia sirve el puerto:
+SINA está **basado en sus contenedores**, pero la app se conecta a *lo que responda* en el
+puerto de `localhost` — y en esta máquina el **27017 lo ocupa un MongoDB 8 nativo de Windows**
+(servicio "MongoDB Server", usado por otros proyectos): con ambos corriendo, el nativo sombrea
+al contenedor y los datos acabarían en el lugar equivocado (pasó en jul 2026; la base `sina` se
+migró al contenedor). Resolución permanente, sin tocar el Mongo nativo:
+
+- **PostgreSQL** = contenedor `sina_db` en `5432` (nadie más usa ese puerto).
+- **MongoDB** = contenedor `sina_mongo` publicado en **`27018`** (`compose.yaml`), y
+  `MONGO_URI=mongodb://localhost:27018` en el `.env`. El nativo conserva 27017.
+
+Si algo se ve raro (datos que "no aparecen"), verifica qué instancia responde:
 
 ```bash
-# ¿Qué proceso escucha? (PowerShell) — si sale "wslrelay" con contenedores DETENIDOS,
-# hay servicios en otra distro WSL sirviendo esos puertos.
-Get-NetTCPConnection -LocalPort 27017,5432 -State Listen |
-  ForEach-Object { (Get-Process -Id $_.OwningProcess).ProcessName }
-
-# ¿Qué versión responde? (el contenedor es mongo:7 / pgvector-pg16; si difiere, es otra instancia)
-podman exec sina_mongo mongosh --quiet --eval "db.version()"   # versión DEL CONTENEDOR
-& .venv\Scripts\python.exe -c "from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27017').server_info()['version'])"  # versión que VE LA APP
+podman exec sina_mongo mongosh --quiet --eval "db.version()"   # contenedor → 7.x
+& .venv\Scripts\python.exe -c "from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27018').server_info()['version'])"  # lo que ve la app → debe ser 7.x
 ```
-
-Si las versiones difieren, los comandos `podman exec …` de abajo consultan el contenedor (no los
-datos reales de la app); usa entonces un cliente contra `localhost` directo (Compass/DBeaver o
-`mongosh mongodb://localhost:27017/sina` si lo tienes instalado).
 :::
 
 **Consultas rápidas sin instalar clientes** (usando los CLI que ya traen los contenedores —

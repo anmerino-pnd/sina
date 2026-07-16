@@ -26,6 +26,12 @@ The chat agent (Fase 3) needs **Ollama** running with a tool-capable model
 (`ollama pull qwen2.5:7b`) and `ENABLE_CHAT=1`. Chat history persists to **MongoDB** (from
 compose); if Mongo is down the chat still answers, just without saving.
 
+**Port gotcha (dev machine):** the Mongo container publishes on **host port 27018**
+(`MONGO_URI=mongodb://localhost:27018`) because a native Windows MongoDB 8 service (other
+projects) owns 27017 and would shadow the container. Postgres container uses 5432 normally.
+`podman-restart` is enabled inside the podman machine, so `podman machine start` after a
+reboot is enough to revive both containers.
+
 There is **no test suite** in the repo yet (the README's `pytest tests/` is aspirational —
 no `tests/` directory exists). Verify changes by running the server and hitting endpoints,
 e.g. `GET /api/v1/gasolina?estado=sonora&municipio=hermosillo`.
