@@ -93,8 +93,9 @@ CRE bajo demanda; Gas LP y Supermercados necesitan PostgreSQL con datos sembrado
 - **Python 3.12+** y **[uv](https://docs.astral.sh/uv/)** (gestor de paquetes).
 - **Node.js 20+** y **npm** (para la SPA en `frontend/`).
 - **Podman** + **podman-compose** (para PostgreSQL y MongoDB locales). En Windows, con WSL2.
-- **[Ollama](https://ollama.com)** (opcional, solo para el chat) con un modelo con tool-calling
-  (`ollama pull qwen2.5:7b`).
+- **[Ollama](https://ollama.com)** (opcional: chat, VLM de flyers y embeddings) con el modelo
+  multimodal del proyecto (`ollama pull qwen3.6:35b`, ~20+ GB) y el de embeddings
+  (`ollama pull qwen3-embedding:8b`).
 
 ---
 
@@ -114,7 +115,7 @@ cp .env.example .env        # crea tu configuración local
 ```
 
 El `.env.example` ya trae los valores de PostgreSQL que coinciden con `compose.yaml`
-(`localhost:5432`, usuario `sina_admin`), así que para local no hace falta cambiar nada.
+(`localhost:5433`, usuario `sina_admin`), así que para local no hace falta cambiar nada.
 
 ### 2. Levantar PostgreSQL + pgvector (y MongoDB) con Podman
 
@@ -173,9 +174,13 @@ API, sin CORS). Útil para probar el comportamiento real de despliegue.
 - Corre los scrapers de supermercados (Soriana / Del Sol / Benavides / Farmacias Guadalajara)
   para poblar la tabla `supermercados` — ver [Ingesta de datos](#ingesta-de-datos-scraping).
 - Para **embeddings + búsqueda vectorial**, pon `ENABLE_EMBEDDINGS=1` en el `.env` **antes** de
-  scrapear. El modelo por defecto (`Qwen/Qwen3-Embedding-8B`) es pesado; en una PC sin GPU usa uno
-  ligero, p. ej. `EMBEDDING_MODEL=intfloat/multilingual-e5-small`. Sin embeddings, la búsqueda cae
-  a texto (ILIKE) y funciona igual.
+  scrapear. El proveedor por defecto es **Ollama** (`qwen3-embedding:8b`, requiere
+  `ollama pull qwen3-embedding:8b`; sin torch ni GPU dedicada). Alternativa:
+  `EMBEDDING_PROVIDER=huggingface` con sentence-transformers local (`Qwen/Qwen3-Embedding-8B`, o
+  uno ligero como `EMBEDDING_MODEL=intfloat/multilingual-e5-small`). Sin embeddings, la búsqueda
+  cae a texto (ILIKE) y funciona igual. Si activas embeddings con productos ya scrapeados (o
+  cambias de modelo), regenera vectores: `ENABLE_EMBEDDINGS=1 uv run python -m sina.embedder.backfill`
+  (`--todos` para recomputar todo).
 
 > Nota: `DB_URL` se resuelve **al importar** y las tablas se crean solas en ese momento. Define el
 > `.env` antes de arrancar o sembrar.
@@ -186,10 +191,10 @@ El asistente usa **Ollama** (local) detrás de una clase abstracta `LLMProvider`
 modelo patrocinado sin tocar el resto). Para habilitarlo:
 
 ```bash
-ollama pull qwen2.5:7b        # un modelo que soporte tool-calling
+ollama pull qwen3.6:35b       # multimodal con tool-calling (mismo modelo para chat y VLM)
 # en .env:
 #   ENABLE_CHAT=1
-#   OLLAMA_MODEL=qwen2.5:7b
+#   OLLAMA_MODEL=qwen3.6:35b
 ```
 
 Luego abre `/chat` en la SPA. Funciona **sin login** (sin guardar historial) o **con login**
@@ -290,7 +295,7 @@ Cuando haya un servidor (VPS, o GCP con Cloud SQL), **no se cambia código**: se
 ```dotenv
 # Apuntar a la base remota (los datos NO se migran solos: hay que sembrar/scrapear allá)
 DB_HOST=tu-host-postgres
-DB_PORT=5432
+DB_PORT=5433
 DB_NAME=sina_db
 DB_USER=usuario
 DB_PASSWORD=contraseña-fuerte
@@ -334,7 +339,7 @@ Todas se documentan en [.env.example](.env.example). Resumen:
 | `*_BASE_URL` (Soriana/Del Sol/Benavides/Guadalajara)                | Dominio base de cada tienda (el `url_path` vive en su config).   | dominios oficiales         |
 | `ENABLE_EMBEDDINGS`                                                   | Genera embeddings al scrapear productos (solo PostgreSQL).       | `0`                      |
 | `ENABLE_CHAT`                                                        | Habilita el asistente en`POST /api/v1/chat`.                    | `0`                      |
-| `LLM_PROVIDER` / `OLLAMA_HOST` / `OLLAMA_MODEL`                    | Proveedor LLM y Ollama (modelo con tool-calling).                | ollama / :11434 / qwen2.5:7b |
+| `LLM_PROVIDER` / `OLLAMA_HOST` / `OLLAMA_MODEL`                    | Proveedor LLM y Ollama (modelo con tool-calling).                | ollama / :11434 / qwen3.6:35b |
 | `MONGO_URI` / `MONGO_DB`                                            | Historial de chat (local; cambia la URI al patrocinar).          | localhost:27017 / sina     |
 | `CHAT_MAX_CONVERSACIONES` / `CHAT_CHUNK_SIZE`                      | Conversaciones por usuario y mensajes por bucket.                | 5 / 15                     |
 | `EMBEDDING_MODEL`                                                     | Modelo de embeddings (intercambiable).                           | Qwen (pesado)              |

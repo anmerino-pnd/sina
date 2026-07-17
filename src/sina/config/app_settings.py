@@ -43,8 +43,10 @@ class AppSettings(BaseSettings):
     # Proveedor de LLM: "ollama" (local) hoy; "gemini" (GCP) futuro.
     llm_provider: str = Field(default="ollama", alias="LLM_PROVIDER")
     # Ollama: host local por defecto; el modelo debe soportar tool-calling.
+    # qwen3.6:35b requiere `ollama pull qwen3.6:35b` (~20+ GB); con OLLAMA_MODEL
+    # en el .env se puede usar otro más chico durante desarrollo.
     ollama_host: str = Field(default="http://localhost:11434", alias="OLLAMA_HOST")
-    ollama_model: str = Field(default="qwen2.5:7b", alias="OLLAMA_MODEL")
+    ollama_model: str = Field(default="qwen3.6:35b", alias="OLLAMA_MODEL")
     llm_temperature: float = Field(default=0.2, alias="LLM_TEMPERATURE")
     # Tope de iteraciones del grafo (rondas de tool-calling) por respuesta.
     llm_max_iters: int = Field(default=6, alias="LLM_MAX_ITERS")
@@ -54,8 +56,9 @@ class AppSettings(BaseSettings):
     enable_vlm: bool = Field(default=False, alias="ENABLE_VLM")
     # Proveedor de VLM: "ollama" (local) hoy; "gemini" (GCP) futuro.
     vlm_provider: str = Field(default="ollama", alias="VLM_PROVIDER")
-    # Modelo de visión LOCAL por defecto; adaptable a nube con OLLAMA_API_KEY.
-    vlm_model: str = Field(default="qwen2.5vl:7b", alias="VLM_MODEL")
+    # Mismo modelo multimodal que el chat (qwen3.6:35b): Ollama mantiene UN solo
+    # modelo grande cargado y atiende chat + extracción sin swaps de memoria.
+    vlm_model: str = Field(default="qwen3.6:35b", alias="VLM_MODEL")
     vlm_host: str = Field(default="http://localhost:11434", alias="VLM_HOST")
 
     # ── Historial de chat en MongoDB (Fase 3) ─────────────────────────────

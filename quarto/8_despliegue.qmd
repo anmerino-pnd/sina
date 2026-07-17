@@ -15,7 +15,8 @@ lang: es
 
 - **Python ≥ 3.12** con **uv** como gestor de paquetes.
 - **Podman** (para levantar PostgreSQL + pgvector y MongoDB vía `compose.yaml`).
-- **Ollama** con un modelo con tools (p. ej. `qwen2.5:7b`) para el chat.
+- **Ollama** con el modelo multimodal del proyecto (`qwen3.6:35b`: chat + VLM de flyers) y el
+  de embeddings (`qwen3-embedding:8b`).
 - **Node** (para construir la SPA en `frontend/`).
 
 ## 8.2. Correr en local
@@ -30,7 +31,8 @@ uv run uvicorn sina.main:app --reload         # servidor de desarrollo en :8000
 Para el chat (Fase 3):
 
 ```bash
-ollama pull qwen2.5:7b                         # modelo con tool-calling
+ollama pull qwen3.6:35b                        # multimodal: chat (tools) + VLM de flyers
+ollama pull qwen3-embedding:8b                 # embeddings (búsqueda semántica)
 # .env → ENABLE_CHAT=1
 ```
 
@@ -49,11 +51,11 @@ npm run build      # producción (la sirve FastAPI en el mismo origen)
 
 ## 8.3. Base de datos con Podman: persistencia, ciclo de vida y acceso {#db-podman}
 
-`compose.yaml` levanta dos contenedores: **PostgreSQL 16 + pgvector** (`sina_db`, puerto 5432) y
+`compose.yaml` levanta dos contenedores: **PostgreSQL 16 + pgvector** (`sina_db`, puerto host 5433) y
 **MongoDB** (`sina_mongo`, puerto 27017). Se usa la imagen `pgvector/pgvector:pg16` **a propósito**:
 trae la extensión `pgvector` que SINA necesita para los embeddings; un PostgreSQL instalado de forma
 nativa **no la trae** y habría que compilarla aparte. Por eso el contenedor es la vía recomendada
-sobre una instalación nativa (para la app da igual: en ambos casos se conecta a `localhost:5432`).
+sobre una instalación nativa (para la app da igual: se conecta al `localhost:puerto` del `.env`).
 
 **Tres cosas con ciclos de vida distintos.** La confusión típica es creer que apagar el contenedor
 borra los datos. No:
@@ -89,18 +91,18 @@ reiniciar, corre `podman ps`; si `sina_db`/`sina_mongo` no aparecen en `Up`:
 
 ```bash
 podman machine start      # arranca la máquina WSL; podman-restart revive los contenedores
-podman ps                 # confirmar sina_db (5432) y sina_mongo (27018) en Up
+podman ps                 # confirmar sina_db (5433) y sina_mongo (27018) en Up
 ```
 
 **Ver los datos con una GUI (no es solo CLI).** Como el contenedor publica el puerto a tu equipo
-(`5432:5432`), para cualquier cliente es un PostgreSQL normal en `localhost`. Sirven **pgAdmin,
+(`5433:5432`), para cualquier cliente es un PostgreSQL normal en `localhost`. Sirven **pgAdmin,
 DBeaver, DataGrip, TablePlus** o la extensión **PostgreSQL de VS Code**. Parámetros de conexión (los
 mismos del `compose.yaml` / `.env`):
 
 | Campo | Valor |
 | --- | --- |
 | Host | `localhost` |
-| Puerto | `5432` |
+| Puerto | `5433` |
 | Base de datos | `sina_db` |
 | Usuario | `sina_admin` |
 | Contraseña | `sina_password` |
@@ -109,23 +111,27 @@ mismos del `compose.yaml` / `.env`):
 (el puerto del contenedor de SINA — ver el aviso de arriba) con **MongoDB Compass**.
 
 ::: {.callout-important}
-## Puertos en la máquina de desarrollo: por qué Mongo va en 27018
+## Puertos en la máquina de desarrollo: por qué SINA usa 5433 y 27018
 
 SINA está **basado en sus contenedores**, pero la app se conecta a *lo que responda* en el
-puerto de `localhost` — y en esta máquina el **27017 lo ocupa un MongoDB 8 nativo de Windows**
-(servicio "MongoDB Server", usado por otros proyectos): con ambos corriendo, el nativo sombrea
-al contenedor y los datos acabarían en el lugar equivocado (pasó en jul 2026; la base `sina` se
-migró al contenedor). Resolución permanente, sin tocar el Mongo nativo:
+puerto de `localhost`, y en esta máquina los puertos estándar están ocupados por servicios de
+otros proyectos que sombrean a los contenedores de SINA (pasó dos veces en jul 2026: los datos
+acababan en la instancia equivocada). Resolución permanente — **cada proyecto su puerto**, sin
+tocar los servicios ajenos:
 
-- **PostgreSQL** = contenedor `sina_db` en `5432` (nadie más usa ese puerto).
-- **MongoDB** = contenedor `sina_mongo` publicado en **`27018`** (`compose.yaml`), y
-  `MONGO_URI=mongodb://localhost:27018` en el `.env`. El nativo conserva 27017.
+| Puerto | Quién | Nota |
+| --- | --- | --- |
+| `27017` | MongoDB 8 **nativo de Windows** (otros proyectos) | No tocar. |
+| **`27018`** | **`sina_mongo`** (contenedor, `MONGO_URI=mongodb://localhost:27018`) | El de SINA. |
+| `5432` | `argos-postgres` (contenedor de otro proyecto, también con restart automático) | No tocar. |
+| **`5433`** | **`sina_db`** (contenedor, `DB_PORT=5433`) | El de SINA. |
 
 Si algo se ve raro (datos que "no aparecen"), verifica qué instancia responde:
 
 ```bash
-podman exec sina_mongo mongosh --quiet --eval "db.version()"   # contenedor → 7.x
-& .venv\Scripts\python.exe -c "from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27018').server_info()['version'])"  # lo que ve la app → debe ser 7.x
+podman ps --format "{{.Names}} {{.Ports}}"                     # puertos publicados por contenedor
+podman exec sina_mongo mongosh --quiet --eval "db.version()"   # contenedor Mongo de SINA → 7.x
+podman exec sina_db psql -U sina_admin -d sina_db -c "SELECT version();"
 ```
 :::
 

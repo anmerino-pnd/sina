@@ -16,26 +16,21 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
+from toon import encode
+
 from sina.agent.graph import END, Grafo
 from sina.agent.llm.base import LLMProvider, LLMUso
 from sina.agent.tools.base import ContextoConsulta
 from sina.agent.tools.registry import construir_registro
 from sina.config.app_settings import settings
+from sina.config.prompt import chat_system_prompt
 from sina.config.timezone import get_mexico_now
 
 log = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Eres SINA, un asistente que ayuda a familias mexicanas a gastar menos en \
-gasolina, gas LP y despensa. Respondes en español claro y sencillo (público de baja \
-alfabetización digital), en pocas frases.
-
-Reglas:
-- Usa SIEMPRE las herramientas para obtener precios; NUNCA inventes precios ni estaciones.
-- Si no sabes el municipio del usuario, pídeselo antes de buscar.
-- Para gasolina "cerca de mí" usa ordenar_por="cercania" (solo funciona si el usuario compartió su ubicación).
-- El Gas LP se consulta por localidad: si no la sabes, usa listar_localidades_gas_lp.
-- Al terminar, responde en lenguaje natural con los datos que devolvieron las herramientas \
-(nombre del lugar, precio en pesos). No muestres JSON."""
+# Prompt estructurado → TOON (menos tokens que la prosa equivalente); mismo
+# patrón que el extractor de flyers. El contenido vive en config/prompt.py.
+SYSTEM_PROMPT = encode(chat_system_prompt)
 
 
 @dataclass

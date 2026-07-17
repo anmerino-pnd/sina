@@ -23,12 +23,15 @@ podman-compose up -d                             # start PostgreSQL 16 + pgvecto
 ```
 
 The chat agent (Fase 3) needs **Ollama** running with a tool-capable model
-(`ollama pull qwen2.5:7b`) and `ENABLE_CHAT=1`. Chat history persists to **MongoDB** (from
+(`ollama pull qwen3.6:35b` — multimodal, shared by chat AND the flyer VLM) and `ENABLE_CHAT=1`.
+Chat history persists to **MongoDB** (from
 compose); if Mongo is down the chat still answers, just without saving.
 
 **Port gotcha (dev machine):** the Mongo container publishes on **host port 27018**
 (`MONGO_URI=mongodb://localhost:27018`) because a native Windows MongoDB 8 service (other
-projects) owns 27017 and would shadow the container. Postgres container uses 5432 normally.
+projects) owns 27017 and would shadow the container. The Postgres container publishes on
+**host port 5433** (`DB_PORT=5433`) for the same reason: `argos-postgres` (another project,
+also auto-restarted) competes for 5432.
 `podman-restart` is enabled inside the podman machine, so `podman machine start` after a
 reboot is enough to revive both containers.
 
@@ -119,7 +122,10 @@ chat (Fase 3), auth/users, and annotator.
   las crea **cerrando sobre un `ContextoConsulta`** (estado/municipio/localidad/lat/lng). El `lat/lng` se
   **inyecta** (el LLM nunca lo rellena). Tools: `buscar_gasolina` (precio o cercanía por haversine),
   `buscar_gas_lp`, `listar_localidades_gas_lp`, `buscar_producto`, `comparar_lista`, `armar_canasta`,
-  `datos_disponibles`.
+  `datos_disponibles`. **Formato TOON** (`toon.encode`, paquete `python-toon`): el system prompt del
+  chat (dict `chat_system_prompt` en `config/prompt.py`) y los RESULTADOS de tools van en TOON
+  (~44% menos chars que JSON en listas de precios; fallback a JSON). Los esquemas de tools siguen
+  en JSON Schema (contrato del tool-calling de Ollama).
 - `graph.py` — motor de grafo mínimo (estilo LangGraph, **sin** LangChain/LangGraph): nodos que pueden ser
   generadores (ceden eventos de streaming y `return` la actualización de estado), aristas fijas y condicionales.
 - `agent.py` — `responder_stream(mensaje, contexto, historial, provider)` recorre el grafo `agente ↔ tools`
@@ -184,7 +190,10 @@ por espacios en blanco, no por producto) → **VLM por zona** → verificación 
 - Endpoints admin (`main.py`, `X-Admin-Key`): `POST /annotator/{flyer,preanotar,annotate,extract,
   persistir}`, `GET /annotator/{tree,status}`. `GET /sina/annotator` sirve solo el shell (la UI
   adjunta la key desde un campo). `persistir` → `SupermercadoRepository.upsert_flyer_productos`.
-- `embedder/` — sentence/Qwen embeddings feeding the pgvector column.
+- `embedder/` — embeddings feeding the pgvector column. Two providers selected by
+  `EMBEDDING_PROVIDER`: `ollama` (default, `qwen3-embedding:8b`, no torch) and `huggingface`
+  (sentence-transformers). `python -m sina.embedder.backfill` (re)generates vectors for
+  existing products (after enabling embeddings late or switching models).
 
 **`supermercados` unifica scraping y flyer** (`db/models.py`): columna `fuente`
 (`"scraping"`|`"flyer"`) + `vigencia_inicio/fin` + `marca`/`unidad`; `pid` es **nullable** (los

@@ -215,7 +215,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li><strong>Python ≥ 3.12</strong> con <strong>uv</strong> como gestor de paquetes.</li>
 <li><strong>Podman</strong> (para levantar PostgreSQL + pgvector y MongoDB vía <code>compose.yaml</code>).</li>
-<li><strong>Ollama</strong> con un modelo con tools (p.&nbsp;ej. <code>qwen2.5:7b</code>) para el chat.</li>
+<li><strong>Ollama</strong> con el modelo multimodal del proyecto (<code>qwen3.6:35b</code>: chat + VLM de flyers) y el de embeddings (<code>qwen3-embedding:8b</code>).</li>
 <li><strong>Node</strong> (para construir la SPA en <code>frontend/</code>).</li>
 </ul>
 </section>
@@ -226,8 +226,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run python <span class="at">-m</span> sina.db.seeder               <span class="co"># catálogos + rutas de scraping</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run uvicorn sina.main:app <span class="at">--reload</span>         <span class="co"># servidor de desarrollo en :8000</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Para el chat (Fase 3):</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen2.5:7b                         <span class="co"># modelo con tool-calling</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># .env → ENABLE_CHAT=1</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen3.6:35b                        <span class="co"># multimodal: chat (tools) + VLM de flyers</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen3-embedding:8b                 <span class="co"># embeddings (búsqueda semántica)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># .env → ENABLE_CHAT=1</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Frontend (SPA):</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> frontend</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
@@ -239,7 +240,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="db-podman" class="level2">
 <h2 class="anchored" data-anchor-id="db-podman">8.3. Base de datos con Podman: persistencia, ciclo de vida y acceso</h2>
-<p><code>compose.yaml</code> levanta dos contenedores: <strong>PostgreSQL 16 + pgvector</strong> (<code>sina_db</code>, puerto 5432) y <strong>MongoDB</strong> (<code>sina_mongo</code>, puerto 27017). Se usa la imagen <code>pgvector/pgvector:pg16</code> <strong>a propósito</strong>: trae la extensión <code>pgvector</code> que SINA necesita para los embeddings; un PostgreSQL instalado de forma nativa <strong>no la trae</strong> y habría que compilarla aparte. Por eso el contenedor es la vía recomendada sobre una instalación nativa (para la app da igual: en ambos casos se conecta a <code>localhost:5432</code>).</p>
+<p><code>compose.yaml</code> levanta dos contenedores: <strong>PostgreSQL 16 + pgvector</strong> (<code>sina_db</code>, puerto host 5433) y <strong>MongoDB</strong> (<code>sina_mongo</code>, puerto 27017). Se usa la imagen <code>pgvector/pgvector:pg16</code> <strong>a propósito</strong>: trae la extensión <code>pgvector</code> que SINA necesita para los embeddings; un PostgreSQL instalado de forma nativa <strong>no la trae</strong> y habría que compilarla aparte. Por eso el contenedor es la vía recomendada sobre una instalación nativa (para la app da igual: se conecta al <code>localhost:puerto</code> del <code>.env</code>).</p>
 <p><strong>Tres cosas con ciclos de vida distintos.</strong> La confusión típica es creer que apagar el contenedor borra los datos. No:</p>
 <table class="caption-top table">
 <colgroup>
@@ -283,8 +284,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps <span class="at">-a</span>              <span class="co"># incluir los detenidos</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Al reiniciar la PC (Windows/WSL).</strong> Podman corre dentro de una máquina <strong>WSL</strong> (<code>podman-machine-default</code>). Al apagar el equipo, esa máquina se detiene y con ella los contenedores. El servicio <code>podman-restart</code> está <strong>habilitado dentro de la máquina</strong> (jul 2026: <code>podman machine ssh "sudo systemctl enable --now podman-restart"</code>), así que el <code>restart: unless-stopped</code> del <code>compose.yaml</code> revive los contenedores solo con que la máquina arranque. En Windows esa máquina no siempre arranca sola tras un reinicio; regla práctica: tras reiniciar, corre <code>podman ps</code>; si <code>sina_db</code>/<code>sina_mongo</code> no aparecen en <code>Up</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> machine start      <span class="co"># arranca la máquina WSL; podman-restart revive los contenedores</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps                 <span class="co"># confirmar sina_db (5432) y sina_mongo (27018) en Up</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Ver los datos con una GUI (no es solo CLI).</strong> Como el contenedor publica el puerto a tu equipo (<code>5432:5432</code>), para cualquier cliente es un PostgreSQL normal en <code>localhost</code>. Sirven <strong>pgAdmin, DBeaver, DataGrip, TablePlus</strong> o la extensión <strong>PostgreSQL de VS Code</strong>. Parámetros de conexión (los mismos del <code>compose.yaml</code> / <code>.env</code>):</p>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps                 <span class="co"># confirmar sina_db (5433) y sina_mongo (27018) en Up</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Ver los datos con una GUI (no es solo CLI).</strong> Como el contenedor publica el puerto a tu equipo (<code>5433:5432</code>), para cualquier cliente es un PostgreSQL normal en <code>localhost</code>. Sirven <strong>pgAdmin, DBeaver, DataGrip, TablePlus</strong> o la extensión <strong>PostgreSQL de VS Code</strong>. Parámetros de conexión (los mismos del <code>compose.yaml</code> / <code>.env</code>):</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -299,7 +300,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td>Puerto</td>
-<td><code>5432</code></td>
+<td><code>5433</code></td>
 </tr>
 <tr class="odd">
 <td>Base de datos</td>
@@ -322,18 +323,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Puertos en la máquina de desarrollo: por qué Mongo va en 27018
+Puertos en la máquina de desarrollo: por qué SINA usa 5433 y 27018
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>SINA está <strong>basado en sus contenedores</strong>, pero la app se conecta a <em>lo que responda</em> en el puerto de <code>localhost</code> — y en esta máquina el <strong>27017 lo ocupa un MongoDB 8 nativo de Windows</strong> (servicio “MongoDB Server”, usado por otros proyectos): con ambos corriendo, el nativo sombrea al contenedor y los datos acabarían en el lugar equivocado (pasó en jul 2026; la base <code>sina</code> se migró al contenedor). Resolución permanente, sin tocar el Mongo nativo:</p>
-<ul>
-<li><strong>PostgreSQL</strong> = contenedor <code>sina_db</code> en <code>5432</code> (nadie más usa ese puerto).</li>
-<li><strong>MongoDB</strong> = contenedor <code>sina_mongo</code> publicado en <strong><code>27018</code></strong> (<code>compose.yaml</code>), y <code>MONGO_URI=mongodb://localhost:27018</code> en el <code>.env</code>. El nativo conserva 27017.</li>
-</ul>
+<p>SINA está <strong>basado en sus contenedores</strong>, pero la app se conecta a <em>lo que responda</em> en el puerto de <code>localhost</code>, y en esta máquina los puertos estándar están ocupados por servicios de otros proyectos que sombrean a los contenedores de SINA (pasó dos veces en jul 2026: los datos acababan en la instancia equivocada). Resolución permanente — <strong>cada proyecto su puerto</strong>, sin tocar los servicios ajenos:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Puerto</th>
+<th>Quién</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>27017</code></td>
+<td>MongoDB 8 <strong>nativo de Windows</strong> (otros proyectos)</td>
+<td>No tocar.</td>
+</tr>
+<tr class="even">
+<td><strong><code>27018</code></strong></td>
+<td><strong><code>sina_mongo</code></strong> (contenedor, <code>MONGO_URI=mongodb://localhost:27018</code>)</td>
+<td>El de SINA.</td>
+</tr>
+<tr class="odd">
+<td><code>5432</code></td>
+<td><code>argos-postgres</code> (contenedor de otro proyecto, también con restart automático)</td>
+<td>No tocar.</td>
+</tr>
+<tr class="even">
+<td><strong><code>5433</code></strong></td>
+<td><strong><code>sina_db</code></strong> (contenedor, <code>DB_PORT=5433</code>)</td>
+<td>El de SINA.</td>
+</tr>
+</tbody>
+</table>
 <p>Si algo se ve raro (datos que “no aparecen”), verifica qué instancia responde:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_mongo mongosh <span class="at">--quiet</span> <span class="at">--eval</span> <span class="st">"db.version()"</span>   <span class="co"># contenedor → 7.x</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">&amp;</span> <span class="ex">.venv\Scripts\python.exe</span> <span class="at">-c</span> <span class="st">"from pymongo import MongoClient; print(MongoClient('mongodb://localhost:27018').server_info()['version'])"</span>  <span class="co"># lo que ve la app → debe ser 7.x</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> ps <span class="at">--format</span> <span class="st">"{{.Names}} {{.Ports}}"</span>                     <span class="co"># puertos publicados por contenedor</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_mongo mongosh <span class="at">--quiet</span> <span class="at">--eval</span> <span class="st">"db.version()"</span>   <span class="co"># contenedor Mongo de SINA → 7.x</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> exec sina_db psql <span class="at">-U</span> sina_admin <span class="at">-d</span> sina_db <span class="at">-c</span> <span class="st">"SELECT version();"</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <p><strong>Consultas rápidas sin instalar clientes</strong> (usando los CLI que ya traen los contenedores — válido cuando los contenedores SON quienes sirven los puertos):</p>

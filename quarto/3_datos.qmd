@@ -130,8 +130,11 @@ Cuando `ENABLE_EMBEDDINGS=1` (solo PostgreSQL), `upsert_productos` invoca
 `EmbeddingService.vectorizar_productos()` en lote y puebla `Supermercado.embedding`. La búsqueda de
 productos combina **filtro duro** (tienda/departamento/categoría) con **similitud vectorial**
 (distancia coseno sobre pgvector), con **fallback de texto** (ILIKE) si no hay embeddings. El
-proveedor de embeddings es perezoso y abstracto (`EmbeddingProvider`), con modelo configurable vía
-`EMBEDDING_MODEL`.
+proveedor es perezoso y abstracto (`EmbeddingProvider`) con dos implementaciones elegibles por
+`EMBEDDING_PROVIDER`: **`ollama`** (default, `qwen3-embedding:8b` — mismo servidor Ollama que el
+chat/VLM, sin torch) y `huggingface` (sentence-transformers local). Modelo vía `EMBEDDING_MODEL`.
+Para (re)generar vectores de productos ya existentes (al activar embeddings tarde o cambiar de
+modelo): `ENABLE_EMBEDDINGS=1 uv run python -m sina.embedder.backfill` (`--todos` recomputa todo).
 
 ## 3.6. Criterio de precios (barato / promedio / caro) {#criterio}
 

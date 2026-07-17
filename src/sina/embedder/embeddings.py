@@ -2,12 +2,17 @@ import os
 import logging
 from typing import List, Dict, Any, Optional
 from sina.embedder.base import EmbeddingProvider
-from sina.embedder.qwen_embedder import QwenHuggingFaceProvider
 
 logger = logging.getLogger(__name__)
 
-# Modelo open-source por defecto; intercambiable vía EMBEDDING_MODEL.
-DEFAULT_EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-8B"
+# Provider por defecto y modelo por provider; intercambiables vía
+# EMBEDDING_PROVIDER / EMBEDDING_MODEL. "ollama" es el default: mismo servidor
+# que el chat/VLM, sin torch (solo requiere `ollama pull qwen3-embedding:8b`).
+DEFAULT_EMBEDDING_PROVIDER = "ollama"
+DEFAULT_MODELS = {
+    "ollama": "qwen3-embedding:8b",
+    "huggingface": "Qwen/Qwen3-Embedding-8B",
+}
 
 
 # --- 3. SERVICIO PRINCIPAL (El que usarás en tu código) ---
@@ -69,34 +74,40 @@ def get_embedding_service() -> Optional[EmbeddingService]:
 
     _service_intentado = True
     try:
-        model_name = os.getenv("EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
-        logger.info("Inicializando embeddings con modelo '%s'...", model_name)
-        _service = EmbeddingService(QwenHuggingFaceProvider(model_name=model_name))
+        proveedor = os.getenv("EMBEDDING_PROVIDER", DEFAULT_EMBEDDING_PROVIDER).strip().lower()
+        model_name = os.getenv("EMBEDDING_MODEL", DEFAULT_MODELS.get(proveedor, ""))
+        logger.info("Inicializando embeddings: provider '%s', modelo '%s'...", proveedor, model_name)
+        _service = EmbeddingService(_construir_provider(proveedor, model_name))
     except Exception as e:
         logger.error("No se pudo inicializar el servicio de embeddings: %s", e)
         _service = None
     return _service
 
 
+def _construir_provider(proveedor: str, model_name: str) -> EmbeddingProvider:
+    """Imports perezosos: cada provider carga sus dependencias solo si se elige."""
+    if proveedor == "ollama":
+        from sina.embedder.ollama_embedder import OllamaEmbeddingProvider
+        return OllamaEmbeddingProvider(model_name=model_name)
+    if proveedor == "huggingface":
+        from sina.embedder.qwen_embedder import QwenHuggingFaceProvider
+        return QwenHuggingFaceProvider(model_name=model_name)
+    raise ValueError(f"EMBEDDING_PROVIDER desconocido: '{proveedor}' (usa 'ollama' o 'huggingface')")
+
+
 # --- PRUEBA DEL MÓDULO ---
 if __name__ == "__main__":
-    # Si quieres probarlo de forma aislada corriendo: python src/sina/processing/embeddings.py
-    
+    # Prueba aislada: ENABLE_EMBEDDINGS=1 uv run python -m sina.embedder.embeddings
+    # (respeta EMBEDDING_PROVIDER / EMBEDDING_MODEL del entorno).
     print("Iniciando prueba del motor de Embeddings...")
-    try:
-        # Inyectamos el proveedor Qwen al servicio
-        motor = EmbeddingService(QwenHuggingFaceProvider())
-        
-        # Simulamos un producto extraído de Soriana
+    motor = get_embedding_service()
+    if motor is None:
+        print("Servicio deshabilitado o no inicializable (revisa ENABLE_EMBEDDINGS y el provider).")
+    else:
         vector = motor.vectorizar_supermercado(
             producto="Arroz Blanco Precocido Diamante 150 g",
             tienda="Soriana",
-            precio=24.90
+            precio=24.90,
         )
-        
-        print("\n✅ ÉXITO!")
         print(f"Dimensiones del vector devuelto: {len(vector)}")
         print(f"Muestra (primeros 5 valores): {vector[:5]}")
-        
-    except Exception as e:
-        print(f"\n❌ Error durante la prueba: {e}")

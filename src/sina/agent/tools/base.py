@@ -67,16 +67,32 @@ class RegistroTools:
         return [t.a_esquema_ollama() for t in self.tools.values()]
 
     def ejecutar(self, llamada: ToolCall) -> str:
-        """Ejecuta una tool y devuelve su resultado como JSON (string) para el LLM."""
+        """Ejecuta una tool y devuelve su resultado serializado (TOON) para el LLM."""
         tool = self.tools.get(llamada.nombre)
         if tool is None:
-            return json.dumps({"error": f"tool desconocida: {llamada.nombre}"}, ensure_ascii=False)
+            return _serializar({"error": f"tool desconocida: {llamada.nombre}"})
         try:
             resultado = tool.fn(**(llamada.argumentos or {}))
         except TypeError as e:
             # Argumentos inválidos del modelo → mensaje corregible, no excepción fatal.
-            return json.dumps({"error": f"argumentos inválidos: {e}"}, ensure_ascii=False)
+            return _serializar({"error": f"argumentos inválidos: {e}"})
         except Exception as e:  # noqa: BLE001
             log.exception("Error ejecutando tool %s", llamada.nombre)
-            return json.dumps({"error": f"fallo en {llamada.nombre}: {e}"}, ensure_ascii=False)
+            return _serializar({"error": f"fallo en {llamada.nombre}: {e}"})
+        return _serializar(resultado)
+
+
+def _serializar(resultado: Any) -> str:
+    """
+    Serializa el resultado de una tool para el LLM en formato TOON (30-60% menos
+    tokens que JSON en datos tabulares como listas de precios). Se normaliza
+    primero a tipos planos (fechas/Decimal → str, vía roundtrip JSON) y, si TOON
+    fallara con alguna estructura, cae a JSON — nunca se rompe el turno del agente.
+    """
+    try:
+        from toon import encode  # noqa: PLC0415 — lazy, mismo criterio que el LLM provider
+
+        plano = json.loads(json.dumps(resultado, ensure_ascii=False, default=str))
+        return encode(plano)
+    except Exception:  # noqa: BLE001
         return json.dumps(resultado, ensure_ascii=False, default=str)

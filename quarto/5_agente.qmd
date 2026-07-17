@@ -42,6 +42,14 @@ En `agent/tools/`, cada tool envuelve una consulta a los repositorios con su **J
 (estado/municipio/localidad/lat/lng). El **`lat/lng` se inyecta** desde el contexto — el LLM nunca
 lo rellena (evita que alucine coordenadas).
 
+**Formato TOON.** Tanto el *system prompt* del agente (dict `chat_system_prompt` en
+`config/prompt.py`) como los **resultados** de las tools se serializan en
+[TOON](https://github.com/xaviviro/python-toon) (`toon.encode`) en lugar de JSON: en datos
+tabulares —listas de estaciones/productos— ahorra ~30-60% de tokens (medido: 44% en un resultado
+típico de `buscar_gasolina`), mismo patrón que el extractor de flyers. Con fallback a JSON si la
+estructura no se puede encodear. Los **esquemas** de las tools siguen siendo JSON Schema (contrato
+de la API de tool-calling de Ollama).
+
 | Tool | Función |
 | --- | --- |
 | `buscar_gasolina` | Precio o cercanía (haversine) de gasolineras. |

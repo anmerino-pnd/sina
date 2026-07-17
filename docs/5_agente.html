@@ -198,6 +198,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="tools-internas" class="level2">
 <h2 class="anchored" data-anchor-id="tools-internas">5.3. Tools internas</h2>
 <p>En <code>agent/tools/</code>, cada tool envuelve una consulta a los repositorios con su <strong>JSON Schema</strong>. <code>registry.construir_registro(ctx)</code> las crea <strong>cerrando sobre un <code>ContextoConsulta</code></strong> (estado/municipio/localidad/lat/lng). El <strong><code>lat/lng</code> se inyecta</strong> desde el contexto — el LLM nunca lo rellena (evita que alucine coordenadas).</p>
+<p><strong>Formato TOON.</strong> Tanto el <em>system prompt</em> del agente (dict <code>chat_system_prompt</code> en <code>config/prompt.py</code>) como los <strong>resultados</strong> de las tools se serializan en <a href="https://github.com/xaviviro/python-toon">TOON</a> (<code>toon.encode</code>) en lugar de JSON: en datos tabulares —listas de estaciones/productos— ahorra ~30-60% de tokens (medido: 44% en un resultado típico de <code>buscar_gasolina</code>), mismo patrón que el extractor de flyers. Con fallback a JSON si la estructura no se puede encodear. Los <strong>esquemas</strong> de las tools siguen siendo JSON Schema (contrato de la API de tool-calling de Ollama).</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">

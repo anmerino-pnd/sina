@@ -1,5 +1,9 @@
 # Ejecutar con: podman-compose up -d
 services:
+  # Puerto host 5433 A PROPÓSITO: en esta máquina otro contenedor de Postgres
+  # (argos-postgres, de otro proyecto, también con restart automático) compite
+  # por el 5432 y quien arranque primero sombrea al otro. SINA usa SU contenedor
+  # vía DB_PORT=5433. (Mismo criterio que Mongo en 27018.)
   postgres_vector:
     image: pgvector/pgvector:pg16
     container_name: sina_db
@@ -8,7 +12,7 @@ services:
       POSTGRES_PASSWORD: sina_password
       POSTGRES_DB: sina_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - sina_pgdata:/var/lib/postgresql/data
     restart: unless-stopped
