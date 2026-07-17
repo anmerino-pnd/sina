@@ -318,6 +318,89 @@ Figura&nbsp;2: Historial de chat: bucket + lista ligada de chunks
 <h2 class="anchored" data-anchor-id="telemetría-por-mensaje">5.7. Telemetría por mensaje</h2>
 <p>Cada respuesta agrega telemetría para optimizar después: <strong>modelo</strong>, <strong>input/output/cached tokens</strong>, <strong>tokens por segundo</strong>, <strong>duración</strong>, <code>tool_timings</code> (por tool) y <code>phase_timings</code> (<code>llm_ms</code>/<code>tools_ms</code>/<code>total_ms</code>/<code>iteraciones</code>).</p>
 </section>
+<section id="moderacion" class="level2">
+<h2 class="anchored" data-anchor-id="moderacion">5.8. Moderación de consultas y baneo progresivo</h2>
+<p>Capa <strong>previa al agente</strong> (<code>src/sina/moderacion/</code>, opt-in <code>ENABLE_MODERACION</code>, apagada por defecto): cada consulta se clasifica como <code>relevante</code> / <code>irrelevante</code> / <code>inapropiado</code> con un LLM <strong>chico y dedicado</strong> — no el del agente — y solo lo relevante llega al grafo. El objetivo es doble: que el modelo grande no gaste cómputo en charla fuera de dominio, y que el abuso escale a baneos temporales. La idea viene de un chatbot RAG previo; aquí se implementó corrigiendo sus debilidades conocidas (identidad rotable, salida sin validar, conteo no atómico, IO bloqueante).</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-moderacion" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-moderacion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-moderacion">flowchart LR
+    MSG(["Mensaje del usuario"]) --&gt; BAN{"¿Baneado?"}
+    BAN --&gt;|"Sí"| REST["Tiempo restante&lt;br/&gt;(sin clasificar)"]
+    BAN --&gt;|"No"| PRE{"Pre-filtro&lt;br/&gt;(regex)"}
+    PRE --&gt;|"match"| INAP["inapropiado"]
+    PRE --&gt;|"pasa"| LLM["Clasificador LLM&lt;br/&gt;(qwen3.5:9b, temp 0)"]
+    LLM --&gt; ET{"etiqueta"}
+    ET --&gt;|"relevante"| AG["Agente&lt;br/&gt;(flujo normal)"]
+    ET --&gt;|"irrelevante"| TXT["Texto cortés fijo&lt;br/&gt;(sin LLM)"]
+    ET --&gt;|"inapropiado"| INAP
+    INAP --&gt; ESC["Baneo progresivo&lt;br/&gt;(strike atómico en Mongo)"]
+
+    classDef nodo  fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef dec   fill:#fef9c3,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    classDef term  fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class LLM,ESC,AG nodo;
+    class BAN,PRE,ET dec;
+    class MSG,REST,TXT,INAP term;
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-moderacion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3: Flujo de moderación: baneo → pre-filtro → clasificador → router
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Clasificador</strong> (<code>clasificador.py</code>). Modelo configurable (<code>MODERACION_MODEL</code>, default <code>qwen3.5:9b</code>) contra el mismo Ollama u otro host (<code>MODERACION_HOST</code>). Recibe el mensaje actual y los últimos 5 turnos del usuario <strong>serializados como datos JSON</strong> dentro del mensaje <code>user</code> — nunca concatenados como instrucciones — y el system prompt (en <code>config/prompt.py</code>) ordena ignorar cualquier instrucción embebida (anti <em>prompt-injection</em>: el principio “el contexto es rey” permite que “¿y la premium?” tras hablar de gasolina sea relevante). La salida se fuerza con <code>format=&lt;json schema&gt;</code> de Ollama (mismo patrón que el VLM) y se valida contra el enum. Dos detalles medidos en desarrollo:</p>
+<ul>
+<li><strong><code>think=False</code> es obligatorio</strong>: qwen3.x razona antes de emitir el JSON y la misma clasificación pasa de <strong>~99 s a ~2 s</strong> al desactivarlo. Si el modelo no acepta el parámetro, se omite solo.</li>
+<li><strong><code>keep_alive="30m"</code></strong>: con el default de Ollama (5 min) cada arranque en frío rebasa el timeout.</li>
+</ul>
+<p><strong>Política de fallo: <em>fail-open</em> a <code>relevante</code>.</strong> Timeout (<code>MODERACION_TIMEOUT_S</code>, 10 s) + 1 reintento; si aun así no hay etiqueta válida, la consulta <strong>pasa</strong>. Razones: (a) el dominio es de bajo riesgo — el agente solo consulta precios; (b) clasificador y agente comparten el mismo Ollama: si está caído, el agente fallará de todos modos con su propio manejo, y <em>fail-closed</em> solo añadiría una segunda forma de negar servicio a usuarios legítimos; (c) el <strong>pre-filtro determinista</strong> (<code>prefiltro.py</code>, regex conservadoras de insultos fuertes/amenazas/solicitudes ilegales) sigue atrapando lo obviamente inapropiado sin LLM. Todo fallback queda auditado con <code>origen="fallback"</code>.</p>
+<p><strong>Baneo progresivo</strong> (<code>baneo.py</code> = lógica pura en UTC, unit-testeada; <code>ModeracionStore</code> en <code>db/stores.py</code> = persistencia). La <strong>identidad</strong> es <code>user:&lt;google_sub&gt;</code> con sesión o <code>ip:&lt;client_ip&gt;</code> anónimo — se calcula en el servidor, nunca viene del body (no se evade rotando un id de navegador, defecto del sistema original). Escalamiento por strikes acumulados:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Strike</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sanción</td>
+<td>advertencia</td>
+<td>1 min</td>
+<td>3 min</td>
+<td>10 min</td>
+<td>1 h</td>
+<td>1 día</td>
+<td>7 días (tope)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Perdón:</strong> el contador se reinicia si pasó <strong>más de 1 hora</strong> desde el último incidente <strong>y</strong> la sanción previa fue corta (&lt; 1 h) o no hubo; un baneo largo no se perdona por el paso del tiempo. El strike es un <strong><code>$inc</code> atómico</strong> (<code>find_one_and_update</code>) — dos mensajes inapropiados concurrentes cuentan 2, no 1. El baneo vigente se revisa <strong>antes</strong> de clasificar (corta sin gastar LLM). Estado y auditoría viven en Mongo con TTL (colecciones <code>moderacion_usuarios</code> y <code>moderacion_log</code>, ver <a href="./3_datos.html">Datos §3.4.2</a>); con Mongo caído la capa degrada suave: clasifica y responde, pero los strikes no persisten.</p>
+<p>Las respuestas moderadas (irrelevante, advertencia, baneo, tiempo restante) salen como <strong>SSE con un único evento <code>done</code></strong> — el mismo contrato que el agente, así que el frontend no cambia; los metadatos llevan <code>{moderacion: {etiqueta, origen, accion}}</code>. Los turnos irrelevantes se guardan en el historial (si había conversación); los inapropiados solo en la auditoría. La capa estrenó la <strong>suite de pruebas</strong> del repo: <code>uv run pytest tests/ -q</code> (escalamiento, perdón en casos límite, prefiltro, clasificador con mocks y router).</p>
+</section>
 </div>
 
 

@@ -32,6 +32,7 @@ futuro. Se actualiza conforme avanza el trabajo.
 | Embeddings de productos | ✅ | Opt-in `ENABLE_EMBEDDINGS`, requiere pgvector. |
 | Búsqueda / API Supermercados | ✅ | Vectorial + fallback de texto. |
 | Agente / Chat (tools internas) | ✅ | LLM Ollama + tools + grafo; SSE; historial Mongo. |
+| Moderación del chat | ✅ | Clasificador LLM dedicado (opt-in `ENABLE_MODERACION`) + pre-filtro + baneo progresivo en Mongo; fail-open. |
 | Pipeline volantes (Ley + Abarrey) | ✅ | Descarga → pre-anotar zonas (CV: paneles Ley / bandas Abarrey) → ajuste → VLM por zona → verificación → Postgres (`fuente=flyer`). YOLO pendiente. |
 | Capa VLM (`sina/vlm/`) | ✅ | `VLMProvider` abstracto + Ollama visión (salida estructurada); gated por `ENABLE_VLM`. |
 | Scheduling automático | ✅ | APScheduler (gasolina 06:00, gas LP sáb 08:00). |
@@ -39,7 +40,7 @@ futuro. Se actualiza conforme avanza el trabajo.
 | SPA React (Landing + 4 secciones) | ✅ | Vite + React + Tailwind + modo oscuro; chat integrado. |
 | Google OAuth | ✅ | Cookie httpOnly + CSRF; requiere `GOOGLE_OAUTH_CLIENT_ID`. |
 | `GeminiProvider` (LLM patrocinado) | ❌ | Hueco listo (subclase de la ABC). |
-| Tests / CI-CD / Containerfile | ❌ | Fase 5. |
+| Tests / CI-CD / Containerfile | 🚧 | pytest estrenado con la suite de moderación (`tests/`); CI/CD y Containerfile pendientes (Fase 5). |
 | QQP / PROFECO | 🗑️ | **Eliminado del código** (jul 2026): modelo y repositorio borrados; la tabla `qqp_precios` puede quedar huérfana en DBs existentes. |
 
 ## 7.2. Fases de desarrollo
@@ -88,6 +89,10 @@ flowchart LR
 - [x] Motor de grafo propio (sin LangChain/LangGraph); iteraciones acotadas.
 - [x] `POST /api/v1/chat` en **streaming SSE** con pausa; historial en MongoDB.
 - [x] Telemetría por mensaje.
+- [x] **Capa de moderación** (`sina/moderacion/`, opt-in `ENABLE_MODERACION`): clasificador LLM
+      chico dedicado (`qwen3.5:9b`, salida estructurada + `think=False`, fail-open) + pre-filtro
+      regex + **baneo progresivo** por identidad servidor-side con estado atómico y auditoría en
+      Mongo. Incluye la primera suite de pruebas del repo (`uv run pytest tests/ -q`).
 - [ ] `GeminiProvider` real (con `cached_tokens`) y streaming SSE "premium" (reintentos). *(futuro)*
 
 ### 7.2.4. Fase 4 — SPA React + OAuth ✅ (base)
@@ -111,7 +116,8 @@ flowchart LR
 
 ### 7.2.5. Fase 5 — Calidad y despliegue ❌
 
-- [ ] Tests con pytest (repos/tools, endpoints, mocks de scrapers y gobierno).
+- [ ] Tests con pytest (repos/tools, endpoints, mocks de scrapers y gobierno). *(Estrenado con la
+      suite de la capa de moderación — `tests/` + pytest como dev-dependency; falta cubrir el resto.)*
 - [ ] CI/CD con GitHub Actions (lint + tests en PR; build de imagen al merge).
 - [ ] Empaquetado con Podman (`Containerfile`, no Docker) + `compose` app + Postgres.
 - [ ] Deploy multi-destino: local / servidor dedicado / **GCP** (Cloud Run + Cloud SQL + Scheduler).

@@ -51,6 +51,20 @@ class AppSettings(BaseSettings):
     # Tope de iteraciones del grafo (rondas de tool-calling) por respuesta.
     llm_max_iters: int = Field(default=6, alias="LLM_MAX_ITERS")
 
+    # ── Moderación de consultas del chat ──────────────────────────────────
+    # Feature flag de la capa de moderación (clasificador + baneo progresivo).
+    # Off → el chat funciona exactamente igual que sin la capa.
+    enable_moderacion: bool = Field(default=False, alias="ENABLE_MODERACION")
+    # Modelo chico DEDICADO a clasificar (no es el modelo del agente):
+    # requiere `ollama pull qwen3.5:9b`.
+    moderacion_model: str = Field(default="qwen3.5:9b", alias="MODERACION_MODEL")
+    # Host de Ollama para el clasificador. Vacío → usa `ollama_host`.
+    moderacion_host: str = Field(default="", alias="MODERACION_HOST")
+    # Timeout de la llamada de clasificación; al agotarse cae al fallback
+    # (fail-open a "relevante") sin tumbar el request. La primera consulta tras
+    # cargar el modelo puede rebasarlo y pasar sin clasificar (aceptable).
+    moderacion_timeout_s: float = Field(default=10.0, alias="MODERACION_TIMEOUT_S")
+
     # ── Extracción de flyers por VLM (Fase 6) ─────────────────────────────
     # Feature flag del extractor de volantes. Off → POST /annotator/extract 503.
     enable_vlm: bool = Field(default=False, alias="ENABLE_VLM")

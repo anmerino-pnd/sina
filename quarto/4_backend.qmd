@@ -26,7 +26,7 @@ producción, sirve la **SPA React** desde el mismo origen (mount `/assets` + cat
 | `GET /api/v1/gasolina?estado&municipio` | Precios de gasolineras del municipio (caché 24 h). |
 | `GET /api/v1/gas-lp?estado&municipio[&localidad]` | Precios de Gas LP (caché semanal). |
 | `GET /api/v1/supermercados` | Búsqueda de productos (vectorial + filtros, fallback de texto). |
-| `POST /api/v1/chat` | Chat del agente en **streaming SSE** (ver [Agente](5_agente.qmd)). |
+| `POST /api/v1/chat` | Chat del agente en **streaming SSE** (ver [Agente](5_agente.qmd)). Con `ENABLE_MODERACION=1`, cada consulta pasa antes por la [capa de moderación](5_agente.qmd#moderacion). |
 | `GET/POST/DELETE /api/v1/chat/conversaciones[...]` | CRUD de conversaciones (requiere sesión). |
 | `GET /api/v1/catalogo` | Catálogo estado→municipio para los selectores de la SPA. Se sirve con `Cache-Control: public, max-age=3600`. |
 | `GET /api/v1/health` | Última actualización + vigencia por categoría. Memoizado en memoria (TTL 60 s) + `Cache-Control: public, max-age=60` para que los health-checks frecuentes no toquen la DB. |
@@ -127,6 +127,10 @@ Refresca solo ubicaciones/localidades ya presentes, reutilizando la caché on-de
   siguen mandando en sus rutas (`/auth/google` 10/min, `/chat` 20/min).
 - **Validación de entrada del chat**: `lat`/`lng` acotados a rangos geográficos válidos, `mensaje`
   con tope de 4 000 caracteres e `historial` limitado a 50 mensajes de ≤8 000 caracteres cada uno.
+- **Moderación del chat** (opt-in `ENABLE_MODERACION`): clasificador LLM dedicado + pre-filtro
+  determinista + **baneo progresivo** por identidad servidor-side (`user:<sub>` o `ip:<ip>`,
+  nunca del body), con estado atómico en Mongo y log de auditoría. Detalle en
+  [Agente §5.8](5_agente.qmd#moderacion).
 - **Anti path-traversal** en el flujo annotator (`resolver_ruta_flyer`) y respuestas 500 genéricas
   (el stack trace va al log, nunca al cliente).
 - **Guardas de credenciales por defecto**: en producción (`SINA_ENV=prod`) el arranque **falla**

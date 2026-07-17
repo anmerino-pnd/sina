@@ -131,4 +131,81 @@ Cada respuesta agrega telemetría para optimizar después: **modelo**, **input/o
 **tokens por segundo**, **duración**, `tool_timings` (por tool) y `phase_timings`
 (`llm_ms`/`tools_ms`/`total_ms`/`iteraciones`).
 
+## 5.8. Moderación de consultas y baneo progresivo {#moderacion}
+
+Capa **previa al agente** (`src/sina/moderacion/`, opt-in `ENABLE_MODERACION`, apagada por
+defecto): cada consulta se clasifica como `relevante` / `irrelevante` / `inapropiado` con un LLM
+**chico y dedicado** — no el del agente — y solo lo relevante llega al grafo. El objetivo es doble:
+que el modelo grande no gaste cómputo en charla fuera de dominio, y que el abuso escale a baneos
+temporales. La idea viene de un chatbot RAG previo; aquí se implementó corrigiendo sus debilidades
+conocidas (identidad rotable, salida sin validar, conteo no atómico, IO bloqueante).
+
+```{mermaid}
+%%| label: fig-moderacion
+%%| fig-cap: "Flujo de moderación: baneo → pre-filtro → clasificador → router"
+flowchart LR
+    MSG(["Mensaje del usuario"]) --> BAN{"¿Baneado?"}
+    BAN -->|"Sí"| REST["Tiempo restante<br/>(sin clasificar)"]
+    BAN -->|"No"| PRE{"Pre-filtro<br/>(regex)"}
+    PRE -->|"match"| INAP["inapropiado"]
+    PRE -->|"pasa"| LLM["Clasificador LLM<br/>(qwen3.5:9b, temp 0)"]
+    LLM --> ET{"etiqueta"}
+    ET -->|"relevante"| AG["Agente<br/>(flujo normal)"]
+    ET -->|"irrelevante"| TXT["Texto cortés fijo<br/>(sin LLM)"]
+    ET -->|"inapropiado"| INAP
+    INAP --> ESC["Baneo progresivo<br/>(strike atómico en Mongo)"]
+
+    classDef nodo  fill:#f7eafb,stroke:#7a2492,stroke-width:1px,color:#3b0e48;
+    classDef dec   fill:#fef9c3,stroke:#bb8a38,stroke-width:1px,color:#5b4310;
+    classDef term  fill:#dcfce7,stroke:#4e7a4f,stroke-width:1px,color:#14532d;
+    class LLM,ESC,AG nodo;
+    class BAN,PRE,ET dec;
+    class MSG,REST,TXT,INAP term;
+```
+
+**Clasificador** (`clasificador.py`). Modelo configurable (`MODERACION_MODEL`, default
+`qwen3.5:9b`) contra el mismo Ollama u otro host (`MODERACION_HOST`). Recibe el mensaje actual y
+los últimos 5 turnos del usuario **serializados como datos JSON** dentro del mensaje `user` — nunca
+concatenados como instrucciones — y el system prompt (en `config/prompt.py`) ordena ignorar
+cualquier instrucción embebida (anti *prompt-injection*: el principio "el contexto es rey" permite
+que "¿y la premium?" tras hablar de gasolina sea relevante). La salida se fuerza con
+`format=<json schema>` de Ollama (mismo patrón que el VLM) y se valida contra el enum. Dos detalles
+medidos en desarrollo:
+
+- **`think=False` es obligatorio**: qwen3.x razona antes de emitir el JSON y la misma clasificación
+  pasa de **~99 s a ~2 s** al desactivarlo. Si el modelo no acepta el parámetro, se omite solo.
+- **`keep_alive="30m"`**: con el default de Ollama (5 min) cada arranque en frío rebasa el timeout.
+
+**Política de fallo: *fail-open* a `relevante`.** Timeout (`MODERACION_TIMEOUT_S`, 10 s) + 1
+reintento; si aun así no hay etiqueta válida, la consulta **pasa**. Razones: (a) el dominio es de
+bajo riesgo — el agente solo consulta precios; (b) clasificador y agente comparten el mismo Ollama:
+si está caído, el agente fallará de todos modos con su propio manejo, y *fail-closed* solo añadiría
+una segunda forma de negar servicio a usuarios legítimos; (c) el **pre-filtro determinista**
+(`prefiltro.py`, regex conservadoras de insultos fuertes/amenazas/solicitudes ilegales) sigue
+atrapando lo obviamente inapropiado sin LLM. Todo fallback queda auditado con `origen="fallback"`.
+
+**Baneo progresivo** (`baneo.py` = lógica pura en UTC, unit-testeada; `ModeracionStore` en
+`db/stores.py` = persistencia). La **identidad** es `user:<google_sub>` con sesión o
+`ip:<client_ip>` anónimo — se calcula en el servidor, nunca viene del body (no se evade rotando un
+id de navegador, defecto del sistema original). Escalamiento por strikes acumulados:
+
+| Strike | 1 | 2 | 3 | 4 | 5 | 6 | 7+ |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Sanción | advertencia | 1 min | 3 min | 10 min | 1 h | 1 día | 7 días (tope) |
+
+**Perdón:** el contador se reinicia si pasó **más de 1 hora** desde el último incidente **y** la
+sanción previa fue corta (< 1 h) o no hubo; un baneo largo no se perdona por el paso del tiempo.
+El strike es un **`$inc` atómico** (`find_one_and_update`) — dos mensajes inapropiados concurrentes
+cuentan 2, no 1. El baneo vigente se revisa **antes** de clasificar (corta sin gastar LLM). Estado
+y auditoría viven en Mongo con TTL (colecciones `moderacion_usuarios` y `moderacion_log`, ver
+[Datos §3.4.2](3_datos.qmd)); con Mongo caído la capa degrada suave: clasifica y responde, pero los
+strikes no persisten.
+
+Las respuestas moderadas (irrelevante, advertencia, baneo, tiempo restante) salen como **SSE con un
+único evento `done`** — el mismo contrato que el agente, así que el frontend no cambia; los
+metadatos llevan `{moderacion: {etiqueta, origen, accion}}`. Los turnos irrelevantes se guardan en
+el historial (si había conversación); los inapropiados solo en la auditoría. La capa estrenó la
+**suite de pruebas** del repo: `uv run pytest tests/ -q` (escalamiento, perdón en casos límite,
+prefiltro, clasificador con mocks y router).
+
 :::

@@ -14,6 +14,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
+from slowapi.util import get_remote_address
 
 from sina.agent.agent import responder_stream
 from sina.agent.llm.factory import get_llm_provider
@@ -22,6 +23,7 @@ from sina.api.deps import require_csrf, require_csrf_si_sesion, require_session,
 from sina.api.ratelimit import limiter
 from sina.config.app_settings import settings
 from sina.db.chat_store import ChatStore, ConversacionesLlenas
+from sina.moderacion.moderar import ResultadoModeracion, moderar
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +73,46 @@ def _sse(evento: str, dato) -> str:
     return f"event: {evento}\ndata: {json.dumps(dato, ensure_ascii=False, default=str)}\n\n"
 
 
+def _respuesta_moderada(
+    veredicto: ResultadoModeracion, body: ChatIn, sesion: dict | None
+) -> StreamingResponse:
+    """
+    Respuesta de la capa de moderación: SSE con un único evento `done` (mismo
+    contrato que el agente, el frontend no cambia), sin invocar al LLM principal.
+    Los turnos `irrelevante` se registran en el historial si el cliente ya venía
+    con conversación; inapropiados/baneados solo quedan en `moderacion_log`.
+    """
+    dato = {
+        "respuesta": veredicto.respuesta,
+        "metadatos": {"moderacion": {
+            "etiqueta": veredicto.etiqueta,
+            "origen": veredicto.origen,
+            "accion": veredicto.accion,
+        }},
+    }
+    if veredicto.etiqueta == "irrelevante" and sesion is not None and body.conversacion_id:
+        store = ChatStore()
+        if store.disponible:
+            store.append_mensajes(
+                sesion["sub"], body.conversacion_id,
+                [
+                    {"rol": "user", "contenido": body.mensaje},
+                    {"rol": "assistant", "contenido": veredicto.respuesta,
+                     "metadatos": dato["metadatos"]},
+                ],
+            )
+            dato["conversacion_id"] = body.conversacion_id
+
+    def stream():
+        yield _sse("done", dato)
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 def _guard_chat():
     if not settings.enable_chat:
         raise HTTPException(status_code=503, detail="El asistente está deshabilitado.")
@@ -89,6 +131,18 @@ def chat(
     _csrf=Depends(require_csrf_si_sesion),
 ):
     provider = _guard_chat()
+
+    # Moderación (opt-in): baneo → pre-filtro → clasificador. Corta ANTES del
+    # agente (y de autocrear conversación) si la consulta no debe pasar. La
+    # identidad de baneo se calcula aquí y NUNCA viene del body (no rotable).
+    if settings.enable_moderacion:
+        identidad = (
+            f"user:{sesion['sub']}" if sesion else f"ip:{get_remote_address(request)}"
+        )
+        veredicto = moderar(body.mensaje, body.historial, identidad)
+        if not veredicto.permitido:
+            return _respuesta_moderada(veredicto, body, sesion)
+
     u = body.ubicacion or UbicacionIn()
     ctx = ContextoConsulta(
         estado=u.estado, municipio=u.municipio, localidad=u.localidad, lat=u.lat, lng=u.lng

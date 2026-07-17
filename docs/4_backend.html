@@ -200,7 +200,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td><code>POST /api/v1/chat</code></td>
-<td>Chat del agente en <strong>streaming SSE</strong> (ver <a href="./5_agente.html">Agente</a>).</td>
+<td>Chat del agente en <strong>streaming SSE</strong> (ver <a href="./5_agente.html">Agente</a>). Con <code>ENABLE_MODERACION=1</code>, cada consulta pasa antes por la <a href="./5_agente.html#moderacion">capa de moderación</a>.</td>
 </tr>
 <tr class="odd">
 <td><code>GET/POST/DELETE /api/v1/chat/conversaciones[...]</code></td>
@@ -347,6 +347,7 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>Cabeceras</strong> CSP y HSTS (<code>sina/api/security.py</code>); <strong>CORS</strong> por allowlist.</li>
 <li><strong>Rate limiting global</strong> con <code>slowapi</code>: <code>SlowAPIMiddleware</code> aplica el límite por defecto (<strong>240/min por IP</strong>, por instancia salvo backend Redis) a <strong>toda</strong> la API — incluidos los endpoints admin, lo que frena fuerza bruta sobre <code>ADMIN_API_KEY</code> — y los decoradores estrictos siguen mandando en sus rutas (<code>/auth/google</code> 10/min, <code>/chat</code> 20/min).</li>
 <li><strong>Validación de entrada del chat</strong>: <code>lat</code>/<code>lng</code> acotados a rangos geográficos válidos, <code>mensaje</code> con tope de 4 000 caracteres e <code>historial</code> limitado a 50 mensajes de ≤8 000 caracteres cada uno.</li>
+<li><strong>Moderación del chat</strong> (opt-in <code>ENABLE_MODERACION</code>): clasificador LLM dedicado + pre-filtro determinista + <strong>baneo progresivo</strong> por identidad servidor-side (<code>user:&lt;sub&gt;</code> o <code>ip:&lt;ip&gt;</code>, nunca del body), con estado atómico en Mongo y log de auditoría. Detalle en <a href="./5_agente.html#moderacion">Agente §5.8</a>.</li>
 <li><strong>Anti path-traversal</strong> en el flujo annotator (<code>resolver_ruta_flyer</code>) y respuestas 500 genéricas (el stack trace va al log, nunca al cliente).</li>
 <li><strong>Guardas de credenciales por defecto</strong>: en producción (<code>SINA_ENV=prod</code>) el arranque <strong>falla</strong> si <code>DB_PASSWORD</code> sigue siendo el valor de ejemplo del repositorio, y se advierte si <code>MONGO_URI</code> apunta a una instancia sin autenticación (<code>config/app_settings.py</code>).</li>
 <li><strong>Autenticación</strong> Google OAuth 2.0: sesión en <strong>cookie httpOnly + Secure + SameSite firmada</strong> con <strong>CSRF double-submit</strong>. Nunca se guardan contraseñas ni el token de Google.</li>

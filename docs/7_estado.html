@@ -257,46 +257,51 @@ ul.task-list li input[type="checkbox"] {
 <td>LLM Ollama + tools + grafo; SSE; historial Mongo.</td>
 </tr>
 <tr class="odd">
+<td>Moderación del chat</td>
+<td style="text-align: center;">✅</td>
+<td>Clasificador LLM dedicado (opt-in <code>ENABLE_MODERACION</code>) + pre-filtro + baneo progresivo en Mongo; fail-open.</td>
+</tr>
+<tr class="even">
 <td>Pipeline volantes (Ley + Abarrey)</td>
 <td style="text-align: center;">✅</td>
 <td>Descarga → pre-anotar zonas (CV: paneles Ley / bandas Abarrey) → ajuste → VLM por zona → verificación → Postgres (<code>fuente=flyer</code>). YOLO pendiente.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Capa VLM (<code>sina/vlm/</code>)</td>
 <td style="text-align: center;">✅</td>
 <td><code>VLMProvider</code> abstracto + Ollama visión (salida estructurada); gated por <code>ENABLE_VLM</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Scheduling automático</td>
 <td style="text-align: center;">✅</td>
 <td>APScheduler (gasolina 06:00, gas LP sáb 08:00).</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Logging + health check</td>
 <td style="text-align: center;">✅</td>
 <td>Logging unificado; <code>GET /api/v1/health</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>SPA React (Landing + 4 secciones)</td>
 <td style="text-align: center;">✅</td>
 <td>Vite + React + Tailwind + modo oscuro; chat integrado.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Google OAuth</td>
 <td style="text-align: center;">✅</td>
 <td>Cookie httpOnly + CSRF; requiere <code>GOOGLE_OAUTH_CLIENT_ID</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>GeminiProvider</code> (LLM patrocinado)</td>
 <td style="text-align: center;">❌</td>
 <td>Hueco listo (subclase de la ABC).</td>
 </tr>
-<tr class="even">
-<td>Tests / CI-CD / Containerfile</td>
-<td style="text-align: center;">❌</td>
-<td>Fase 5.</td>
-</tr>
 <tr class="odd">
+<td>Tests / CI-CD / Containerfile</td>
+<td style="text-align: center;">🚧</td>
+<td>pytest estrenado con la suite de moderación (<code>tests/</code>); CI/CD y Containerfile pendientes (Fase 5).</td>
+</tr>
+<tr class="even">
 <td>QQP / PROFECO</td>
 <td style="text-align: center;">🗑️</td>
 <td><strong>Eliminado del código</strong> (jul 2026): modelo y repositorio borrados; la tabla <code>qqp_precios</code> puede quedar huérfana en DBs existentes.</td>
@@ -365,6 +370,7 @@ Figura&nbsp;1: Roadmap por fases y su estado
 <li><label><input type="checkbox" checked="">Motor de grafo propio (sin LangChain/LangGraph); iteraciones acotadas.</label></li>
 <li><label><input type="checkbox" checked=""><code>POST /api/v1/chat</code> en <strong>streaming SSE</strong> con pausa; historial en MongoDB.</label></li>
 <li><label><input type="checkbox" checked="">Telemetría por mensaje.</label></li>
+<li><label><input type="checkbox" checked=""><strong>Capa de moderación</strong> (<code>sina/moderacion/</code>, opt-in <code>ENABLE_MODERACION</code>): clasificador LLM chico dedicado (<code>qwen3.5:9b</code>, salida estructurada + <code>think=False</code>, fail-open) + pre-filtro regex + <strong>baneo progresivo</strong> por identidad servidor-side con estado atómico y auditoría en Mongo. Incluye la primera suite de pruebas del repo (<code>uv run pytest tests/ -q</code>).</label></li>
 <li><label><input type="checkbox"><code>GeminiProvider</code> real (con <code>cached_tokens</code>) y streaming SSE “premium” (reintentos). <em>(futuro)</em></label></li>
 </ul>
 </section>
@@ -383,7 +389,7 @@ Figura&nbsp;1: Roadmap por fases y su estado
 <section id="fase-5-calidad-y-despliegue" class="level3">
 <h3 class="anchored" data-anchor-id="fase-5-calidad-y-despliegue">7.2.5. Fase 5 — Calidad y despliegue ❌</h3>
 <ul class="task-list">
-<li><label><input type="checkbox">Tests con pytest (repos/tools, endpoints, mocks de scrapers y gobierno).</label></li>
+<li><label><input type="checkbox">Tests con pytest (repos/tools, endpoints, mocks de scrapers y gobierno). <em>(Estrenado con la suite de la capa de moderación — <code>tests/</code> + pytest como dev-dependency; falta cubrir el resto.)</em></label></li>
 <li><label><input type="checkbox">CI/CD con GitHub Actions (lint + tests en PR; build de imagen al merge).</label></li>
 <li><label><input type="checkbox">Empaquetado con Podman (<code>Containerfile</code>, no Docker) + <code>compose</code> app + Postgres.</label></li>
 <li><label><input type="checkbox">Deploy multi-destino: local / servidor dedicado / <strong>GCP</strong> (Cloud Run + Cloud SQL + Scheduler).</label></li>

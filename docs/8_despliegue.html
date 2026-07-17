@@ -228,7 +228,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Para el chat (Fase 3):</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen3.6:35b                        <span class="co"># multimodal: chat (tools) + VLM de flyers</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen3-embedding:8b                 <span class="co"># embeddings (búsqueda semántica)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># .env → ENABLE_CHAT=1</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> pull qwen3.5:9b                         <span class="co"># clasificador de moderación (opcional)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># .env → ENABLE_CHAT=1  (+ ENABLE_MODERACION=1 para la capa de moderación)</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Frontend (SPA):</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> frontend</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
@@ -420,18 +421,22 @@ Puertos en la máquina de desarrollo: por qué SINA usa 5433 y 27018
 <td><code>ENABLE_CHAT</code>, <code>LLM_PROVIDER</code>, <code>OLLAMA_HOST</code>, <code>OLLAMA_MODEL</code>, <code>LLM_TEMPERATURE</code>, <code>LLM_MAX_ITERS</code></td>
 </tr>
 <tr class="even">
+<td>Moderación del chat</td>
+<td><code>ENABLE_MODERACION</code>, <code>MODERACION_MODEL</code>, <code>MODERACION_HOST</code> (vacío = <code>OLLAMA_HOST</code>), <code>MODERACION_TIMEOUT_S</code> — ver <a href="./5_agente.html#moderacion">Agente §5.8</a></td>
+</tr>
+<tr class="odd">
 <td>Embeddings</td>
 <td><code>ENABLE_EMBEDDINGS</code>, <code>EMBEDDING_MODEL</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>MongoDB (chat)</td>
 <td><code>MONGO_URI</code>, <code>MONGO_DB</code>, <code>CHAT_MAX_CONVERSACIONES</code>, <code>CHAT_CHUNK_SIZE</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Scheduler</td>
 <td><code>ENABLE_SCHEDULER</code>, <code>ENABLE_SUPERMERCADOS_SCRAPING</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Seguridad / auth</td>
 <td><code>GOOGLE_OAUTH_CLIENT_ID</code>, <code>ADMIN_API_KEY</code>, allowlist de CORS</td>
 </tr>
@@ -443,7 +448,8 @@ Puertos en la máquina de desarrollo: por qué SINA usa 5433 y 27018
 <ul>
 <li><strong>Scheduler</strong> (<code>ENABLE_SCHEDULER=1</code>): gasolina diario 06:00, gas LP sábados 08:00 (hora MX); supermercados semanal <strong>opt-in</strong> (<code>ENABLE_SUPERMERCADOS_SCRAPING</code>).</li>
 <li><strong>Health check:</strong> <code>GET /api/v1/health</code> reporta la última actualización y la vigencia por categoría.</li>
-<li><strong>Degradación elegante:</strong> si MongoDB no está, el chat funciona sin persistencia; si los datos de gobierno fallan, se sirve caché vencida con aviso (<code>fuente = cache_vencido</code>).</li>
+<li><strong>Degradación elegante:</strong> si MongoDB no está, el chat funciona sin persistencia (y la moderación clasifica pero no persiste strikes); si el clasificador de moderación falla o excede su timeout, la consulta <strong>pasa</strong> (fail-open); si los datos de gobierno fallan, se sirve caché vencida con aviso (<code>fuente = cache_vencido</code>).</li>
+<li><strong>Tests:</strong> <code>uv run pytest tests/ -q</code> (suite de la capa de moderación).</li>
 </ul>
 </section>
 <section id="empaquetado-meta" class="level2">

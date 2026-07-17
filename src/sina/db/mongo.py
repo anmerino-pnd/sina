@@ -21,6 +21,8 @@ COL_CONVERSACIONES = "conversaciones"
 COL_CHUNKS = "chat_chunks"
 COL_FLYER_CIUDADES = "flyer_ciudades"   # ciudades añadidas desde la UI del anotador
 COL_REGISTRO_JOBS = "registro_jobs"     # auditoría de corridas del scheduler
+COL_MODERACION_USUARIOS = "moderacion_usuarios"  # strikes/baneos por identidad
+COL_MODERACION_LOG = "moderacion_log"            # auditoría de decisiones de moderación
 
 
 def get_mongo_db():
@@ -43,6 +45,16 @@ def get_mongo_db():
         # Auditoría de jobs: consultar por job/fecha; TTL de 90 días para que no crezca sin tope.
         db[COL_REGISTRO_JOBS].create_index([("job", ASCENDING), ("inicio", DESCENDING)])
         db[COL_REGISTRO_JOBS].create_index("inicio", expireAfterSeconds=90 * 24 * 3600)
+        # Moderación: un doc por identidad; TTL de 30 días sobre el ÚLTIMO incidente
+        # (no sobre banned_until: borraría los tries que la escalada necesita; 30 días
+        # > 7 días de baneo máximo, así que nunca borra un baneo activo).
+        db[COL_MODERACION_USUARIOS].create_index("identidad", unique=True)
+        db[COL_MODERACION_USUARIOS].create_index(
+            "last_inappropriate", expireAfterSeconds=30 * 24 * 3600
+        )
+        # Auditoría de decisiones de moderación: TTL 90 días (igual que registro_jobs).
+        db[COL_MODERACION_LOG].create_index([("identidad", ASCENDING), ("creado_en", DESCENDING)])
+        db[COL_MODERACION_LOG].create_index("creado_en", expireAfterSeconds=90 * 24 * 3600)
         _db = db
         log.info("MongoDB conectado (%s/%s).", settings.mongo_uri, settings.mongo_db)
     except Exception as e:  # noqa: BLE001 — degradar sin persistencia

@@ -33,7 +33,8 @@ Para el chat (Fase 3):
 ```bash
 ollama pull qwen3.6:35b                        # multimodal: chat (tools) + VLM de flyers
 ollama pull qwen3-embedding:8b                 # embeddings (búsqueda semántica)
-# .env → ENABLE_CHAT=1
+ollama pull qwen3.5:9b                         # clasificador de moderación (opcional)
+# .env → ENABLE_CHAT=1  (+ ENABLE_MODERACION=1 para la capa de moderación)
 ```
 
 Frontend (SPA):
@@ -176,6 +177,7 @@ Variables clave (ver `.env.example` para la lista completa):
 | Base de datos | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (si faltan host/name/user/password → SQLite fallback). Ver [§8.3](#db-podman). |
 | Scraping (URLs base) | `SORIANA_BASE_URL`, `DELSOL_BASE_URL`, `BENAVIDES_BASE_URL`, `GUADALAJARA_BASE_URL` |
 | Chat / LLM | `ENABLE_CHAT`, `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `LLM_TEMPERATURE`, `LLM_MAX_ITERS` |
+| Moderación del chat | `ENABLE_MODERACION`, `MODERACION_MODEL`, `MODERACION_HOST` (vacío = `OLLAMA_HOST`), `MODERACION_TIMEOUT_S` — ver [Agente §5.8](5_agente.qmd#moderacion) |
 | Embeddings | `ENABLE_EMBEDDINGS`, `EMBEDDING_MODEL` |
 | MongoDB (chat) | `MONGO_URI`, `MONGO_DB`, `CHAT_MAX_CONVERSACIONES`, `CHAT_CHUNK_SIZE` |
 | Scheduler | `ENABLE_SCHEDULER`, `ENABLE_SUPERMERCADOS_SCRAPING` |
@@ -186,8 +188,11 @@ Variables clave (ver `.env.example` para la lista completa):
 - **Scheduler** (`ENABLE_SCHEDULER=1`): gasolina diario 06:00, gas LP sábados 08:00 (hora MX);
   supermercados semanal **opt-in** (`ENABLE_SUPERMERCADOS_SCRAPING`).
 - **Health check:** `GET /api/v1/health` reporta la última actualización y la vigencia por categoría.
-- **Degradación elegante:** si MongoDB no está, el chat funciona sin persistencia; si los datos de
-  gobierno fallan, se sirve caché vencida con aviso (`fuente = cache_vencido`).
+- **Degradación elegante:** si MongoDB no está, el chat funciona sin persistencia (y la moderación
+  clasifica pero no persiste strikes); si el clasificador de moderación falla o excede su timeout,
+  la consulta **pasa** (fail-open); si los datos de gobierno fallan, se sirve caché vencida con
+  aviso (`fuente = cache_vencido`).
+- **Tests:** `uv run pytest tests/ -q` (suite de la capa de moderación).
 
 ## 8.6. Empaquetado (meta)
 

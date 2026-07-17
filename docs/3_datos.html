@@ -373,10 +373,6 @@ Figura&nbsp;1: Pipeline de ingesta de datos
 <h3 class="anchored" data-anchor-id="mongodb-colecciones">3.4.2. MongoDB (colecciones)</h3>
 <p>Mongo guarda lo <strong>documental que cambia en runtime</strong> y siempre con <strong>degradación suave</strong>: si el contenedor está caído, la app sigue (el chat sin historial, el selector de ciudades con la semilla del JSON, la auditoría como no-op). El chat usa paginación por punteros (detalle en <a href="./5_agente.html#historial">Agente</a>); los stores chicos viven en <code>sina/db/stores.py</code>.</p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Colección</th>
@@ -399,6 +395,14 @@ Figura&nbsp;1: Pipeline de ingesta de datos
 <tr class="even">
 <td><code>registro_jobs</code></td>
 <td>Auditoría de corridas del scheduler <code>{job, inicio, fin, duracion_s, ok, detalles, error}</code> con <strong>TTL de 90 días</strong>. Antes solo logs. El monitor de flyers solo registra ticks <strong>con actividad</strong> (los no-op cada 20 min no ensucian). Consultable en <code>GET /api/v1/annotator/jobs</code> (admin).</td>
+</tr>
+<tr class="odd">
+<td><code>moderacion_usuarios</code></td>
+<td>Estado del <strong>baneo progresivo</strong> por identidad (<code>user:&lt;sub&gt;</code> o <code>ip:&lt;ip&gt;</code>): <code>{identidad, inappropriate_tries, last_inappropriate, banned_until, sancion_previa_s}</code>. Strike con <code>$inc</code> <strong>atómico</strong>. <strong>TTL de 30 días sobre <code>last_inappropriate</code></strong> — no sobre <code>banned_until</code>, que borraría los <code>tries</code> que la escalada necesita (30 días &gt; 7 días de baneo máximo, nunca corta un baneo activo). Ver <a href="./5_agente.html#moderacion">Agente §5.8</a>.</td>
+</tr>
+<tr class="even">
+<td><code>moderacion_log</code></td>
+<td>Auditoría de <strong>cada decisión de moderación</strong> <code>{identidad, mensaje (truncado a 500), etiqueta, origen, accion, duracion_ms}</code> con <strong>TTL de 90 días</strong> — permite revisar falsos positivos/negativos del clasificador.</td>
 </tr>
 </tbody>
 </table>
@@ -537,6 +541,18 @@ Figura&nbsp;2: Pipeline de volantes: descarga → zonas → VLM → verificació
 <td>Mongo (<code>registro_jobs</code>, TTL 90 días)</td>
 <td>Wrapper <code>_con_registro</code> en <code>scheduler.py</code></td>
 <td><code>GET /api/v1/annotator/jobs</code> (admin).</td>
+</tr>
+<tr class="odd">
+<td>Estado de baneo por usuario/IP</td>
+<td>Mongo (<code>moderacion_usuarios</code>, TTL 30 días desde el último incidente)</td>
+<td><code>ModeracionStore</code> desde <code>POST /chat</code> (capa de moderación)</td>
+<td>Strike <code>$inc</code> atómico; degradación suave = strikes no persisten.</td>
+</tr>
+<tr class="even">
+<td>Auditoría de decisiones de moderación</td>
+<td>Mongo (<code>moderacion_log</code>, TTL 90 días)</td>
+<td><code>ModeracionStore.auditar</code> en cada consulta moderada</td>
+<td>Para revisar falsos positivos/negativos del clasificador.</td>
 </tr>
 <tr class="odd">
 <td>Artefactos de flyers (imágenes, <code>metadata/labels/extraccion/persistido.json</code>, <code>labels_yolo/</code>)</td>

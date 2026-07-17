@@ -124,13 +124,14 @@ los selectores Estado/Municipio según la categoría.
 | Embeddings de productos         | ✅*    | Conectados en `upsert_productos` (opt-in `ENABLE_EMBEDDINGS`, requiere pgvector). |
 | Búsqueda / API Supermercados    | ✅     | `GET /api/v1/supermercados` (vectorial con fallback de texto). Falta UI. |
 | Agente / Chat (tools internas)  | ✅     | `sina/agent/` (LLM Ollama + tools + grafo); `POST /api/v1/chat` en streaming SSE; historial en MongoDB. |
+| Moderación del chat             | ✅     | `sina/moderacion/` (opt-in `ENABLE_MODERACION`): clasificador LLM chico dedicado + pre-filtro regex + baneo progresivo persistente en Mongo (fail-open). |
 | Pipeline volantes (Casa Ley)    | ✅*    | Descarga flyer + anotación manual + OCR LLM. Track secundario. |
 | QQP / PROFECO                   | 🗑️     | **Deprecado** (modelo/repo conservados con aviso; endpoints removidos). |
 | Scheduling automático           | ✅     | APScheduler en lifespan (`scheduler.py`); gasolina 06:00, gas LP sáb 08:00. |
 | Logging + health check          | ✅     | Logging unificado (`logging_config.py`); `GET /api/v1/health`. |
 | React SPA                       | ✅     | Vite + React + Tailwind. Landing, Gasolina, Gas LP y Supermercados + modo oscuro. Chat en "próximamente". |
 | Google OAuth                    | ✅     | Login con Google (sesión en cookie httpOnly + CSRF); tablas `usuarios`/`chat_historial`. Requiere configurar `GOOGLE_OAUTH_CLIENT_ID`. |
-| Tests / CI-CD / Containerfile   | ❌     | No existen (Fase 5).                                       |
+| Tests / CI-CD / Containerfile   | 🚧     | pytest estrenado con la suite de moderación (`tests/`, `uv run pytest tests/ -q`); CI/CD y Containerfile pendientes (Fase 5). |
 
 ### 3.2 Pendientes críticos inmediatos
 
@@ -200,6 +201,17 @@ los selectores Estado/Municipio según la categoría.
       login (sin persistencia) y con login (guarda en Mongo). CSRF condicional + rate limit.
 - [x] **Telemetría por mensaje** (para optimizar): modelo, input/output/cached tokens, tokens/seg,
       duración, `tool_timings` y `phase_timings`.
+- [x] **Capa de moderación de consultas** (`sina/moderacion/`, opt-in `ENABLE_MODERACION`, portada
+      de un chatbot RAG previo corrigiendo sus debilidades): cada consulta pasa ANTES del agente por
+      baneo vigente → pre-filtro regex → clasificador LLM **chico dedicado**
+      (`MODERACION_MODEL`=qwen3.5:9b, temp 0, salida estructurada `format=<json schema>` +
+      `think=False` — con razonamiento tarda ~50× más; timeout + 1 reintento, **fail-open a
+      `relevante`**). Router: `relevante` → agente; `irrelevante` → texto cortés fijo (sin LLM);
+      `inapropiado` → baneo progresivo (advertencia→1min→3min→10min→1h→1día→7días; perdón si pasó
+      >1h y la sanción previa fue <1h). Identidad servidor-side (`user:<google_sub>` o
+      `ip:<client_ip>`, nunca del body), strike `$inc` **atómico** en Mongo, TTL nativo y log de
+      auditoría (`moderacion_log`). Respuestas moderadas = SSE con un único `done` (frontend sin
+      cambios). Incluye la **primera suite de pruebas del repo** (`tests/`, pytest dev-dependency).
 - **Sin servidor MCP por ahora**; las tools viven dentro del backend. Empaquetarlas como
   servidor MCP estándar queda como posible evolución futura.
 - [ ] Pendiente: `GeminiProvider` real (con `cached_tokens`), y streaming SSE "premium" (reintentos).
@@ -236,7 +248,8 @@ los selectores Estado/Municipio según la categoría.
 ### FASE 5 — Calidad y Despliegue (Producción)
 **Meta:** que sea desplegable y mantenible siguiendo buenas prácticas.
 - [ ] Tests con pytest (unit de repositorios/tools; integración de endpoints; mocks de
-      scrapers y de gobierno).
+      scrapers y de gobierno). *(Estrenado: `tests/` cubre la capa de moderación — baneo/perdón,
+      prefiltro, clasificador con mocks y router; falta cubrir el resto del sistema.)*
 - [ ] CI/CD con GitHub Actions: lint + tests en PR; build de imagen al hacer merge.
 - [ ] Empaquetado con **Podman** (`Containerfile`, no Docker); `compose` para app + Postgres.
 - [ ] Deploy multi-destino:
@@ -295,8 +308,11 @@ El chat NO usa PostgreSQL: por ser documental y con paginación por punteros, vi
 | ---------------- | ---------------------------------------------------------------------- |
 | `conversaciones` | `{google_sub, titulo, cabeza_chunk_id→chunk más reciente, num_mensajes, ultimo_preview}` |
 | `chat_chunks`    | `{conversacion_id, mensajes:[…≤CHAT_CHUNK_SIZE], anterior_id→chunk más viejo, seq}` — se pagina hacia atrás siguiendo `anterior_id` |
+| `moderacion_usuarios` | Estado del baneo progresivo por identidad (`user:<sub>` / `ip:<ip>`): tries, último incidente, `banned_until`. Strike `$inc` atómico; **TTL 30 días** sobre el último incidente (no sobre `banned_until`, que borraría los tries de la escalada). |
+| `moderacion_log` | Auditoría de cada decisión de moderación (etiqueta, origen, acción, duración); **TTL 90 días**. |
 
-Si Mongo no está disponible, el chat sigue funcionando **sin** persistencia (degradación elegante).
+Si Mongo no está disponible, el chat sigue funcionando **sin** persistencia (degradación elegante;
+la moderación clasifica pero no persiste strikes).
 
 ---
 

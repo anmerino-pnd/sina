@@ -123,6 +123,8 @@ semilla del JSON, la auditoría como no-op). El chat usa paginación por puntero
 | `chat_chunks` | `{conversacion_id, mensajes:[…≤CHAT_CHUNK_SIZE], anterior_id, seq}` |
 | `flyer_ciudades` | Ciudades añadidas desde la UI del anotador ("Añadir otra…"). Antes se usaban al vuelo y se perdían; el JSON versionado queda como **semilla** de solo lectura y el selector muestra semilla ∪ Mongo (dedup por clave normalizada). |
 | `registro_jobs` | Auditoría de corridas del scheduler `{job, inicio, fin, duracion_s, ok, detalles, error}` con **TTL de 90 días**. Antes solo logs. El monitor de flyers solo registra ticks **con actividad** (los no-op cada 20 min no ensucian). Consultable en `GET /api/v1/annotator/jobs` (admin). |
+| `moderacion_usuarios` | Estado del **baneo progresivo** por identidad (`user:<sub>` o `ip:<ip>`): `{identidad, inappropriate_tries, last_inappropriate, banned_until, sancion_previa_s}`. Strike con `$inc` **atómico**. **TTL de 30 días sobre `last_inappropriate`** — no sobre `banned_until`, que borraría los `tries` que la escalada necesita (30 días > 7 días de baneo máximo, nunca corta un baneo activo). Ver [Agente §5.8](5_agente.qmd#moderacion). |
+| `moderacion_log` | Auditoría de **cada decisión de moderación** `{identidad, mensaje (truncado a 500), etiqueta, origen, accion, duracion_ms}` con **TTL de 90 días** — permite revisar falsos positivos/negativos del clasificador. |
 
 ## 3.5. Embeddings y búsqueda semántica
 
@@ -266,6 +268,8 @@ archivos (imágenes de flyers) y **git** para configuración que es parte del c�
 | Historial de chat + telemetría por mensaje | Mongo (`conversaciones`, `chat_chunks`) | `POST /chat` al completar el stream | Solo usuarios con sesión; anónimos no persisten. |
 | Ciudades de flyers añadidas en la UI | Mongo (`flyer_ciudades`) | `POST /annotator/flyer` (si la descarga funcionó) | Semilla de solo lectura: `config/flyer_ciudades.json`. |
 | Auditoría de jobs del scheduler | Mongo (`registro_jobs`, TTL 90 días) | Wrapper `_con_registro` en `scheduler.py` | `GET /api/v1/annotator/jobs` (admin). |
+| Estado de baneo por usuario/IP | Mongo (`moderacion_usuarios`, TTL 30 días desde el último incidente) | `ModeracionStore` desde `POST /chat` (capa de moderación) | Strike `$inc` atómico; degradación suave = strikes no persisten. |
+| Auditoría de decisiones de moderación | Mongo (`moderacion_log`, TTL 90 días) | `ModeracionStore.auditar` en cada consulta moderada | Para revisar falsos positivos/negativos del clasificador. |
 | Artefactos de flyers (imágenes, `metadata/labels/extraccion/persistido.json`, `labels_yolo/`) | Filesystem `datos/flyers/<tienda>/<ciudad>/<fecha>/` | Spiders + endpoints del anotador | **A propósito NO van a Mongo**: acompañan a las imágenes que describen y el ciclo de vida debe funcionar aunque Mongo esté caído. |
 | Dataset YOLO consolidado | Filesystem `datos/yolo_dataset/` | `python -m sina.annotator.dataset` | Derivado; se reconstruye completo en cada corrida. |
 | Configs (clases, ciudades semilla, rutas de tiendas) | Git (`src/sina/config/*.json`) | El desarrollador (commit) | Configuración = código; no se muta en runtime. |

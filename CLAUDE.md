@@ -24,7 +24,9 @@ podman-compose up -d                             # start PostgreSQL 16 + pgvecto
 
 The chat agent (Fase 3) needs **Ollama** running with a tool-capable model
 (`ollama pull qwen3.6:35b` — multimodal, shared by chat AND the flyer VLM) and `ENABLE_CHAT=1`.
-Chat history persists to **MongoDB** (from
+The optional moderation layer additionally needs its own small classifier model
+(`ollama pull qwen3.5:9b`, or point `MODERACION_MODEL` at another local one) and
+`ENABLE_MODERACION=1`. Chat history persists to **MongoDB** (from
 compose); if Mongo is down the chat still answers, just without saving.
 
 **Port gotcha (dev machine):** the Mongo container publishes on **host port 27018**
@@ -35,9 +37,9 @@ also auto-restarted) competes for 5432.
 `podman-restart` is enabled inside the podman machine, so `podman machine start` after a
 reboot is enough to revive both containers.
 
-There is **no test suite** in the repo yet (the README's `pytest tests/` is aspirational —
-no `tests/` directory exists). Verify changes by running the server and hitting endpoints,
-e.g. `GET /api/v1/gasolina?estado=sonora&municipio=hermosillo`.
+Tests: `uv run pytest tests/ -q` (hoy cubre la capa de moderación: baneo/perdón, prefiltro,
+clasificador con mocks y router). Para el resto del sistema, verifica corriendo el servidor
+y pegándole a los endpoints, e.g. `GET /api/v1/gasolina?estado=sonora&municipio=hermosillo`.
 
 ## Database selection (important gotcha)
 
@@ -134,6 +136,17 @@ chat (Fase 3), auth/users, and annotator.
 - **Endpoint** `src/sina/api/chat.py`: `POST /api/v1/chat` es **SSE** (`text/event-stream`), sesión opcional
   (`require_csrf_si_sesion` en `deps.py`), rate-limited; **solo persiste al completar** el stream (pausa = no
   guarda). CRUD de conversaciones con paginación por puntero.
+- **Moderación — `src/sina/moderacion/`** (opt-in `ENABLE_MODERACION`, off por default): capa previa al
+  agente en el endpoint. Orden: baneo vigente → `prefiltro.py` (regex de lo obviamente inapropiado) →
+  `clasificador.py` (LLM chico **dedicado**, `MODERACION_MODEL`=qwen3.5:9b, `format=<json schema>` +
+  `think=False` — con razonamiento tarda ~50× más; timeout + 1 reintento, **fail-open a `relevante`**) →
+  router `moderar.py`: `relevante` pasa al agente, `irrelevante` responde texto fijo (sin LLM),
+  `inapropiado` escala el baneo progresivo (advertencia→1min→3min→10min→1h→1día→7días, perdón si pasó
+  >1h y la sanción previa fue <1h). Lógica pura en `baneo.py` (UTC, unit-testeada); estado en Mongo
+  (`ModeracionStore` en `db/stores.py`: `$inc` atómico, TTL 30 días sobre `last_inappropriate`;
+  auditoría en `moderacion_log`, TTL 90 días). Identidad de baneo: `user:<google_sub>` o
+  `ip:<client_ip>` (nunca del body). Las respuestas moderadas salen como SSE con un único `done`
+  (el frontend no cambia). Tests en `tests/` (`uv run pytest tests/ -q` — primera suite del repo).
 
 **MongoDB — `src/sina/db/mongo.py` + `chat_store.py` + `stores.py`:** `get_mongo_db()` perezoso
 (devuelve `None` si Mongo no está → TODO lo de Mongo degrada suave, nunca es dependencia dura).

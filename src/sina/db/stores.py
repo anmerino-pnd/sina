@@ -10,14 +10,30 @@ Qué vive aquí y por qué (ver "Mapa de almacenamiento" en quarto/3_datos.qmd):
   al vuelo y se perdían al recargar.
 - `registro_jobs`: auditoría de corridas del scheduler (qué job corrió, cuándo,
   cuánto tardó, qué hizo). Antes solo existía en logs; con TTL de 90 días.
+- `moderacion_usuarios` / `moderacion_log`: estado del baneo progresivo por
+  identidad (TTL 30 días desde el último incidente) y auditoría de cada
+  decisión de moderación (TTL 90 días). Ver `sina/moderacion/`.
 """
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from sina.config.timezone import get_mexico_now
-from sina.db.mongo import COL_FLYER_CIUDADES, COL_REGISTRO_JOBS, get_mongo_db
+from sina.db.mongo import (
+    COL_FLYER_CIUDADES,
+    COL_MODERACION_LOG,
+    COL_MODERACION_USUARIOS,
+    COL_REGISTRO_JOBS,
+    get_mongo_db,
+)
+from sina.moderacion.baneo import (
+    ahora_utc,
+    calcular_sancion,
+    mensaje_sancion,
+    mensaje_tiempo_restante,
+)
 
 log = logging.getLogger(__name__)
 
@@ -118,3 +134,134 @@ class RegistroJobsStore:
                     d[k] = d[k].isoformat()
             corridas.append(d)
         return corridas
+
+
+def _como_utc(dt: datetime) -> datetime:
+    """pymongo devuelve datetimes naive (UTC); los normaliza a aware."""
+    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+
+
+class ModeracionStore:
+    """
+    Estado del baneo progresivo por identidad (`user:<sub>` o `ip:<ip>`) +
+    auditoría de decisiones. La lógica de escalamiento/perdón vive en
+    `sina/moderacion/baneo.py` (pura); aquí solo la persistencia.
+
+    Con Mongo caído degrada suave: `revisar_baneo` deja pasar y
+    `registrar_inapropiado` devuelve solo la advertencia sin persistir.
+    """
+
+    def __init__(self) -> None:
+        self.db = get_mongo_db()
+
+    @property
+    def disponible(self) -> bool:
+        return self.db is not None
+
+    def revisar_baneo(self, identidad: str) -> str | None:
+        """Mensaje de tiempo restante si sigue baneado; None si puede pasar."""
+        if not self.disponible:
+            return None
+        try:
+            doc = self.db[COL_MODERACION_USUARIOS].find_one({"identidad": identidad})
+            if not doc or not doc.get("banned_until"):
+                return None
+            ahora = ahora_utc()
+            banned_until = _como_utc(doc["banned_until"])
+            if banned_until > ahora:
+                return mensaje_tiempo_restante(banned_until, ahora)
+            # Baneo expirado: limpiar y dejar pasar.
+            self.db[COL_MODERACION_USUARIOS].update_one(
+                {"identidad": identidad}, {"$unset": {"banned_until": ""}}
+            )
+            return None
+        except Exception:  # noqa: BLE001 — la moderación nunca tumba el chat
+            log.exception("No se pudo revisar el baneo de %s", identidad)
+            return None
+
+    def registrar_inapropiado(self, identidad: str) -> tuple[str, str]:
+        """
+        Aplica perdón + strike + escalamiento. Devuelve `(mensaje, accion)` con
+        accion "advertencia" | "baneo_<segundos>s" | "advertencia_sin_persistir".
+
+        El paso crítico (strike) es un `$inc` atómico: dos mensajes inapropiados
+        concurrentes del mismo usuario cuentan 2, no 1 (defecto del original).
+        """
+        ahora = ahora_utc()
+        if not self.disponible:
+            log.warning("Mongo no disponible; strike de %s no se persiste.", identidad)
+            return mensaje_sancion(None), "advertencia_sin_persistir"
+        try:
+            col = self.db[COL_MODERACION_USUARIOS]
+            # 1. Perdón (espejo en Mongo de `baneo.aplica_perdon`): reinicia el
+            #    contador si pasó MÁS de 1 h del último incidente Y la sanción
+            #    previa fue corta (< 1 h) o no hubo. Update condicional atómico.
+            col.update_one(
+                {
+                    "identidad": identidad,
+                    "last_inappropriate": {"$lt": ahora - timedelta(hours=1)},
+                    "$or": [
+                        {"sancion_previa_s": {"$exists": False}},
+                        {"sancion_previa_s": None},
+                        {"sancion_previa_s": {"$lt": 3600}},
+                    ],
+                },
+                {"$set": {"inappropriate_tries": 0}},
+            )
+            # 2. Strike atómico.
+            from pymongo import ReturnDocument
+
+            doc = col.find_one_and_update(
+                {"identidad": identidad},
+                {
+                    "$inc": {"inappropriate_tries": 1},
+                    "$set": {"last_inappropriate": ahora, "actualizado_en": ahora},
+                },
+                upsert=True,
+                return_document=ReturnDocument.AFTER,
+            )
+            tries = int(doc["inappropriate_tries"])
+            # 3. Escalamiento (carrera residual benigna: last-writer-wins entre
+            #    dos sanciones casi simultáneas del mismo usuario).
+            sancion = calcular_sancion(tries)
+            if sancion is None:
+                col.update_one(
+                    {"identidad": identidad}, {"$set": {"sancion_previa_s": None}}
+                )
+                return mensaje_sancion(None), "advertencia"
+            col.update_one(
+                {"identidad": identidad},
+                {"$set": {
+                    "banned_until": ahora + sancion,
+                    "sancion_previa_s": sancion.total_seconds(),
+                }},
+            )
+            return mensaje_sancion(sancion), f"baneo_{int(sancion.total_seconds())}s"
+        except Exception:  # noqa: BLE001
+            log.exception("No se pudo registrar el strike de %s", identidad)
+            return mensaje_sancion(None), "advertencia_sin_persistir"
+
+    def auditar(
+        self,
+        identidad: str,
+        mensaje: str,
+        etiqueta: str,
+        origen: str,
+        accion: str,
+        duracion_ms: float | None = None,
+    ) -> None:
+        """Log de auditoría de CADA decisión (para revisar falsos positivos)."""
+        if not self.disponible:
+            return
+        try:
+            self.db[COL_MODERACION_LOG].insert_one({
+                "identidad": identidad,
+                "mensaje": mensaje[:500],
+                "etiqueta": etiqueta,
+                "origen": origen,
+                "accion": accion,
+                "duracion_ms": round(duracion_ms, 1) if duracion_ms is not None else None,
+                "creado_en": ahora_utc(),
+            })
+        except Exception:  # noqa: BLE001 — la auditoría nunca tumba el chat
+            log.exception("No se pudo auditar la decisión de moderación")
