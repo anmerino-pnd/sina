@@ -5,7 +5,6 @@ sina.egg-info
 chromedriver.exe
 datos/flyers/
 datos/yolo_dataset/
-datos/db
 logs/
 frontend/node_modules
 frontend/dist
