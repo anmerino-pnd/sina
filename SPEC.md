@@ -49,11 +49,14 @@ primera necesidad, para que gaste menos o le afecte lo menos posible.
 | Empaquetado   | uv (deps) + Podman (compose DB) | Podman / Containerfile (no Docker)         |
 | Deploy        | Local                           | PC / servidor dedicado / GCP (Cloud Run)   |
 
-> **Nota — SQLite quedó descartado.** Al ejecutar los scrapers de ubicaciones de gasolineras
-> y de localidades por municipio, el volumen de datos hizo inviable SQLite. Se adoptó
-> **PostgreSQL + pgvector**: PostgreSQL aguanta el volumen y pgvector permite guardar
-> embeddings de productos para búsqueda semántica. SQLite queda solo como *fallback* de
-> desarrollo (ver `get_db_url()` en `config/credentials.py`).
+> **Nota — SQLite quedó descartado como almacén versionado.** Al ejecutar los scrapers de
+> ubicaciones de gasolineras y de localidades por municipio, más el histórico deprecado de QQP,
+> el archivo `.db` superó los 265 MB en Git LFS. Se adoptó **PostgreSQL 16 + pgvector** vía Podman
+> como base por defecto, y los catálogos fundacionales (32 entidades, 2,476 municipios, **297,878
+> localidades CNE** y **11,023 coordenadas de gasolineras**) se extrajeron a archivos semilla
+> ligeros en **`datos/seeds/`** (`catalogo_municipios.json`, `cne_localidades.parquet` y
+> `ubicaciones_gasolineras.parquet`, ~2.7 MB en total con compresión `zstd`) que `sina.db.seeder`
+> carga en bloque. SQLite queda únicamente como *fallback* efímero de desarrollo local (ignorado en Git).
 
 ### 2.2 Patrón Arquitectónico (meta)
 
@@ -84,7 +87,7 @@ primera necesidad, para que gaste menos o le afecte lo menos posible.
 │  catálogos CNE · config de scraping · usuarios / chat     │
 └─────────────────────────────────────────────────────────┘
         ▲
-        │ scrapers (gobierno: requests · supermercados: Playwright/Selenium)
+        │ seeder (datos/seeds/*.parquet) + scrapers (gobierno: requests · supermercados: Playwright/curl_cffi)
 ```
 
 ### 2.3 Estrategia de Datos (Caching Inteligente)
@@ -94,7 +97,7 @@ primera necesidad, para que gaste menos o le afecte lo menos posible.
 | Gasolina      | Diaria (AM)       | Usuario busca + datos > 24h              |
 | Gas LP        | Semanal (sábado)  | Usuario busca + datos > último sábado    |
 | Supermercados | Programada        | Scraping directo (Soriana, Del Sol, Benavides, Guadalajara) |
-| Ubicaciones   | Una vez + updates | Scraping inicial, luego solo cambios     |
+| Ubicaciones / Localidades | Semilla inicial + updates | `sina.db.seeder` desde `datos/seeds/*.parquet`, luego solo cambios |
 
 **Regla general:** si el usuario busca un lugar y los datos están vigentes → se sirve de
 caché; si vencieron → se llama a la API de gobierno / se re-scrapea → se guarda en DB →
@@ -112,47 +115,45 @@ los selectores Estado/Municipio según la categoría.
 
 | Módulo                          | Estado | Notas                                                      |
 | ------------------------------- | ------ | ---------------------------------------------------------- |
-| Pipeline + API Gasolina         | ✅     | API CRE + caché 24h on-demand. Falta scheduler automático. |
-| UI Gasolina (Jinja2)            | ✅     | Mapa + ranking. Migra a SPA preservando funciones.         |
-| Scraper ubicaciones gasolineras | ✅     | Código listo; se corre puntualmente.                       |
-| Pipeline + API Gas LP           | ✅     | API CNE + caché semanal. Falta scheduler automático.       |
-| UI Gas LP (Jinja2)              | ✅     | Cascada estado→municipio→localidad. Migra a SPA.           |
+| Pipeline + API Gasolina         | ✅     | API CRE + caché 24h on-demand + scheduler.                 |
+| UI Gasolina (SPA)               | ✅     | Mapa + ranking + calculadora + cercanas en React SPA.      |
+| Semillas Parquet (`datos/seeds/`) | ✅   | `catalogo_municipios.json` + `cne_localidades.parquet` (297.8k) + `ubicaciones_gasolineras.parquet` (11k); cargadas en bloque por `sina.db.seeder`. |
+| Pipeline + API Gas LP           | ✅     | API CNE + caché semanal + scheduler.                       |
+| UI Gas LP (SPA)                 | ✅     | Cascada estado→municipio→localidad en React SPA.           |
 | Scraping Soriana                | ✅     | SFCC; Playwright; `upsert` a tabla `supermercados` (mapeo `pid_origen`→`pid`). |
 | Scraping Del Sol                | ✅     | VTEX; Playwright async; `upsert` a `supermercados`.        |
 | Scraping Benavides              | ✅     | Magento; `curl_cffi` (server-side, sin navegador); paginación `?p=N`. |
 | Scraping Farmacias Guadalajara  | ✅     | SFCC; `curl_cffi`; paginación "Show More" SFCC; pestañas Super/Farmacia/Dermo (Ofertas excluida por solaparse). |
 | Embeddings de productos         | ✅*    | Conectados en `upsert_productos` (opt-in `ENABLE_EMBEDDINGS`, requiere pgvector). |
-| Búsqueda / API Supermercados    | ✅     | `GET /api/v1/supermercados` (vectorial con fallback de texto). Falta UI. |
+| Búsqueda / API Supermercados    | ✅     | `GET /api/v1/supermercados` (vectorial con fallback de texto) + vista en SPA. |
 | Agente / Chat (tools internas)  | ✅     | `sina/agent/` (LLM Ollama + tools + grafo); `POST /api/v1/chat` en streaming SSE; historial en MongoDB. |
 | Moderación del chat             | ✅     | `sina/moderacion/` (opt-in `ENABLE_MODERACION`): clasificador LLM chico dedicado + pre-filtro regex + baneo progresivo persistente en Mongo (fail-open). |
-| Pipeline volantes (Casa Ley)    | ✅*    | Descarga flyer + anotación manual + OCR LLM. Track secundario. |
-| QQP / PROFECO                   | 🗑️     | **Deprecado** (modelo/repo conservados con aviso; endpoints removidos). |
+| Pipeline volantes (Ley + Abarrey)| ✅*   | Descarga flyer + pre-anotación CV por zonas + VLM + verificación humana → Postgres (`fuente=flyer`). |
+| QQP / PROFECO                   | 🗑️     | **Eliminado** (código y `.db` legacy removidos; reemplazado por scraping directo a `supermercados`). |
 | Scheduling automático           | ✅     | APScheduler en lifespan (`scheduler.py`); gasolina 06:00, gas LP sáb 08:00. |
 | Logging + health check          | ✅     | Logging unificado (`logging_config.py`); `GET /api/v1/health`. |
-| React SPA                       | ✅     | Vite + React + Tailwind. Landing, Gasolina, Gas LP y Supermercados + modo oscuro. Chat en "próximamente". |
-| Google OAuth                    | ✅     | Login con Google (sesión en cookie httpOnly + CSRF); tablas `usuarios`/`chat_historial`. Requiere configurar `GOOGLE_OAUTH_CLIENT_ID`. |
-| Tests / CI-CD / Containerfile   | 🚧     | pytest estrenado con la suite de moderación (`tests/`, `uv run pytest tests/ -q`); CI/CD y Containerfile pendientes (Fase 5). |
+| React SPA                       | ✅     | Vite + React + Tailwind. Landing, Gasolina, Gas LP, Supermercados y Chat + modo oscuro. |
+| Google OAuth                    | ✅     | Login con Google (sesión en cookie httpOnly + CSRF); tabla `usuarios`. Requiere configurar `GOOGLE_OAUTH_CLIENT_ID`. |
+| Tests / CI-CD / Containerfile   | 🚧     | pytest con suites de moderación y seeder (`tests/`, `uv run pytest tests/ -q`); CI/CD y Containerfile pendientes (Fase 5). |
 
-### 3.2 Pendientes críticos inmediatos
+### 3.2 Hoja de Ruta Operativa Inmediata (Transición a Podman + Extracción + LLM)
 
-- [x] Fijar PostgreSQL + pgvector como base por defecto (extensión `vector` auto-creada en
-      `repository.py`; `.env.example` alineado con `compose.yaml`).
-- [x] Deprecar QQP/PROFECO sin borrarlo (modelo `PrecioQQP` y `QQPRepository` conservados con
-      aviso `DeprecationWarning`, por si se reactiva).
-- [x] Scheduler automático (gasolina diario 06:00, gas LP sábados 08:00; hora MX).
-- [ ] Conectar embeddings al `upsert_productos()` y añadir búsqueda vectorial. *(Fase 2)*
-- [ ] Endpoint + consulta de supermercados. *(Fase 2)*
+- [x] **Paso 1 — Extracción de semillas y retiro de `sina_data.db`:** Extraer `cne_localidades` (297,878 filas) y ubicaciones de `gasolineras` (11,023 filas) a formato **Parquet (`zstd`)** en `datos/seeds/`, refactorizar `sina.db.seeder` con upserts por lotes (`BATCH_SIZE=5000`), restringir el mount estático a `/datos/flyers` y eliminar `sina_data.db` (Git LFS) y archivos prototipo antiguos.
+- [x] **Paso 2 — Infraestructura local con Podman + Validación de Gasolina y Gas LP:** Instalar WSL2 + Podman + Ollama en la estación de trabajo, configurar `.env`, levantar `podman-compose up -d` (`sina_db` con PostgreSQL 16 + `pgvector` en `:5433` y `sina_mongo` en `:27018`), poblar semillas con `uv run python -m sina.db.seeder` y validar tableros de **Gasolina** y **Gas LP** contra las APIs de la CNE (`cne.gob.mx`) y mapa OpenStreetMap.
+- [ ] **Paso 3 — Etapa de Extracción de Supermercados y Volantes (en espera):** Ejecutar y validar la ingesta en PostgreSQL de spiders server-side (`curl_cffi`: Benavides y Farmacias Guadalajara), spiders con navegador headless (`Playwright`: Soriana y Del Sol) y volantes (`Abarrey` y `Casa Ley` con fallback a Edge).
+- [ ] **Paso 4 — Activación de Modelos en Ollama (LLM/VLM/Embeddings) y Ampliación de Pruebas:** Descargar modelos en GPU de 16 GB VRAM (NVIDIA RTX 5060 Ti), activar chat/moderación/embeddings, correr `sina.embedder.backfill` y ampliar la suite de pruebas con `pytest`.
 
 ---
 
 ## 4. Fases de Desarrollo
 
-### FASE 1 — Estabilización del Backend ✅
-**Meta:** que gasolina y gas LP corran solos y la base sea PostgreSQL.
-- [x] PostgreSQL + pgvector como default; SQLite solo fallback dev. La extensión `vector` se
+### FASE 1 — Estabilización del Backend y Semillas ✅
+**Meta:** que gasolina y gas LP corran solos, las semillas sean ligeras/reproducibles y la base sea PostgreSQL.
+- [x] PostgreSQL + pgvector como default; SQLite solo fallback dev (ignorado en Git). La extensión `vector` se
       crea automáticamente al arrancar (`repository.py`) y `.env.example` coincide con `compose.yaml`.
-- [x] Deprecar QQP/PROFECO **sin borrar** (modelo `PrecioQQP` + `QQPRepository` con
-      `DeprecationWarning`; la tabla se sigue creando por si se reactiva).
+- [x] Extracción de catálogos base a `datos/seeds/` (`catalogo_municipios.json`, `cne_localidades.parquet`,
+      `ubicaciones_gasolineras.parquet`) y carga masiva idempotente en `sina.db.seeder`.
+- [x] Eliminar QQP/PROFECO y el archivo binario `sina_data.db` (265 MB) del repositorio.
 - [x] APScheduler en el `lifespan` de FastAPI (`sina/scheduler.py`), controlado por
       `ENABLE_SCHEDULER`:
   - Gasolina: diario 6:00 AM (hora centro MX)
@@ -346,8 +347,16 @@ Las tools consultan los repositorios existentes (`GasolinaRepository`, `GasLPRep
 
 ---
 
-## 7. Estrategia de Despliegue
+## 7. Estrategia de Despliegue y Flujo de Trabajo con Git
 
+- **Flujo de trabajo profesional por ramas (Git Branching):**
+  - La rama `main` representa siempre una base estable y funcional. **No se desarrolla directamente sobre `main`.**
+  - Cada feature, corrección o fase se trabaja en una rama dedicada siguiendo prefijos estándar:
+    - `feat/<nombre-corto>` — nuevas funcionalidades o etapas del roadmap (p. ej. `feat/supermercados-ingesta`, `feat/ollama-agente`).
+    - `fix/<nombre-corto>` — corrección de errores puntuales.
+    - `docs/<nombre-corto>` — cambios de documentación o Quarto.
+    - `test/<nombre-corto>` / `chore/<nombre-corto>` — pruebas automatizadas, CI/CD, contenedores.
+  - Antes de integrar (`merge` / Pull Request) a `main`, se valida que `pytest` (`uv run python -m pytest tests/ -q`) y el build de la SPA (`npm --prefix frontend run build`) pasen sin errores.
 - **Empaquetado:** Podman (no Docker). `Containerfile` para el backend; `compose.yaml` para
   app + PostgreSQL/pgvector.
 - **Destinos:** PC local · servidor dedicado · **GCP (norte)**.

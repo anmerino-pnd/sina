@@ -97,6 +97,11 @@ def transform_gas_prices(estado: str, municipio: str,
         if col not in df_pivot.columns:
             df_pivot[col] = None
 
+    def _clean_price(val: Any) -> Optional[float]:
+        if val is None or pd.isna(val):
+            return None
+        return float(val)
+
     # ── Construir registros para upsert_precios() ─────────
     registros: List[Dict[str, Any]] = [
         {
@@ -105,9 +110,9 @@ def transform_gas_prices(estado: str, municipio: str,
             "municipio"     : municipio.lower(),
             "nombre"        : row["Nombre"],
             "direccion"     : row["Direccion"],
-            "magna"         : row.get("Magna"),
-            "premium"       : row.get("Premium"),
-            "diesel"        : row.get("Diesel"),
+            "magna"         : _clean_price(row.get("Magna")),
+            "premium"       : _clean_price(row.get("Premium")),
+            "diesel"        : _clean_price(row.get("Diesel")),
             "fecha_registro": get_mexico_now(),
         }
         for _, row in df_pivot.iterrows()
@@ -240,7 +245,10 @@ def scrape_municipio(
     return resultados
 
 def _respuesta_gasolina(registros: list, estado: str, municipio: str, fuente: str) -> Dict[str, Any]:
-    fecha_datos = registros[0].get("fecha_extraccion") if registros else None
+    fecha_datos = next(
+        (r.get("fecha_extraccion") for r in registros if r.get("fecha_extraccion") is not None),
+        None,
+    )
     return {
         "status"     : "ok",
         "fuente"     : fuente,
@@ -276,9 +284,12 @@ def get_precios_gasolina(estado: str, municipio: str,
         registros = repo.obtener_por_municipio(estado, municipio)
         return _respuesta_gasolina(registros, estado, municipio, "cache")
 
-    # ── 2. Vencido pero con datos → servir stale + refrescar en background ──
+    # ── 2. Vencido pero con datos de precios → servir stale + refrescar en background ──
+    # Nota: el seeder inserta filas con solo coordenadas (fecha_extraccion=None).
+    # Esas filas aún no tienen precios, por lo que deben ir al paso 3 (consulta en línea).
     registros = repo.obtener_por_municipio(estado, municipio)
-    if registros:
+    tiene_precios = any(r.get("fecha_extraccion") is not None for r in registros)
+    if registros and tiene_precios:
         refrescar_en_background(
             f"gasolina:{estado}/{municipio}",
             lambda: _refrescar_gasolina(estado, municipio, entidad_id, municipio_id),

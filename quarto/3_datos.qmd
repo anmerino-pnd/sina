@@ -261,7 +261,8 @@ archivos (imágenes de flyers) y **git** para configuración que es parte del c�
 | Dato | Dónde vive | Quién escribe | Notas |
 | --- | --- | --- | --- |
 | Precios (gasolina, gas LP, supermercados) | Postgres | Scrapers + scheduler + anotador (`persistir`) | Fuente de verdad del dominio. |
-| Catálogos geográficos CNE | Postgres | `sina.db.seeder` (manual) | Seed desde `datos/gasolineras/catalogo_municipios.json` (estático, generado en notebook). |
+| Catálogos geográficos CNE (entidades, municipios, 297.8k localidades) | Postgres | `sina.db.seeder` (manual, en lotes) | Seed desde `datos/seeds/catalogo_municipios.json` y `datos/seeds/cne_localidades.parquet` (`zstd`). |
+| Ubicaciones de gasolineras (11k permisos CRE con `latitud/longitud`) | Postgres (`gasolineras`) | `sina.db.seeder` + scraper puntual | Seed base desde `datos/seeds/ubicaciones_gasolineras.parquet`; la API CRE completa precios sin pisar coordenadas. |
 | Rutas de scraping por tienda | Postgres (`catalogos_config`) | Seeder desde `config/*_config.json` | Los JSON son la semilla versionada; el runtime lee Postgres. |
 | Usuarios (Google OAuth) | Postgres (`usuarios`) | Login / `PATCH /me` | Sin contraseñas ni tokens. |
 | Sesiones | Cookie firmada (`sina_session`, HMAC) | Backend al login | **Stateless**: no hay tabla ni colección de sesiones. |
@@ -270,9 +271,9 @@ archivos (imágenes de flyers) y **git** para configuración que es parte del c�
 | Auditoría de jobs del scheduler | Mongo (`registro_jobs`, TTL 90 días) | Wrapper `_con_registro` en `scheduler.py` | `GET /api/v1/annotator/jobs` (admin). |
 | Estado de baneo por usuario/IP | Mongo (`moderacion_usuarios`, TTL 30 días desde el último incidente) | `ModeracionStore` desde `POST /chat` (capa de moderación) | Strike `$inc` atómico; degradación suave = strikes no persisten. |
 | Auditoría de decisiones de moderación | Mongo (`moderacion_log`, TTL 90 días) | `ModeracionStore.auditar` en cada consulta moderada | Para revisar falsos positivos/negativos del clasificador. |
-| Artefactos de flyers (imágenes, `metadata/labels/extraccion/persistido.json`, `labels_yolo/`) | Filesystem `datos/flyers/<tienda>/<ciudad>/<fecha>/` | Spiders + endpoints del anotador | **A propósito NO van a Mongo**: acompañan a las imágenes que describen y el ciclo de vida debe funcionar aunque Mongo esté caído. |
+| Artefactos de flyers (imágenes, `metadata/labels/extraccion/persistido.json`, `labels_yolo/`) | Filesystem `datos/flyers/<tienda>/<ciudad>/<fecha>/` | Spiders + endpoints del anotador | **A propósito NO van a Mongo**: acompañan a las imágenes que describen y el ciclo de vida debe funcionar aunque Mongo esté caído. Servidos en `/datos/flyers/...`. |
 | Dataset YOLO consolidado | Filesystem `datos/yolo_dataset/` | `python -m sina.annotator.dataset` | Derivado; se reconstruye completo en cada corrida. |
-| Configs (clases, ciudades semilla, rutas de tiendas) | Git (`src/sina/config/*.json`) | El desarrollador (commit) | Configuración = código; no se muta en runtime. |
+| Semillas y configs (catálogos CNE/gasolineras en Parquet, clases, ciudades semilla, rutas de tiendas) | Git (`datos/seeds/*` y `src/sina/config/*.json`) | El desarrollador (commit) | Semillas estáticas (~2.7 MB total, sin Git LFS) y configuración = código; no se mutan en runtime. |
 | Preferencias del visitante (tema, ubicación) | Navegador (`localStorage`: `sina.theme`, `sina.ubicacion`) | La SPA | Por-dispositivo. Migrarlas a Mongo por usuario es candidato futuro, igual que una "lista de compras" persistente (feature nueva, no migración). |
 | Clave admin del anotador | Navegador (`sessionStorage`) | La UI del anotador | Secreto de dispositivo; jamás se persiste server-side. |
 

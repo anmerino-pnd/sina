@@ -177,10 +177,7 @@ export default function StationMap({
 }: Props) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const { tema } = useTheme();
-  const tileUrl =
-    tema === "dark"
-      ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  const tileUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
   useEffect(() => {
     if (modoFijar) contenedorRef.current?.classList.add("cursor-crosshair");
@@ -201,8 +198,8 @@ export default function StationMap({
         <TileLayer
           key={tema}
           url={tileUrl}
-          attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://carto.com/attributions">CARTO</a>'
-          subdomains="abcd"
+          className={tema === "dark" ? "brightness-90 invert hue-rotate-180 contrast-95" : ""}
+          attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           maxZoom={19}
         />
 

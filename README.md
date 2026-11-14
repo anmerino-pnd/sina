@@ -126,16 +126,17 @@ podman-compose up -d        # arranca sina_db (pgvector/pgvector:pg16) y sina_mo
 MongoDB solo se usa para el historial del chat (Fase 3). Si no lo levantas, todo lo demás
 funciona; el chat responde pero sin guardar conversaciones.
 
-### 3. Sembrar catálogos
+### 3. Sembrar catálogos y ubicaciones base
 
 ```bash
 uv run python -m sina.db.seeder
 ```
 
-Esto carga entidades/municipios/**localidades** y los **catálogos de rutas de scraping** de
-Soriana, Del Sol, Benavides y Farmacias Guadalajara. Es lo que habilita las localidades del
-dashboard de **Gas LP** (sin seeder, esa lista sale vacía) y las rutas que consumen los spiders
-de supermercados (ver [Ingesta de datos](#ingesta-de-datos-scraping)).
+Esto lee los archivos semilla de `datos/seeds/` (`catalogo_municipios.json`, `cne_localidades.parquet` y `ubicaciones_gasolineras.parquet`) junto con `src/sina/config/*_config.json`, y puebla en bloque:
+- **Entidades (32)** y **municipios (2,476)**.
+- **Localidades CNE (297,878)** para el dashboard y agente de **Gas LP**.
+- **Coordenadas de gasolineras (11,023 estaciones)** para el mapa y búsqueda por cercanía de **Gasolina**.
+- **Catálogos de rutas de scraping** de Soriana, Del Sol, Benavides y Farmacias Guadalajara (ver [Ingesta de datos](#ingesta-de-datos-scraping)).
 
 ### 4. Levantar el backend
 
@@ -398,8 +399,11 @@ sina/
 │   └── ollama/                # extract_flyer_text.py (OCR/LLM)
 ├── frontend/                  # SPA React (Vite + React 19 + Tailwind v4)
 │   └── src/{pages,features,components,hooks,lib}
-├── templates/ · static/       # dashboards Jinja legacy (en migración)
-└── datos/                     # artefactos scrapeados + SQLite de dev
+├── templates/ · static/       # UI del anotador de volantes + dashboards legacy
+├── tests/                     # suite pytest (moderación, seeder y semillas Parquet)
+└── datos/
+    ├── seeds/                 # semillas versionadas (catalogo_municipios.json, *.parquet)
+    └── flyers/                # artefactos de volantes (ignorados en git)
 ```
 
 ---
@@ -417,7 +421,8 @@ podman exec -it sina_mongo mongosh sina                 # consola de MongoDB (hi
 
 # Backend
 uv run uvicorn sina.main:app --reload --port 8000
-uv run python -m sina.db.seeder      # sembrar catálogos (municipios + rutas de scraping)
+uv run python -m sina.db.seeder      # sembrar municipios, 297k localidades, 11k gasolineras y rutas
+uv run python -m pytest tests/ -q    # ejecutar suite de pruebas
 
 # Ingesta de supermercados (requiere PostgreSQL + catálogos sembrados)
 uv run python -m sina.scraping.supermercados.soriana_spider
@@ -432,16 +437,33 @@ cd frontend && npm run build         # compilar (lo sirve FastAPI en :8000)
 
 ---
 
+## Flujo de trabajo con Git (Ramas y Buenas Prácticas)
+
+Para mantener `main` siempre estable y desplegable, todo desarrollo nuevo se realiza por **ramas (feature branches)**:
+
+1. **Crear una rama por tarea o feature desde `main`:**
+   - `feat/<nombre>` — nuevas funcionalidades o fases (ej. `feat/ingesta-supermercados`, `feat/chat-ollama`).
+   - `fix/<nombre>` — correcciones de bugs (ej. `fix/cache-gasolina-postgres`).
+   - `docs/<nombre>` — mejoras a la documentación o al sitio Quarto.
+   - `test/<nombre>` / `chore/<nombre>` — pruebas, CI/CD, `Containerfile` o mantenimiento.
+2. **Commits atómicos y descriptivos** (estilo *Conventional Commits*: `feat:`, `fix:`, `docs:`, `test:`, `chore:`).
+3. **Verificación previa al merge:**
+   - Pasar la suite de pruebas: `uv run python -m pytest tests/ -q`.
+   - Si se modificó `frontend/`, verificar compilación limpia: `npm --prefix frontend run build`.
+4. **Integración a `main`** mediante Pull Request o merge limpio una vez validada la funcionalidad.
+
+---
+
 ## Roadmap (resumen de [SPEC.md](SPEC.md))
 
 | Fase | Objetivo                                                       | Estado                                                             |
 | ---- | -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 1    | Estabilizar backend (PostgreSQL + pgvector, scheduler, health) | Hecho                                                              |
+| 1    | Estabilizar backend + semillas Parquet (`datos/seeds/`)        | Hecho                                                              |
 | 2    | Pipeline de supermercados + embeddings (core)                  | Hecho (base)                                                       |
-| 3    | Capa de agente / chat con tools internas                       | Hecho (base): Ollama + tools + grafo, `/chat` SSE, historial Mongo |
-| 4    | SPA React + Google OAuth                                       | En curso (landing, auth y dashboards hechos; chat "próximamente") |
-| 5    | Calidad y despliegue (tests, CI/CD, Containerfile, GCP)        | Pendiente                                                          |
-| 6    | ML de volantes (detección de zonas)                           | Largo plazo                                                        |
+| 3    | Capa de agente / chat con tools internas + moderación          | Hecho (base): Ollama + tools + grafo, `/chat` SSE, historial Mongo |
+| 4    | SPA React + Google OAuth                                       | Hecho (landing, auth, Gasolina, Gas LP, Supermercados y Chat)      |
+| 5    | Calidad y despliegue (tests, CI/CD, Containerfile, GCP)        | En curso (`tests/` con pytest para moderación y seeder)            |
+| 6    | ML de volantes (detección de zonas CV/YOLO + VLM)              | En curso (pipeline Ley + Abarrey listo; entrenamiento YOLO pendiente) |
 
 ---
 

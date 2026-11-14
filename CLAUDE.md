@@ -18,12 +18,12 @@ Package manager is **uv** (Python ≥ 3.12). Prefix Python commands with `uv run
 ```bash
 uv sync                                          # install deps
 uv run uvicorn sina.main:app --reload            # dev server on :8000
-uv run python -m sina.db.seeder                  # seed entidades/municipios/localidades + supermarket route catalogs (Soriana/Del Sol/Benavides/Guadalajara)
+uv run python -m sina.db.seeder                  # seed entidades/municipios + 297k localidades CNE (Parquet) + 11k ubicaciones gasolineras (Parquet) + supermarket route catalogs
 podman-compose up -d                             # start PostgreSQL 16 + pgvector + MongoDB (compose.yaml)
 ```
 
 The chat agent (Fase 3) needs **Ollama** running with a tool-capable model
-(`ollama pull qwen3.6:35b` — multimodal, shared by chat AND the flyer VLM) and `ENABLE_CHAT=1`.
+(`ollama pull qwen3.6:35b` — multimodal, shared by chat AND the flyer VLM; on 16 GB VRAM machines like RTX 5060 Ti, use `qwen3:14b` / `qwen3:8b` or `qwen2.5vl:7b` to fit 100% in VRAM) and `ENABLE_CHAT=1`.
 The optional moderation layer additionally needs its own small classifier model
 (`ollama pull qwen3.5:9b`, or point `MODERACION_MODEL` at another local one) and
 `ENABLE_MODERACION=1`. Chat history persists to **MongoDB** (from
@@ -37,15 +37,25 @@ also auto-restarted) competes for 5432.
 `podman-restart` is enabled inside the podman machine, so `podman machine start` after a
 reboot is enough to revive both containers.
 
-Tests: `uv run pytest tests/ -q` (hoy cubre la capa de moderación: baneo/perdón, prefiltro,
-clasificador con mocks y router). Para el resto del sistema, verifica corriendo el servidor
+Tests: `uv run pytest tests/ -q` (o `uv run python -m pytest tests/ -q` en Windows si Smart App Control bloquea `.venv\Scripts\pytest.exe`; cubre la capa de moderación y el seeder/integridad de archivos semilla en `datos/seeds/`). Para el resto del sistema, verifica corriendo el servidor
 y pegándole a los endpoints, e.g. `GET /api/v1/gasolina?estado=sonora&municipio=hermosillo`.
+
+## Git Workflow (Branching Policy)
+
+Starting from the PostgreSQL + Podman baseline commit on `main`, **all work must follow a branch-based workflow**:
+- **Never commit directly to `main`** for new features, refactors, or bug fixes. `main` must always remain stable and deployable.
+- **Create a descriptive branch per task** using standard prefixes:
+  - `feat/<slug>` — new features or phase deliverables (e.g. `feat/scraping-supermercados`, `feat/ollama-chat`).
+  - `fix/<slug>` — bug fixes (e.g. `fix/gasolina-nan-postgres`).
+  - `docs/<slug>` — documentation or Quarto site updates.
+  - `test/<slug>` / `chore/<slug>` — test suites, CI/CD, containerization, tooling.
+- **Pre-merge checklist:** before merging into `main`, verify that `uv run python -m pytest tests/ -q` passes and, if `frontend/` was touched, `npm --prefix frontend run build` succeeds without TypeScript or Vite errors.
 
 ## Database selection (important gotcha)
 
 `sina.config.credentials.get_db_url()` returns a **PostgreSQL** URL when all of
 `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` env vars are set; otherwise it falls back to
-**SQLite** at `datos/db/sina_data.db`. `DB_URL` is resolved **at import time**, and
+**SQLite** at `datos/db/sina_data.db` (ignored in git; no `.db` binary is tracked in the repo). `DB_URL` is resolved **at import time**, and
 `sina/db/repository.py` builds a single global engine and calls
 `Base.metadata.create_all(_engine)` **on import** — so tables auto-create and the DB
 target is locked in the moment any repository module is imported. Set `.env` (copy from
@@ -56,13 +66,13 @@ target is locked in the moment any repository module is imported. Set `.env` (co
 **Entry point — `src/sina/main.py`:** the FastAPI `app`. On startup, a `lifespan` handler
 loads the municipio catalog from the DB once into module-level globals
 (`_municipios_validos`, `_catalogo_js`) used to validate `estado`/`municipio` query params.
-Mounts `/static` and `/datos` (served files), renders Jinja2 templates from `templates/`.
+Mounts `/static` and `/datos/flyers` (served flyer images, scoped to `FLYERS_DATA` so `datos/seeds/` and `datos/db/` are never exposed over HTTP), renders Jinja2 templates from `templates/`.
 QQP endpoints are deprecated/removed; active API surfaces are gasolina, gas-lp, supermercados,
 chat (Fase 3), auth/users, and annotator.
 
 **Data layer — `src/sina/db/`:**
 - `models.py` — SQLAlchemy models. Notable: `PrecioGasolina` (`gasolineras`) uses the CRE
-  permit string `numero` as PK and is filled in **two phases** (scraping fills
+  permit string `numero` as PK and is filled in **two phases** (seeding/scraping fills
   `latitud/longitud`, the CRE API fills `magna/premium/diesel`); `GasLPPrecio` is
   intentionally **denormalized** (stores both IDs and names to avoid JOINs). `Supermercado`
   has a pgvector `embedding` column. Several models carry an `esta_vigente()` method
@@ -72,13 +82,12 @@ chat (Fase 3), auth/users, and annotator.
   Generic `BaseRepository[T]` + one subclass per model (`GasolinaRepository`,
   `GasLPRepository`, `MunicipioRepository`, `CatalogoRepository`, etc.). All repos share
   the global `_engine`; the `db_url` constructor arg is kept only for signature
-  compatibility and is ignored. Upserts use SQLite's `insert(...).on_conflict_do_update`.
-- `seeder.py` — loads catalog/seed data. `seed_catalogo_tienda(session, tienda, config_path)`
-  is a **generic** loader (top-level of each `*_config.json` = departamento, 2nd level =
-  categoría, leaf = `{url_path, prioridad}`); `TIENDAS_CATALOGO` lists every store + its config
-  file, and `seed_catalogos()` iterates it. Upserts are idempotent (dedup by
-  tienda+departamento+categoría+url_path). Note: the config JSONs have **no top-level tienda
-  wrapper** — the tienda name comes from `TIENDAS_CATALOGO`, not the file.
+  compatibility and is ignored. Upserts use `_dialect_insert(model)` (`on_conflict_do_update` / `on_conflict_do_nothing`).
+- `seeder.py` — loads all foundational seed data in batches (`BATCH_SIZE = 5000`) from `datos/seeds/` and `src/sina/config/`:
+  - `seed_catalogo_municipios()` reads `datos/seeds/catalogo_municipios.json` (32 entidades, 2,476 municipios).
+  - `seed_catalogo_localidades()` reads `datos/seeds/cne_localidades.parquet` (297,878 CNE localities compressed with `zstd`).
+  - `seed_ubicaciones_gasolineras()` reads `datos/seeds/ubicaciones_gasolineras.parquet` (11,023 gas station coordinates; upserts `latitud`/`longitud` without overwriting existing CRE prices).
+  - `seed_catalogo_tienda(session, tienda, config_path)` is a **generic** loader (top-level of each `*_config.json` = departamento, 2nd level = categoría, leaf = `{url_path, prioridad}`); `TIENDAS_CATALOGO` lists every store + its config file, and `seed_catalogos()` iterates it. Upserts are idempotent (dedup by tienda+departamento+categoría+url_path). Note: the config JSONs have **no top-level tienda wrapper** — the tienda name comes from `TIENDAS_CATALOGO`, not the file.
 
 **Scrapers — `src/sina/scraping/`, organized by source:**
 - `gobierno/cre_gasolina.py`, `gobierno/cne_gas_lp.py` — government APIs via `requests`.
@@ -101,7 +110,7 @@ chat (Fase 3), auth/users, and annotator.
     paginates via the SFCC "Show More" `Search-UpdateGrid?start=N&sz=20` fragment. Config
     covers only the **Super / Farmacia / Dermo** tabs (Ofertas excluded — it re-lists the same
     `pid`s and would overlap).
-  - `supermercados/casaley_spider.py` — downloads flyer images via **Selenium** (Publitas).
+  - `supermercados/casaley_spider.py` — downloads flyer images via **Selenium** (Publitas). Uses `_crear_driver()` which prefers Chrome/Chromium (Linux/GCP) and falls back automatically to **Microsoft Edge** on Windows so no extra browser install is needed.
   - `supermercados/abarrey_spider.py` — downloads flyer images from `ofertas.php`
     (server-rendered) via `curl_cffi` + BeautifulSoup; same output layout as Casa Ley
     (`page_NN.jpg` + `metadata.json`) plus `vigencia_texto` scraped from the page.
@@ -215,8 +224,8 @@ flyer no lo traen) y su dedup es por la clave compuesta `uq_super_flyer`
 arranque de `repository.py` corre una migración idempotente (ALTER ... IF NOT EXISTS) solo en
 PostgreSQL para alinear DBs existentes. `buscar(..., fuente=, solo_vigentes=)` filtra promos vigentes.
 
-**Config — `src/sina/config/`:** `paths.py` (auto-detected `BASE_DIR`, `DATA`,
-`TEMPLATES_DIR`, `STATIC_DIR`, `DB`, and the `*_CONFIG_PATH` for each store catalog),
+**Config — `src/sina/config/`:** `paths.py` (auto-detected `BASE_DIR`, `DATA`, `SEEDS_DATA`,
+`TEMPLATES_DIR`, `STATIC_DIR`, `DB`, the Parquet/JSON seed paths under `datos/seeds/`, and the `*_CONFIG_PATH` for each store catalog),
 `credentials.py` (env loading + `DB_URL`, `HEADERS`, per-store `*_base_url`), `settings.py`,
 `canasta.py` (canasta-básica product mapping), the store route catalogs
 (`soriana_config.json`, `delsol_config.json`, `benavides_config.json`,
@@ -233,6 +242,5 @@ GET /api/v1/gasolina?estado&municipio
 
 Scraped flyer/image artifacts live under `datos/flyers/<tienda>/<city>/<date>/` (flyer stores
 —`casa_ley`, `abarrey`— are grouped under `datos/flyers/` so the annotator's store selector lists
-only flyer sources, not `db/`/`gasolineras/`; `resolver_ruta_flyer` and the annotator tree are
-rooted at `FLYERS_DATA`, images served at `/datos/flyers/...`) and are
-served at `/datos`.
+only flyer sources, not `db/`/`seeds/`; `resolver_ruta_flyer` and the annotator tree are
+rooted at `FLYERS_DATA`, and images are served exclusively at `/datos/flyers/...`).

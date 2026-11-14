@@ -239,4 +239,19 @@ quarto render        # genera el sitio en ../docs
 quarto preview       # vista previa con recarga en vivo
 ```
 
+## 8.9. Flujo de trabajo con Git (Ramas y Buenas Prácticas)
+
+A partir de la estabilización del backend con PostgreSQL + Podman en `main`, todo el desarrollo sigue un **flujo profesional basado en ramas (Feature Branch Workflow)**:
+
+1. **Rama `main` protegida por convención:** `main` contiene únicamente código probado y funcional. Ninguna funcionalidad nueva ni refactorización se desarrolla directamente sobre `main`.
+2. **Nomenclatura de ramas:**
+   - `feat/<nombre-corto>` — nuevas funcionalidades o etapas del roadmap (ej. `feat/ingesta-supermercados`, `feat/ollama-chat`).
+   - `fix/<nombre-corto>` — corrección de errores puntuales.
+   - `docs/<nombre-corto>` — cambios de documentación o Quarto.
+   - `test/<nombre-corto>` / `chore/<nombre-corto>` — pruebas automatizadas, CI/CD, `Containerfile`.
+3. **Criterio de integración (Definition of Done antes de merge a `main`):**
+   - Suite de pruebas en verde: `uv run python -m pytest tests/ -q`.
+   - Si se tocó `frontend/`, compilación limpia de TypeScript y Vite: `npm --prefix frontend run build`.
+   - Commits atómicos y descriptivos estilo *Conventional Commits* (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
+
 :::

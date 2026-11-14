@@ -131,8 +131,8 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(chat_router)
 
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-app.mount("/datos",  StaticFiles(directory=str(DATA)),       name="datos")
+app.mount("/static",       StaticFiles(directory=str(STATIC_DIR)),  name="static")
+app.mount("/datos/flyers", StaticFiles(directory=str(FLYERS_DATA)), name="datos")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # ============================================================

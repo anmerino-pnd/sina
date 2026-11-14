@@ -170,6 +170,13 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
 
     def obtener_por_municipio(self, estado: str, municipio: str) -> list[dict]:
         """Consulta gasolineras por estado y municipio."""
+        import math
+
+        def _num(v: float | None) -> float | None:
+            if v is None or (isinstance(v, float) and math.isnan(v)):
+                return None
+            return v
+
         with self.Session() as session:
             stmt = select(self.model).where(
                 self.model.estado    == estado.lower(),
@@ -181,14 +188,15 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
                     "numero"   : r.numero,
                     "nombre"   : r.nombre,
                     "direccion": r.direccion,
-                    "magna"    : r.magna,
-                    "premium"  : r.premium,
-                    "diesel"   : r.diesel,
-                    "latitud"  : r.latitud,
-                    "longitud" : r.longitud,
+                    "magna"    : _num(r.magna),
+                    "premium"  : _num(r.premium),
+                    "diesel"   : _num(r.diesel),
+                    "latitud"  : _num(r.latitud),
+                    "longitud" : _num(r.longitud),
                     "fecha_extraccion": r.fecha_registro,
                 }
                 for r in rows
+                if r.nombre is not None
             ]
 
     def upsert_ubicaciones(self, registros: list[dict]):
@@ -267,9 +275,10 @@ class GasolinaRepository(BaseRepository[PrecioGasolina]):
         with self.Session() as session:
             ultimo = (
                 session.query(self.model)
-                .filter_by(
-                    estado=estado.lower(),
-                    municipio=municipio.lower()
+                .filter(
+                    self.model.estado == estado.lower(),
+                    self.model.municipio == municipio.lower(),
+                    self.model.fecha_registro.is_not(None),
                 )
                 .order_by(self.model.fecha_registro.desc())
                 .first()

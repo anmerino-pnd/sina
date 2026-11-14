@@ -76,9 +76,10 @@ y sobrio**, alejado del glassmorphism morado genérico:
 - **Calculadora de ahorro.** El mensaje se expresa desde la **perspectiva de la estación
   seleccionada** respecto a la base ("Ahorras $X" si es más barata, "Pagas $X más" si es más cara),
   con flecha y color coherentes.
-- **Mapa Leaflet.** Se aísla el stacking context del mapa (`isolate`) para que sus controles no
-  tapen menús ni el navbar; e `invalidateSize` + `ResizeObserver` evitan los tiles en gris al
-  montar/redimensionar.
+- **Mapa Leaflet.** Usa teselas oficiales de **OpenStreetMap** (`tile.openstreetmap.org`, libres de
+  API key tras el cambio de política de CARTO, con inversión CSS automática en modo oscuro). Se
+  aísla el stacking context del mapa (`isolate`) para que sus controles no tapen menús ni el navbar;
+  e `invalidateSize` + `ResizeObserver` evitan los tiles en gris al montar/redimensionar.
 - **Listas y scroll.** Resaltado de fila tipo "pill" redondeado (hover/seleccionado); estaciones
   cercanas como lista con scroll propio; scrollbar afinada y cálida, consistente con el tema.
 - **Responsividad.** En pantalla partida, Top 10 y cercanas se colocan lado a lado; las cartas

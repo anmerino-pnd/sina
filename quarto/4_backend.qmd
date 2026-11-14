@@ -16,7 +16,7 @@ lang: es
 El punto de entrada es `src/sina/main.py` (la instancia `app`). En el arranque, un manejador
 `lifespan` carga **una vez** el catálogo de municipios desde la DB a variables globales
 (`_municipios_validos`, `_catalogo_js`) que sirven para validar los parámetros `estado`/`municipio`.
-La app monta `/static` y `/datos` (archivos servidos), renderiza plantillas Jinja2 heredadas y, en
+La app monta `/static` y `/datos/flyers` (imágenes de volantes acotadas a `FLYERS_DATA`, sin exponer `datos/seeds/` ni `datos/db/`), renderiza plantillas Jinja2 heredadas y, en
 producción, sirve la **SPA React** desde el mismo origen (mount `/assets` + catch-all).
 
 ## 4.2. Endpoints principales
@@ -76,11 +76,16 @@ Todo el acceso a datos pasa por `src/sina/db/`:
   engine** (`_dialect_insert`: `postgresql.insert` o `sqlite.insert` — el constructo de un dialecto
   no compila bajo el otro). El catálogo estado→municipio se obtiene en **una sola query con JOIN**
   (antes 1+N por la relación lazy) y el `estado_cache` del health check vive consolidado en
-  `BaseRepository._estado_cache`, parametrizado por campo de fecha. En PostgreSQL se crea además
-  un **índice trigram** (`pg_trgm` + GIN sobre `supermercados.producto`) para que la búsqueda de
-  texto `ILIKE '%q%'` no sea un full-scan.
-- **`seeder.py`** — carga catálogos/semillas de forma **genérica e idempotente**
-  (`seed_catalogo_tienda` + `TIENDAS_CATALOGO`).
+  `BaseRepository._estado_cache`, parametrizado por campo de fecha. En `GasolinaRepository`:
+  `necesita_actualizacion` filtra `fecha_registro IS NOT NULL` antes de `ORDER BY ... DESC` (evita
+  que el `NULLS FIRST` por defecto de PostgreSQL tome estaciones semilla sin precio), y
+  `obtener_por_municipio` sanea valores `NaN` de `pandas` a `None` para garantizar JSON válido.
+  En PostgreSQL se crea además un **índice trigram** (`pg_trgm` + GIN sobre `supermercados.producto`)
+  para que la búsqueda de texto `ILIKE '%q%'` no sea un full-scan.
+- **`seeder.py`** — carga catálogos/semillas de forma **genérica, en lotes (`BATCH_SIZE=5000`) e idempotente**
+  usando el dialecto de la sesión activa (`session.get_bind()`):
+  `seed_catalogo_municipios` (`catalogo_municipios.json`), `seed_catalogo_localidades` (`cne_localidades.parquet`, 297.8k filas),
+  `seed_ubicaciones_gasolineras` (`ubicaciones_gasolineras.parquet`, 11k filas) y `seed_catalogos` (`seed_catalogo_tienda` + `TIENDAS_CATALOGO`).
 
 **Origen unificado en `supermercados`.** La tabla lleva un discriminador `fuente`
 (`"scraping"` | `"flyer"`) + `vigencia_inicio/fin` + `marca`/`unidad`. El scraping deduplica por
@@ -101,7 +106,7 @@ on-demand**; los de supermercados son **dirigidos por DB** (leen sus rutas de `c
 | Del Sol | VTEX | Playwright-stealth **async** | VTEX |
 | Benavides | Magento | `curl_cffi` + BeautifulSoup (server-rendered) | `?p=N` |
 | Farmacias Guadalajara | SFCC (server-rendered) | `curl_cffi` + BeautifulSoup | "Show More" `Search-UpdateGrid?start=N&sz=20` |
-| Casa Ley (secundario) | Publitas (volantes) | Selenium (descarga de imágenes) | — |
+| Casa Ley (secundario) | Publitas (volantes) | Selenium (Chrome/Chromium con fallback automático a Microsoft Edge en Windows) | — |
 
 Para Guadalajara se cubren las pestañas **Super / Farmacia / Dermo** (Ofertas se excluye porque
 re-lista los mismos `pid` y se traslaparía).

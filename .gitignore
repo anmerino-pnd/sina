@@ -3,8 +3,14 @@ __pycache__/
 __init__.py
 sina.egg-info
 chromedriver.exe
+datos/db/
 datos/flyers/
 datos/yolo_dataset/
+*.db
+*.db-shm
+*.db-wal
 logs/
 frontend/node_modules
 frontend/dist
+.vscode/
+.pytest_cache/

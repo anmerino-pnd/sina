@@ -16,17 +16,15 @@ BASE_DIR = find_project_root(Path(__file__))
 # --- Datos existentes ---
 DATA = BASE_DIR / "datos"
 DB = DATA / "db"
+SEEDS_DATA = DATA / "seeds"
 # Volantes (flyers) agrupados bajo datos/flyers/ para que el anotador liste solo
-# tiendas de volantes (no db/ ni gasolineras/).
+# tiendas de volantes (no db/ ni seeds/).
 FLYERS_DATA = DATA / "flyers"
 CASA_LEY_DATA = FLYERS_DATA / "casa_ley"
 ABARREY_DATA = FLYERS_DATA / "abarrey"
-GAS_DATA = DATA / "gasolineras"
 
 # --- Logs ---
 LOGS = BASE_DIR / "logs"
-
-# --- Anotador (nuevo) ---
 
 # --- Templates y estáticos ---
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -42,17 +40,19 @@ GUADALAJARA_CONFIG = BASE_DIR / "src" / "sina" / "config" / "guadalajara_config.
 for path in [
     DB,
     DATA,
+    SEEDS_DATA,
     FLYERS_DATA,
     CASA_LEY_DATA,
     ABARREY_DATA,
     TEMPLATES_DIR,
     STATIC_DIR,
-    GAS_DATA,
     LOGS,
 ]:
     path.mkdir(parents=True, exist_ok=True)
 
-CATALOGO_MUNICIPIOS_PATH = GAS_DATA / "catalogo_municipios.json"
+CATALOGO_MUNICIPIOS_PATH = SEEDS_DATA / "catalogo_municipios.json"
+LOCALIDADES_PARQUET_PATH = SEEDS_DATA / "cne_localidades.parquet"
+UBICACIONES_GASOLINERAS_PARQUET_PATH = SEEDS_DATA / "ubicaciones_gasolineras.parquet"
 CLASES_JSON_PATH = CLASSES
 SORIANA_CONFIG_PATH = SORIANA_CONFIG
 DELSOL_CONFIG_PATH = DELSOL_CONFIG

@@ -2,11 +2,12 @@ import os
 import re
 import json
 import time
+import shutil
 import datetime
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -15,6 +16,39 @@ from typing import Set, Dict, Any
 
 from sina.config.credentials import HEADERS
 from sina.scraping.supermercados.interfaces import BrowserConfig
+
+
+def _crear_driver(config: BrowserConfig) -> WebDriver:
+    """
+    Crea un WebDriver Chromium. Usa Chrome/Chromium si está instalado (p. ej. Linux/GCP)
+    y cae automáticamente a Microsoft Edge en Windows para no requerir otro navegador.
+    """
+    argumentos = ["--no-sandbox", "--disable-dev-shm-usage"]
+    if config.headless:
+        argumentos.append("--headless")
+    if config.viewport:
+        width = config.viewport.get("width", 1920)
+        height = config.viewport.get("height", 1080)
+        argumentos.append(f"--window-size={width},{height}")
+
+    tiene_chrome = bool(
+        shutil.which("chrome")
+        or shutil.which("google-chrome")
+        or shutil.which("chromium")
+        or os.path.exists(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+        or os.path.exists(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
+    )
+
+    if tiene_chrome:
+        chrome_opts = webdriver.ChromeOptions()
+        for arg in argumentos:
+            chrome_opts.add_argument(arg)
+        return webdriver.Chrome(options=chrome_opts)
+
+    edge_opts = webdriver.EdgeOptions()
+    for arg in argumentos:
+        edge_opts.add_argument(arg)
+    return webdriver.Edge(options=edge_opts)
 
 def extract_images(driver: WebDriver) -> Set[str]:
     """Extracts high-res image URLs from current page view."""
@@ -40,17 +74,7 @@ def discover_pages(base_url: str, config: BrowserConfig = BrowserConfig()) -> Di
     """
     print(f"🔍 Opening: {base_url}")
     
-    options = webdriver.ChromeOptions()
-    if config.headless:
-        options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    if config.viewport:
-        width = config.viewport.get('width', 1920)
-        height = config.viewport.get('height', 1080)
-        options.add_argument(f"--window-size={width},{height}")
-    
-    driver = webdriver.Chrome(options=options)
+    driver = _crear_driver(config)
     wait = WebDriverWait(driver, 15)
     pages: Dict[int, str] = {}
     

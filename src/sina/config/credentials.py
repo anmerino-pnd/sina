@@ -17,12 +17,27 @@ abarrey_url: str = os.getenv('ABARREY_URL', "https://www.abarrey.com/ofertas.php
 ollama_api_key : str = os.getenv('OLLAMA_API_KEY', "")
 google_api_key: str = os.getenv('GOOGLE_API_KEY', "")
 
-gasolina_api_rest: str = os.getenv('GASOLINA_API_REST', '')
-gasolineras_ubi: str = os.getenv('GASOLINERAS_UBI', '')
+gasolina_api_rest: str = os.getenv(
+    'GASOLINA_API_REST',
+    "https://api-reportediario.cne.gob.mx/api/EstacionServicio/Petroliferos",
+).replace(".cre.gob.mx", ".cne.gob.mx")
+gasolineras_ubi: str = os.getenv(
+    'GASOLINERAS_UBI',
+    "https://gasolinamexico.com.mx/estados",
+)
 
-cne_refer : str = os.getenv('CNE_REFER', "")
-cne_localidades_url: str = os.getenv('CNE_LOCALIDADES_URL', "")
-cne_precios_gas_lp_url: str = os.getenv('CNE_PRECIOS_GAS_LP_URL', "")
+cne_refer: str = os.getenv(
+    'CNE_REFER',
+    "https://www.cne.gob.mx/ConsultaPrecios/GasolinasyDiesel/GasolinasyDiesel.html",
+).replace(".cre.gob.mx", ".cne.gob.mx")
+cne_localidades_url: str = os.getenv(
+    'CNE_LOCALIDADES_URL',
+    "https://api-reportediario.cne.gob.mx/api/cat/Localidad",
+).replace(".cre.gob.mx", ".cne.gob.mx")
+cne_precios_gas_lp_url: str = os.getenv(
+    'CNE_PRECIOS_GAS_LP_URL',
+    "https://api-reportediario.cne.gob.mx/api/Precios/GasLP",
+).replace(".cre.gob.mx", ".cne.gob.mx")
 
 # ── URLs base de supermercados (dominio; el url_path vive en los *_config.json) ──
 # Con default para que el scraping funcione aunque el .env no las declare.

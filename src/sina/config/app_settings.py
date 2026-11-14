@@ -10,8 +10,10 @@ import logging
 import os
 import secrets
 
+from typing import Annotated
+
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +37,9 @@ class AppSettings(BaseSettings):
     session_ttl_seconds: int = Field(default=60 * 60 * 24 * 14, alias="SESSION_TTL")
 
     # Orígenes permitidos por CORS (coma-separados). Vacío → mismo origen.
-    cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
+    cors_origins: Annotated[list[str], NoDecode] = Field(
+        default_factory=list, alias="CORS_ORIGINS"
+    )
 
     # ── Chat / Agente (Fase 3) ────────────────────────────────────────────
     # Feature flag del asistente. Off → POST /api/v1/chat responde 503.

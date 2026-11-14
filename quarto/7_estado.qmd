@@ -22,7 +22,7 @@ futuro. Se actualiza conforme avanza el trabajo.
 | --- | :---: | --- |
 | Pipeline + API Gasolina | ✅ | API CRE + caché 24 h on-demand. |
 | UI Gasolina (SPA) | ✅ | Mapa, ranking, calculadora, cercanas. |
-| Scraper ubicaciones gasolineras | ✅ | Listo; se corre puntualmente. |
+| Semillas Parquet (`datos/seeds/`) | ✅ | `catalogo_municipios.json` + `cne_localidades.parquet` (297.8k) + `ubicaciones_gasolineras.parquet` (11k); cargadas en bloque por `sina.db.seeder`. |
 | Pipeline + API Gas LP | ✅ | API CNE + caché semanal. |
 | UI Gas LP (SPA) | ✅ | Cascada estado→municipio→localidad. |
 | Scraping Soriana | ✅ | SFCC; Playwright. |
@@ -40,8 +40,8 @@ futuro. Se actualiza conforme avanza el trabajo.
 | SPA React (Landing + 4 secciones) | ✅ | Vite + React + Tailwind + modo oscuro; chat integrado. |
 | Google OAuth | ✅ | Cookie httpOnly + CSRF; requiere `GOOGLE_OAUTH_CLIENT_ID`. |
 | `GeminiProvider` (LLM patrocinado) | ❌ | Hueco listo (subclase de la ABC). |
-| Tests / CI-CD / Containerfile | 🚧 | pytest estrenado con la suite de moderación (`tests/`); CI/CD y Containerfile pendientes (Fase 5). |
-| QQP / PROFECO | 🗑️ | **Eliminado del código** (jul 2026): modelo y repositorio borrados; la tabla `qqp_precios` puede quedar huérfana en DBs existentes. |
+| Tests / CI-CD / Containerfile | 🚧 | pytest con suites de moderación y seeder (`tests/`); CI/CD y Containerfile pendientes (Fase 5). |
+| QQP / PROFECO | 🗑️ | **Eliminado del código y del repo** (jul/oct 2026): modelo, repositorio y archivo `.db` legacy removidos. |
 
 ## 7.2. Fases de desarrollo
 
@@ -66,7 +66,10 @@ flowchart LR
 ### 7.2.1. Fase 1 — Estabilización del backend ✅
 
 - [x] PostgreSQL + pgvector como default; SQLite solo fallback dev (extensión `vector` auto-creada).
-- [x] Deprecar QQP/PROFECO (jul 2026: modelo/repo finalmente **eliminados** del código).
+- [x] Semillas extraídas a `datos/seeds/` (`catalogo_municipios.json`, `cne_localidades.parquet` y `ubicaciones_gasolineras.parquet` con compresión `zstd`, ~2.7 MB total) y retiro definitivo de `sina_data.db` (265 MB en Git LFS).
+- [x] Infraestructura local levantada con Podman (`sina_db` PostgreSQL 16 + `pgvector` en `:5433` y `sina_mongo` en `:27018`), sembrada y verificada en vivo con las APIs de la CNE (`cne.gob.mx`) para Gasolina y Gas LP.
+- [x] Saneamiento de valores `NaN` de `pandas` y ordenamiento `fecha_registro IS NOT NULL` en PostgreSQL.
+- [x] Deprecar y eliminar QQP/PROFECO del código y del repositorio.
 - [x] Upserts portables SQLite/PostgreSQL (`_dialect_insert`; el constructo del dialecto SQLite
       no compilaba bajo Postgres).
 - [x] APScheduler en el `lifespan` (gasolina 06:00, gas LP sáb 08:00, hora MX).
@@ -114,10 +117,11 @@ flowchart LR
       `React.memo` por marcador) y fail-fast en prod con credenciales por defecto.
 - [ ] `favoritos` y `alertas` ("avísame si baja de $X"). *(Fase 4+)*
 
-### 7.2.5. Fase 5 — Calidad y despliegue ❌
+### 7.2.5. Fase 5 — Calidad y despliegue 🚧
 
-- [ ] Tests con pytest (repos/tools, endpoints, mocks de scrapers y gobierno). *(Estrenado con la
-      suite de la capa de moderación — `tests/` + pytest como dev-dependency; falta cubrir el resto.)*
+- [x] **Flujo de trabajo profesional por ramas (Git Branching):** a partir de la base estable en `main`, cada feature, corrección o etapa se desarrolla en su propia rama (`feat/*`, `fix/*`, `docs/*`, `test/*`, `chore/*`) y se integra a `main` tras validar `pytest` y el build de la SPA.
+- [x] Tests con pytest para la capa de moderación y para el seeder/semillas Parquet (`tests/`, 60 pruebas en verde).
+- [ ] Ampliar cobertura de pytest (repos/tools, endpoints, mocks de scrapers y gobierno).
 - [ ] CI/CD con GitHub Actions (lint + tests en PR; build de imagen al merge).
 - [ ] Empaquetado con Podman (`Containerfile`, no Docker) + `compose` app + Postgres.
 - [ ] Deploy multi-destino: local / servidor dedicado / **GCP** (Cloud Run + Cloud SQL + Scheduler).

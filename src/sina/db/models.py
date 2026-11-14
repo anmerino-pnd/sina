@@ -190,13 +190,6 @@ class Localidad(Base):
     # ── Nombre para UI ─────────────────────────────────────────
     nombre = Column(String, nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint(
-            "localidad_id", "municipio_id", "entidad_id",
-            name="uq_localidad_municipio"
-        ),
-    )
-
     def __repr__(self):
         return (
             f"<Localidad id={self.localidad_id} "
